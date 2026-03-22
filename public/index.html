@@ -14,7 +14,11 @@
   <button type="submit">Guardar</button>
 </form>
 
+<h2>Registros</h2>
+<ul id="lista"></ul>
+
 <script>
+// GUARDAR
 document.getElementById("form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -33,7 +37,31 @@ document.getElementById("form").addEventListener("submit", async (e) => {
   });
 
   alert("Guardado correctamente");
+
+  // limpiar formulario
+  document.getElementById("form").reset();
+
+  // recargar lista
+  cargarPartes();
 });
+
+// CARGAR REGISTROS
+async function cargarPartes() {
+  const res = await fetch("/partes");
+  const data = await res.json();
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  data.forEach(p => {
+    const li = document.createElement("li");
+    li.textContent = `${p.estacion} - ${p.novedad} - ${p.fecha}`;
+    lista.appendChild(li);
+  });
+}
+
+// cargar al iniciar
+cargarPartes();
 </script>
 
 </body>
