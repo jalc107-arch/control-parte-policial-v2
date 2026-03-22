@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Parte Policial</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b3d91;
+      color: white;
+      text-align: center;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1 { color: #00c853; }
+
+    .card {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    input, select {
+      padding: 10px;
+      width: 70%;
+      margin: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background: #00c853;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    pre {
+      text-align: left;
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📍 Parte Policial</h1>
+
+<div class="card">
+
+<select id="unidad">
+  <option value="ESTACION">ESTACIÓN DE POLICÍA</option>
+  <option value="COMUNITARIA">POLICÍA COMUNITARIA</option>
+  <option value="DIJIN">DIJIN</option>
+</select>
+
+<input id="estacion" list="estaciones" placeholder="Ej: USAQUEN" />
+
+<datalist id="estaciones">
+  <option value="USAQUEN">
+  <option value="SUBA">
+  <option value="KENNEDY">
+  <option value="BOSA">
+</datalist>
+
+<input id="cedula_responsable" placeholder="Cédula del responsable" />
+<button onclick="validarResponsable()">Validar responsable</button>
+
+<div id="datos_responsable"></div>
+
+<hr>
+
+<!-- CAMPOS OCULTOS -->
+<div id="datos_elabora_pdf" style="display:none;">
+  <input id="grado" />
+  <input id="nombre_elabora" />
+  <input id="cedula_elabora" />
+  <input id="telefono_elabora" />
+  <input id="latitud" />
+  <input id="longitud" />
+</div>
+
+<button onclick="cargarPersonal()">Cargar Personal</button>
+
+<div id="lista"></div>
+
+<button onclick="guardarNovedad()">Guardar Novedad</button>
+<button onclick="generarParte()">Generar Parte</button>
+<button onclick="cargarExcel()">Cargar Excel</button>
+
+<br><br>
+
+<input type="file" id="fileExcel" accept=".xlsx" />
+<button onclick="subirExcel()">Subir Excel</button>
+
+<br><br>
+
+<button onclick="descargarPDF()">Descargar PDF</button>
+
+<pre id="resultado"></pre>
+
+</div>
+
+<script>
+
+// ================= RESPONSABLE =================
+async function validarResponsable() {
+  const cedula = document.getElementById("cedula_responsable").value.trim();
+  const res = await fetch(`/responsable/${cedula}`);
+  const data = await res.json();
+
+  if (!data.ok || !data.autorizado) {
+    document.getElementById("datos_responsable").innerHTML = "⛔ No autorizado";
+    return;
+  }
+
+  window.responsable = { ...data.data, esOficial: data.esOficial };
+
+  document.getElementById("datos_responsable").innerHTML =
+    `✅ ${data.data.grado} ${data.data.apellidos}`;
+}
+
+// ================= PERSONAL =================
+async function cargarPersonal() {
+  const estacion = document.getElementById("estacion").value.toUpperCase();
+
+  if (!window.responsable) {
+    alert("Valida responsable primero");
+    return;
+  }
+
+  const res = await fetch(`/personal/${estacion}`);
+  const data = await res.json();
+
+  const contenedor = document.getElementById("lista");
+  contenedor.innerHTML = "";
+
+  data.data.forEach(p => {
+    contenedor.innerHTML += `
+      <b>${p.apellidos} ${p.nombres}</b>
+      <select id="novedad-${p.cedula}">
+        <option value="">DISPONIBLE</option>
+        <option>SERVICIO</option>
+        <option>PERMISO</option>
+        <option>VACACIONES</option>
+        <option>CITA MEDICA</option>
+      </select><br><br>
+    `;
+  });
+
+  // GPS automático
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      document.getElementById("latitud").value = pos.coords.latitude;
+      document.getElementById("longitud").value = pos.coords.longitude;
+    });
+  }
+}
+
+// ================= GUARDAR =================
+async function guardarNovedad() {
+  const estacion = document.getElementById("estacion").value;
+  const selects = document.querySelectorAll("select[id^='novedad-']");
+
+  for (const s of selects) {
+    if (!s.value) continue;
+
+    const cedula = s.id.replace("novedad-", "");
+
+    await fetch("/novedades", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        cedula,
+        estacion,
+        tipo_novedad: s.value
+      })
+    });
+  }
+
+  alert("Guardado");
+}
+
+// ================= PARTE =================
+async function generarParte() {
+  const estacion = document.getElementById("estacion").value;
+  const unidad = document.getElementById("unidad").value;
+
+  const res = await fetch(`/parte-texto/${estacion}?unidad=${unidad}`);
+  const data = await res.json();
+
+  document.getElementById("resultado").innerText = data.texto || "Error";
+}
+
+// ================= PDF =================
+function descargarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.text(document.getElementById("resultado").innerText, 10, 10);
+  doc.save("parte.pdf");
+}
+
+// ================= CARGAR EXCEL =================
+async function cargarExcel() {
+  const res = await fetch("/cargar-excel");
+  alert(await res.text());
+}
+
+// ================= SUBIR EXCEL =================
+async function subirExcel() {
+  const input = document.getElementById("fileExcel");
+
+  if (!input.files.length) {
+    alert("Selecciona un archivo Excel");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("archivo", input.files[0]);
+
+  try {
+    const res = await fetch("/subir-excel", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.text();
+    console.log("RESPUESTA:", data);
+    alert(data);
+
+  } catch (error) {
+    console.error(error);
+    alert("Error subiendo Excel");
+  }
+}
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</body>
+</html>
