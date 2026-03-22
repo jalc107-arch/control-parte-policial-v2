@@ -140,24 +140,15 @@ app.get("/parte-texto/:estacion", async (req, res) => {
 });
 
 // ================= STATIC (MUY IMPORTANTE) =================
-app.use(express.static(path.join(__dirname, "public")));
-app.get("/db-test", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-    res.json(result.rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 app.use(express.json());
 
-app.post("/rifas", async (req, res) => {
-  const { nombre, fecha, total_boletas } = req.body;
+app.post("/partes", async (req, res) => {
+  const { estacion, fecha, novedad } = req.body;
 
   try {
     const result = await pool.query(
-      "INSERT INTO rifas (nombre, fecha, total_boletas) VALUES ($1, $2, $3) RETURNING *",
-      [nombre, fecha, total_boletas]
+      "INSERT INTO partes (estacion, fecha, novedad) VALUES ($1, $2, $3) RETURNING *",
+      [estacion, fecha, novedad]
     );
 
     res.json(result.rows[0]);
