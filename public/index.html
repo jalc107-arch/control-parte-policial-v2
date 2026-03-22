@@ -96,6 +96,24 @@
 
   <div class="card">
 
+    <div class="seccion">
+  <h2>1. Validar responsable</h2>
+  <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
+  <br>
+  <button onclick="validarResponsable()">Validar responsable</button>
+  <div id="datos_responsable" style="margin-top:10px; font-weight:bold;"></div>
+
+  <!-- ocultos -->
+  <div style="display:none;">
+    <input id="grado" />
+    <input id="nombre_elabora" />
+    <input id="cedula_elabora" />
+    <input id="telefono_elabora" />
+    <input id="latitud" />
+    <input id="longitud" />
+  </div>
+</div>
+
     <div class="seccion" id="bloqueExcel" style="display:none;">
   <h2>1. Subir Excel</h2>
   <input type="file" id="fileExcel" accept=".xlsx" />
@@ -131,25 +149,7 @@
       <button onclick="guardarNovedades()">Guardar Novedades</button>
     </div>
 
-    <div class="seccion">
-  <h2>4. Validar elaborador</h2>
-  <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
-  <br>
-  <button onclick="validarResponsable()">Validar responsable</button>
-  <div id="datos_responsable" style="margin-top:10px; font-weight:bold;"></div>
-
-  <!-- CAMPOS OCULTOS PARA USAR EN PDF / TEXTO -->
-  <div style="display:none;">
-    <input id="grado" />
-    <input id="nombre_elabora" />
-    <input id="cedula_elabora" />
-    <input id="telefono_elabora" />
-    <input id="latitud" />
-    <input id="longitud" />
-  </div>
-</div>
-
-    <div class="seccion">
+      <div class="seccion">
       <h2>5. Generar parte</h2>
       <button onclick="generarParte()">Generar Parte</button>
       <button onclick="descargarPDF()">Descargar PDF</button>
