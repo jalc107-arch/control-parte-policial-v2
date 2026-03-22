@@ -149,7 +149,22 @@ app.get("/db-test", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.use(express.json());
 
+app.post("/rifas", async (req, res) => {
+  const { nombre, fecha, total_boletas } = req.body;
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO rifas (nombre, fecha, total_boletas) VALUES ($1, $2, $3) RETURNING *",
+      [nombre, fecha, total_boletas]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // ================= SERVER =================
 app.listen(PORT, "0.0.0.0", () => {
