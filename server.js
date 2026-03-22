@@ -141,6 +141,15 @@ app.get("/parte-texto/:estacion", async (req, res) => {
 
 // ================= STATIC (MUY IMPORTANTE) =================
 app.use(express.static(path.join(__dirname, "public")));
+app.get("/db-test", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // ================= SERVER =================
 app.listen(PORT, "0.0.0.0", () => {
