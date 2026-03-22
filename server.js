@@ -156,7 +156,14 @@ app.post("/partes", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
+app.get("/partes", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM partes");
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 // ================= SERVER =================
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Servidor corriendo en puerto " + PORT);
