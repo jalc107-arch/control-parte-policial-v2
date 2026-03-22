@@ -327,6 +327,53 @@
       `);
       ventana.document.close();
     }
+<script>
+async function validarResponsable() {
+  const cedula = document.getElementById("cedula_responsable").value.trim();
+
+  if (!cedula) {
+    alert("Ingresa la cédula");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/responsable/${cedula}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      document.getElementById("datos_responsable").innerText = "No autorizado";
+      return;
+    }
+
+    // Mostrar info básica
+    document.getElementById("datos_responsable").innerText =
+      `${data.data.grado} ${data.data.nombre}`;
+
+    // Guardar datos ocultos
+    document.getElementById("grado").value = data.data.grado;
+    document.getElementById("nombre_elabora").value = data.data.nombre;
+    document.getElementById("cedula_elabora").value = data.data.cedula;
+    document.getElementById("telefono_elabora").value = data.data.telefono || "";
+
+    // 🔓 Permisos
+    if (data.data.puede_subir_excel) {
+      document.getElementById("bloqueExcel").style.display = "block";
+    }
+
+    // 🔒 Si NO es oficial → bloquear estación
+    if (!data.data.es_oficial) {
+      document.getElementById("estacion").value = data.data.estacion;
+      document.getElementById("estacion").disabled = true;
+    } else {
+      document.getElementById("estacion").disabled = false;
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Error validando responsable");
+  }
+}
+</script> 
   </script>
 
 </body>
