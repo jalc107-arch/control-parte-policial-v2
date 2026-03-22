@@ -1,68 +1,328 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+  <meta charset="UTF-8" />
   <title>Control de Partes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b3d91;
+      color: white;
+      text-align: center;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h1, h2 {
+      color: #00c853;
+    }
+
+    .card {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 900px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    input, select, button {
+      padding: 10px;
+      margin: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 70%;
+      max-width: 500px;
+    }
+
+    button {
+      background: #00c853;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .persona {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+      text-align: left;
+    }
+
+    .persona b {
+      display: inline-block;
+      min-width: 320px;
+    }
+
+    .persona select {
+      width: 220px;
+    }
+
+    pre {
+      text-align: left;
+      background: #f4f4f4;
+      color: black;
+      padding: 15px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      margin-top: 15px;
+      overflow-x: auto;
+    }
+
+    #lista {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .seccion {
+      margin-top: 25px;
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Registrar Parte</h2>
+  <h1>📍 Control de Partes</h1>
 
-<form id="form">
-  <input type="text" id="estacion" placeholder="Estación" required><br><br>
-  <input type="datetime-local" id="fecha" required><br><br>
-  <input type="text" id="novedad" placeholder="Novedad" required><br><br>
-  <button type="submit">Guardar</button>
-</form>
+  <div class="card">
 
-<h2>Registros</h2>
-<ul id="lista"></ul>
+    <h2>1. Subir Excel</h2>
+    <input type="file" id="fileExcel" accept=".xlsx" />
+    <button onclick="subirExcel()">Subir Excel</button>
 
-<script>
-// GUARDAR
-document.getElementById("form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+    <div class="seccion">
+      <h2>2. Seleccionar estación</h2>
 
-  const data = {
-    estacion: document.getElementById("estacion").value,
-    fecha: document.getElementById("fecha").value,
-    novedad: document.getElementById("novedad").value
-  };
+      <select id="unidad">
+        <option value="ESTACION">ESTACIÓN DE POLICÍA</option>
+        <option value="COMUNITARIA">POLICÍA COMUNITARIA</option>
+        <option value="DIJIN">DIJIN</option>
+      </select>
+      <br>
 
-  await fetch("/partes", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
+      <input id="estacion" list="estaciones" placeholder="Ej: USAQUEN" />
 
-  alert("Guardado correctamente");
+      <datalist id="estaciones">
+        <option value="USAQUEN">
+        <option value="SUBA">
+        <option value="KENNEDY">
+        <option value="BOSA">
+      </datalist>
 
-  // limpiar formulario
-  document.getElementById("form").reset();
+      <br>
+      <button onclick="cargarPersonal()">Cargar Personal</button>
+    </div>
 
-  // recargar lista
-  cargarPartes();
-});
+    <div class="seccion">
+      <h2>3. Novedades por persona</h2>
+      <div id="lista"></div>
+      <button onclick="guardarNovedades()">Guardar Novedades</button>
+    </div>
 
-// CARGAR REGISTROS
-async function cargarPartes() {
-  const res = await fetch("/partes");
-  const data = await res.json();
+    <div class="seccion">
+      <h2>4. Datos del elaborador</h2>
+      <input id="grado" placeholder="Grado" />
+      <br>
+      <input id="nombre_elabora" placeholder="Nombre del elaborador" />
+      <br>
+      <input id="cedula_elabora" placeholder="Cédula del elaborador" />
+      <br>
+      <input id="telefono_elabora" placeholder="Teléfono del elaborador" />
+      <br>
+      <input id="latitud" placeholder="Latitud" />
+      <br>
+      <input id="longitud" placeholder="Longitud" />
+    </div>
 
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
+    <div class="seccion">
+      <h2>5. Generar parte</h2>
+      <button onclick="generarParte()">Generar Parte</button>
+      <button onclick="descargarPDF()">Descargar PDF</button>
+      <pre id="resultado"></pre>
+    </div>
 
-  data.forEach(p => {
-    const li = document.createElement("li");
-    li.textContent = `${p.estacion} - ${p.novedad} - ${p.fecha}`;
-    lista.appendChild(li);
-  });
-}
+  </div>
 
-// cargar al iniciar
-cargarPartes();
-</script>
+  <script>
+    async function subirExcel() {
+      const input = document.getElementById("fileExcel");
+
+      if (!input.files.length) {
+        alert("Selecciona un archivo Excel");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("archivo", input.files[0]);
+
+      try {
+        const res = await fetch("/subir-excel", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.text();
+        alert(data);
+      } catch (error) {
+        console.error(error);
+        alert("Error subiendo Excel");
+      }
+    }
+
+    async function cargarPersonal() {
+      const estacion = document.getElementById("estacion").value.trim().toUpperCase();
+
+      if (!estacion) {
+        alert("Escribe una estación");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/personal/${estacion}`);
+        const data = await res.json();
+
+        const contenedor = document.getElementById("lista");
+        contenedor.innerHTML = "";
+
+        if (!data.ok || !data.data || data.data.length === 0) {
+          contenedor.innerHTML = "<p>No hay personal para esa estación.</p>";
+          return;
+        }
+
+        data.data.forEach(p => {
+          const div = document.createElement("div");
+          div.className = "persona";
+
+          div.innerHTML = `
+            <b>${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}</b>
+            <select id="novedad-${p.cedula}">
+              <option value="">DISPONIBLE</option>
+              <option value="SERVICIO">SERVICIO</option>
+              <option value="PERMISO">PERMISO</option>
+              <option value="VACACIONES">VACACIONES</option>
+              <option value="CITA MEDICA">CITA MEDICA</option>
+              <option value="LICENCIA">LICENCIA</option>
+              <option value="INCAPACIDAD">INCAPACIDAD</option>
+            </select>
+          `;
+
+          contenedor.appendChild(div);
+        });
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((pos) => {
+            document.getElementById("latitud").value = pos.coords.latitude;
+            document.getElementById("longitud").value = pos.coords.longitude;
+          });
+        }
+
+      } catch (error) {
+        console.error(error);
+        alert("Error cargando personal");
+      }
+    }
+
+    async function guardarNovedades() {
+      const estacion = document.getElementById("estacion").value.trim().toUpperCase();
+      const selects = document.querySelectorAll("select[id^='novedad-']");
+
+      if (!estacion) {
+        alert("Escribe una estación");
+        return;
+      }
+
+      try {
+        for (const s of selects) {
+          if (!s.value) continue;
+
+          const cedula = s.id.replace("novedad-", "");
+
+          await fetch("/novedades", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              cedula,
+              estacion,
+              tipo_novedad: s.value
+            })
+          });
+        }
+
+        alert("Novedades guardadas correctamente");
+      } catch (error) {
+        console.error(error);
+        alert("Error guardando novedades");
+      }
+    }
+
+    async function generarParte() {
+      const estacion = document.getElementById("estacion").value.trim().toUpperCase();
+      const unidad = document.getElementById("unidad").value;
+      const grado = document.getElementById("grado").value.trim();
+      const nombre = document.getElementById("nombre_elabora").value.trim();
+      const cedula = document.getElementById("cedula_elabora").value.trim();
+      const telefono = document.getElementById("telefono_elabora").value.trim();
+
+      const resultado = document.getElementById("resultado");
+
+      if (!estacion) {
+        resultado.innerText = "Debes escribir una estación.";
+        return;
+      }
+
+      try {
+        const url = `/parte-texto/${encodeURIComponent(estacion)}?unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.ok) {
+          resultado.innerText = "Error: " + (data.error || "No se pudo generar el parte");
+          return;
+        }
+
+        resultado.innerText = data.texto;
+      } catch (error) {
+        console.error(error);
+        resultado.innerText = "Error conectando con el servidor";
+      }
+    }
+
+    function descargarPDF() {
+      const contenido = document.getElementById("resultado").innerText.trim();
+
+      if (!contenido) {
+        alert("Primero genera el parte");
+        return;
+      }
+
+      const ventana = window.open("", "_blank");
+      ventana.document.write(`
+        <html>
+          <head>
+            <title>Parte PDF</title>
+          </head>
+          <body>
+            <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+            <script>
+              window.print();
+            <\/script>
+          </body>
+        </html>
+      `);
+      ventana.document.close();
+    }
+  </script>
 
 </body>
 </html>
