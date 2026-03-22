@@ -121,27 +121,26 @@
 </div>
 
     <div class="seccion">
-      <h2>2. Seleccionar estación</h2>
+      <div class="seccion">
+  <h2>2. Seleccionar ubicación</h2>
 
-      <select id="unidad">
-        <option value="ESTACION">ESTACIÓN DE POLICÍA</option>
-        <option value="COMUNITARIA">POLICÍA COMUNITARIA</option>
-        <option value="DIJIN">DIJIN</option>
-      </select>
-      <br>
+  <select id="unidad_select" onchange="cargarSubunidades()">
+    <option value="">Seleccionar UNIDAD</option>
+  </select>
+  <br>
 
-      <input id="estacion" list="estaciones" placeholder="Ej: USAQUEN" />
+  <select id="subunidad_select" onchange="cargarEstaciones()">
+    <option value="">Seleccionar SUBUNIDAD</option>
+  </select>
+  <br>
 
-      <datalist id="estaciones">
-        <option value="USAQUEN">
-        <option value="SUBA">
-        <option value="KENNEDY">
-        <option value="BOSA">
-      </datalist>
+  <select id="estacion_select">
+    <option value="">Seleccionar ESTACIÓN</option>
+  </select>
+  <br>
 
-      <br>
-      <button onclick="cargarPersonal()">Cargar Personal</button>
-    </div>
+  <button onclick="cargarPersonal()">Cargar Personal</button>
+</div>
 
     <div class="seccion">
       <h2>3. Novedades por persona</h2>
