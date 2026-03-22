@@ -336,35 +336,37 @@ async function validarResponsable() {
   }
 
   try {
-    const res = await fetch(`/responsable/${cedula}`);
+    const res = await fetch("/validar-responsable", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ cedula })
+    });
+
     const data = await res.json();
 
     if (!data.ok) {
       document.getElementById("datos_responsable").innerText = "No autorizado";
+      document.getElementById("bloqueExcel").style.display = "none";
       return;
     }
 
-    // Mostrar info básica
+    // Mostrar info
     document.getElementById("datos_responsable").innerText =
-      `${data.data.grado} ${data.data.nombre}`;
+      `${data.grado} - ${data.nombre}`;
 
     // Guardar datos ocultos
-    document.getElementById("grado").value = data.data.grado;
-    document.getElementById("nombre_elabora").value = data.data.nombre;
-    document.getElementById("cedula_elabora").value = data.data.cedula;
-    document.getElementById("telefono_elabora").value = data.data.telefono || "";
+    document.getElementById("grado").value = data.grado || "";
+    document.getElementById("nombre_elabora").value = data.nombre || "";
+    document.getElementById("cedula_elabora").value = data.cedula || "";
+    document.getElementById("telefono_elabora").value = data.telefono || "";
 
-    // 🔓 Permisos
-    if (data.data.puede_subir_excel) {
+    // 🔥 Permiso Excel
+    if (data.puedeSubirExcel) {
       document.getElementById("bloqueExcel").style.display = "block";
-    }
-
-    // 🔒 Si NO es oficial → bloquear estación
-    if (!data.data.es_oficial) {
-      document.getElementById("estacion").value = data.data.estacion;
-      document.getElementById("estacion").disabled = true;
     } else {
-      document.getElementById("estacion").disabled = false;
+      document.getElementById("bloqueExcel").style.display = "none";
     }
 
   } catch (error) {
