@@ -430,12 +430,10 @@ app.post("/guardar-novedades", async (req, res) => {
 
 app.get("/validar-parte", async (req, res) => {
   try {
-    const grado = (req.query.grado || "").toUpperCase().trim();
+   const grado = (req.query.grado || "").toUpperCase().trim();
     const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
-
-    const esOficial =
-      gradosOficiales.includes(grado) || grado.includes("OFICIAL");
-
+    const esOficial = gradosOficiales.some(g => grado === g);
+    
     const { tipo, extemporaneo, esMediodia } = validarHorarioParte();
 
     // 🔴 AQUÍ ESTÁ LA CLAVE
