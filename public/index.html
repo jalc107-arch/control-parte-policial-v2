@@ -528,6 +528,14 @@ if (!hayNovedades) {
 
       const resultado = document.getElementById("resultado");
 
+       const validar = await fetch("/validar-parte");
+const dataVal = await validar.json();
+
+if (!dataVal.ok) {
+  alert(dataVal.mensaje);
+  return;
+}
+    
       if (!estacion) {
         resultado.innerText = "Debes seleccionar una estación.";
         return;
