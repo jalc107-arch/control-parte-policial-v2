@@ -321,12 +321,30 @@ app.post("/personal-filtrado", async (req, res) => {
 
     query += `
   ORDER BY
-    CASE
-      WHEN UPPER(grado) IN ('CR', 'TC', 'MY', 'CT', 'TE', 'ST', 'OF') THEN 1
-      WHEN UPPER(grado) IN ('CM','SC','IJ','IT','SI', 'NE') THEN 2
-      WHEN UPPER(grado) = 'PT' THEN 3
-      WHEN UPPER(grado) = 'PP' THEN 4
-      ELSE 5
+    CASE UPPER(grado)
+      -- OFICIALES
+      WHEN 'CR' THEN 1
+      WHEN 'TC' THEN 2
+      WHEN 'MY' THEN 3
+      WHEN 'CT' THEN 4
+      WHEN 'TE' THEN 5
+      WHEN 'ST' THEN 6
+
+      -- NIVEL EJECUTIVO
+      WHEN 'CM' THEN 7
+      WHEN 'SC' THEN 8
+      WHEN 'IJ' THEN 9
+      WHEN 'IT' THEN 10
+      WHEN 'SI' THEN 11
+
+      -- PATRULLEROS
+      WHEN 'PT' THEN 12
+      WHEN 'PP' THEN 13
+
+      -- AUXILIAR
+      WHEN 'AUX' THEN 14
+
+      ELSE 99
     END,
     apellidos,
     nombres
