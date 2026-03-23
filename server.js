@@ -134,7 +134,7 @@ app.post("/validar-responsable", async (req, res) => {
   subunidad: persona.subunidad || "",
   estacion: persona.estacion || "",
   organico: persona.organico || "",
-  rol: persona.rol || "",
+  rol: rol,
   esOficial
 });
   } catch (error) {
