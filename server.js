@@ -429,9 +429,14 @@ app.post("/guardar-novedades", async (req, res) => {
 });
 app.get("/validar-parte", async (req, res) => {
   try {
+    const grado = (req.query.grado || "").toUpperCase();
+    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
+    const esOficial =
+      gradosOficiales.includes(grado) || grado.includes("OFICIAL");
+
     const { tipo, extemporaneo, esMediodia } = validarHorarioParte();
 
-    if (esMediodia) {
+    if (esMediodia && !esOficial) {
       return res.json({
         ok: false,
         mensaje: "⛔ Solo se pueden registrar novedades al mediodía",
