@@ -642,10 +642,14 @@ FECHA: ${fecha}`;
       const dataGuardar = await resGuardar.json();
 
       if (!dataGuardar.ok) {
-        alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
-        return;
-      }
-    }
+  console.log("No se guardó:", dataGuardar.mensaje);
+
+  // ⚠️ SOLO mostrar alerta si es un error real
+  if (!dataGuardar.mensaje?.includes("Ya se registró")) {
+    alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
+    return;
+  }
+}
 
     const qrTexto = construirTextoQRUbicacion();
     const qrUrl = qrTexto
