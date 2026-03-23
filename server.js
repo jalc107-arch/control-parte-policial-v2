@@ -465,6 +465,119 @@ app.get("/validar-parte", async (req, res) => {
     res.status(500).json({ ok: false, error: error.message });
   }
 });
+app.get("/parte-texto", async (req, res) => {
+  const {
+    estacion = "",
+    organico = "",
+    unidad = "",
+    grado = "",
+    nombre = "",
+    cedula = "",
+    telefono = ""
+  } = req.query;
+
+  try {
+    if (!unidad) {
+      return res.status(400).json({
+        ok: false,
+        error: "La unidad es obligatoria"
+      });
+    }
+
+    if (!estacion && !organico) {
+      return res.status(400).json({
+        ok: false,
+        error: "Debes seleccionar estación u orgánico"
+      });
+    }
+
+    let query = `
+      SELECT grado, apellidos, nombres, cedula, tipo_novedad
+      FROM personal p
+      LEFT JOIN novedades n
+        ON p.cedula = n.cedula
+        AND n.fecha = CURRENT_DATE
+      WHERE p.activo = true
+        AND p.unidad = $1
+    `;
+
+    const params = [unidad];
+    let index = 2;
+
+    if (estacion && estacion.trim() !== "") {
+      query += ` AND p.estacion = $${index}`;
+      params.push(estacion);
+      index++;
+    }
+
+    if (organico && organico.trim() !== "") {
+      query += ` AND p.organico = $${index}`;
+      params.push(organico);
+      index++;
+    }
+
+    query += `
+      ORDER BY
+        CASE UPPER(p.grado)
+          WHEN 'CR' THEN 1
+          WHEN 'TC' THEN 2
+          WHEN 'MY' THEN 3
+          WHEN 'CT' THEN 4
+          WHEN 'TE' THEN 5
+          WHEN 'ST' THEN 6
+          WHEN 'CM' THEN 7
+          WHEN 'SC' THEN 8
+          WHEN 'IJ' THEN 9
+          WHEN 'IT' THEN 10
+          WHEN 'SI' THEN 11
+          WHEN 'PT' THEN 12
+          WHEN 'PP' THEN 13
+          WHEN 'AUX' THEN 14
+          ELSE 99
+        END,
+        p.apellidos,
+        p.nombres
+    `;
+
+    const result = await pool.query(query, params);
+
+    const personal = result.rows;
+
+    const disponibles = personal.filter(p => !p.tipo_novedad || p.tipo_novedad === "");
+    const conNovedad = personal.filter(p => p.tipo_novedad && p.tipo_novedad !== "");
+
+    let texto = "";
+    texto += `PARTE DE PERSONAL\n`;
+    texto += `UNIDAD: ${unidad}\n`;
+    if (estacion) texto += `ESTACIÓN: ${estacion}\n`;
+    if (organico) texto += `ORGÁNICO: ${organico}\n`;
+    texto += `ELABORADO POR: ${grado} ${nombre}\n`;
+    texto += `CÉDULA: ${cedula}\n`;
+    texto += `TELÉFONO: ${telefono}\n`;
+    texto += `FECHA: ${new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" })}\n`;
+    texto += `\n`;
+
+    texto += `PERSONAL DISPONIBLE: ${disponibles.length}\n`;
+    disponibles.forEach(p => {
+      texto += `- ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+    });
+
+    texto += `\nPERSONAL CON NOVEDAD: ${conNovedad.length}\n`;
+    conNovedad.forEach(p => {
+      texto += `- ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""} - ${p.tipo_novedad}\n`;
+    });
+
+    res.json({
+      ok: true,
+      texto
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
