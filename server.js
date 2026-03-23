@@ -562,7 +562,21 @@ app.get("/parte-texto", async (req, res) => {
     texto += `ELABORADO POR: ${grado} ${nombre}\n`;
     texto += `CÉDULA: ${cedula}\n`;
     texto += `TELÉFONO: ${telefono}\n`;
-    texto += `FECHA: ${new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" })}\n`;
+    const fecha = new Intl.DateTimeFormat("es-CO", {
+  timeZone: "America/Bogota",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+}).format(new Date());
+
+const hora = new Intl.DateTimeFormat("es-CO", {
+  timeZone: "America/Bogota",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false
+}).format(new Date());
+
+texto += `FECHA: ${fecha} ${hora}\n`;
     texto += `\n`;
 
     texto += `PERSONAL DISPONIBLE: ${disponibles.length}\n`;
