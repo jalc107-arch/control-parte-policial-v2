@@ -296,8 +296,7 @@ app.get("/estructura", async (req, res) => {
 // estacion opcional
 // =========================
 app.post("/personal-filtrado", async (req, res) => {
-  const { unidad, subunidad, estacion } = req.body;
-
+  const { unidad, subunidad, estacion, organico } = req.body;
   try {
     if (!unidad || !subunidad) {
       return res.status(400).json({
@@ -317,9 +316,14 @@ app.post("/personal-filtrado", async (req, res) => {
     const params = [unidad, subunidad];
 
     if (estacion && estacion.trim() !== "") {
-      query += ` AND estacion = $3`;
-      params.push(estacion);
-    }
+  query += ` AND estacion = $3`;
+  params.push(estacion);
+}
+
+if (organico && organico.trim() !== "") {
+  query += ` AND organico = $4`;
+  params.push(organico);
+}
 
     query += `
   ORDER BY
