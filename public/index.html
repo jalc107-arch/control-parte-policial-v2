@@ -515,16 +515,17 @@ novedades.forEach(n => {
   }
 });
 
-if (!hayNovedades) {
-  alert("Debes registrar al menos una novedad");
+if (!estacion && !organico) {
+  resultado.innerText = "Debes seleccionar estación u orgánico.";
   return;
-}
+}     
       const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
       const unidad = document.getElementById("unidad_select").value;
       const grado = document.getElementById("grado").value.trim();
       const nombre = document.getElementById("nombre_elabora").value.trim();
       const cedula = document.getElementById("cedula_elabora").value.trim();
       const telefono = document.getElementById("telefono_elabora").value.trim();
+       const organico = document.getElementById("organico_select").value;
 
       const resultado = document.getElementById("resultado");
 
@@ -542,7 +543,7 @@ if (!dataVal.ok) {
       }
 
       try {
-        const url = `/parte-texto/${encodeURIComponent(estacion)}?unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
+        const url = `/parte-texto?estacion=${encodeURIComponent(estacion)}&organico=${encodeURIComponent(organico)}&unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
 
         const res = await fetch(url);
         const data = await res.json();
