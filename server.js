@@ -845,6 +845,61 @@ app.post("/parte-texto", async (req, res) => {
     });
   }
 });
+// ==============================
+// GUARDA PARTE PDF
+// ==============================
+app.post("/guardar-parte-pdf", async (req, res) => {
+  const {
+    tipo,
+    unidad,
+    subunidad,
+    estacion,
+    grado_responsable,
+    nombre_responsable,
+    cedula_responsable,
+    telefono_responsable,
+    texto_parte
+  } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO partes (
+        tipo,
+        unidad,
+        subunidad,
+        estacion,
+        grado_responsable,
+        nombre_responsable,
+        cedula_responsable,
+        telefono_responsable,
+        texto_parte
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING *`,
+      [
+        tipo || null,
+        unidad || null,
+        subunidad || null,
+        estacion || null,
+        grado_responsable || null,
+        nombre_responsable || null,
+        cedula_responsable || null,
+        telefono_responsable || null,
+        texto_parte || null
+      ]
+    );
+
+    res.json({
+      ok: true,
+      data: result.rows[0]
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
