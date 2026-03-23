@@ -364,6 +364,29 @@ app.post("/personal-filtrado", async (req, res) => {
   }
 });
 
+app.post("/guardar-novedades", async (req, res) => {
+  const { novedades, estacion } = req.body;
+
+  try {
+    if (!novedades || !Array.isArray(novedades)) {
+      return res.status(400).json({ ok: false, error: "Datos inválidos" });
+    }
+
+    for (const n of novedades) {
+      if (!n.cedula || !n.tipo) continue;
+
+      await pool.query(
+        `INSERT INTO novedades (cedula, estacion, tipo_novedad)
+         VALUES ($1, $2, $3)`,
+        [n.cedula, estacion, n.tipo]
+      );
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
