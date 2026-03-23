@@ -124,17 +124,19 @@ app.post("/validar-responsable", async (req, res) => {
       rol === "ADMIN_EXCEL";
 
     res.json({
-      ok: puedeGenerarParte,
-      puedeSubirExcel,
-      nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
-      grado: persona.grado || "",
-      cedula: persona.cedula || "",
-      telefono: persona.telefono || "",
-      unidad: persona.unidad || "",
-      subunidad: persona.subunidad || "",
-      estacion: persona.estacion || "",
-      esOficial
-    });
+  ok: puedeGenerarParte,
+  puedeSubirExcel,
+  nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
+  grado: persona.grado || "",
+  cedula: persona.cedula || "",
+  telefono: persona.telefono || "",
+  unidad: persona.unidad || "",
+  subunidad: persona.subunidad || "",
+  estacion: persona.estacion || "",
+  organico: persona.organico || "",
+  rol: persona.rol || "",
+  esOficial
+});
   } catch (error) {
     res.status(500).json({
       ok: false,
