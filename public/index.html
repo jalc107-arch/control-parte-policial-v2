@@ -622,6 +622,27 @@ FECHA: ${fecha}`;
     return;
   }
 
+  // 🔥 Abrir ventana INMEDIATAMENTE para que no la bloquee el celular
+  const ventana = window.open("", "_blank");
+
+  if (!ventana) {
+    alert("El navegador bloqueó la ventana del PDF. Permite ventanas emergentes.");
+    return;
+  }
+
+  // Mensaje temporal mientras procesa
+  ventana.document.write(`
+    <html>
+      <head>
+        <title>Generando PDF...</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; padding: 20px;">
+        Generando PDF, por favor espera...
+      </body>
+    </html>
+  `);
+  ventana.document.close();
+
   const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
   const unidad = document.getElementById("unidad_select").value;
   const subunidad = document.getElementById("subunidad_select").value;
@@ -664,6 +685,7 @@ FECHA: ${fecha}`;
         console.log("No se guardó:", dataGuardar.mensaje);
 
         if (!dataGuardar.mensaje?.includes("Ya se registró")) {
+          ventana.close();
           alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
           return;
         }
@@ -675,7 +697,7 @@ FECHA: ${fecha}`;
       ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
       : "";
 
-    const ventana = window.open("", "_blank");
+    ventana.document.open();
     ventana.document.write(`
       <html>
         <head>
@@ -685,11 +707,25 @@ FECHA: ${fecha}`;
               font-family: Arial, sans-serif;
               padding: 20px;
             }
+            .marca-agua {
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-30deg);
+              font-size: 60px;
+              color: rgba(0, 0, 0, 0.08);
+              font-weight: bold;
+              white-space: nowrap;
+              z-index: 0;
+              pointer-events: none;
+            }
             .encabezado {
               display: flex;
               justify-content: space-between;
               align-items: flex-start;
               margin-bottom: 20px;
+              position: relative;
+              z-index: 1;
             }
             .titulo {
               font-size: 18px;
@@ -706,10 +742,14 @@ FECHA: ${fecha}`;
               white-space: pre-wrap;
               font-family: Arial, sans-serif;
               font-size: 14px;
+              position: relative;
+              z-index: 1;
             }
           </style>
         </head>
         <body>
+          <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
+
           <div class="encabezado">
             <div class="titulo">PARTE DE PERSONAL</div>
             ${qrUrl ? `
@@ -732,6 +772,7 @@ FECHA: ${fecha}`;
 
   } catch (error) {
     console.error(error);
+    ventana.close();
     alert("Error guardando o generando PDF");
   }
 }
