@@ -427,15 +427,19 @@ app.post("/guardar-novedades", async (req, res) => {
     res.status(500).json({ ok: false, error: error.message });
   }
 });
+
 app.get("/validar-parte", async (req, res) => {
   try {
     const grado = (req.query.grado || "").toUpperCase();
+
     const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
+
     const esOficial =
       gradosOficiales.includes(grado) || grado.includes("OFICIAL");
 
     const { tipo, extemporaneo, esMediodia } = validarHorarioParte();
 
+    // 🔴 AQUÍ ESTÁ LA CLAVE
     if (esMediodia && !esOficial) {
       return res.json({
         ok: false,
@@ -471,6 +475,7 @@ app.get("/validar-parte", async (req, res) => {
     res.status(500).json({ ok: false, error: error.message });
   }
 });
+
 app.get("/parte-texto", async (req, res) => {
   const {
     estacion = "",
