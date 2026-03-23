@@ -376,11 +376,14 @@ app.post("/guardar-novedades", async (req, res) => {
       if (!n.cedula || !n.tipo) continue;
 
       await pool.query(
-        `INSERT INTO novedades (cedula, estacion, tipo_novedad)
-         VALUES ($1, $2, $3)`,
-        [n.cedula, estacion, n.tipo]
-      );
-    }
+  `INSERT INTO novedades (cedula, estacion, tipo_novedad)
+   VALUES ($1, $2, $3)
+   ON CONFLICT (cedula, fecha)
+   DO UPDATE SET
+     estacion = EXCLUDED.estacion,
+     tipo_novedad = EXCLUDED.tipo_novedad`,
+  [n.cedula, estacion, n.tipo]
+);
 
     res.json({ ok: true });
   } catch (error) {
