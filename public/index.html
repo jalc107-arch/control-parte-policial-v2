@@ -365,11 +365,14 @@
 
   organicoSelect.innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
-  const filtrados = estructuraGlobal.filter(x =>
+  let filtrados = estructuraGlobal.filter(x =>
     x.unidad === unidad &&
-    x.subunidad === subunidad &&
-    x.estacion === estacion
+    x.subunidad === subunidad
   );
+
+  if (estacion && estacion.trim() !== "") {
+    filtrados = filtrados.filter(x => x.estacion === estacion);
+  }
 
   const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
 
