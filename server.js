@@ -503,7 +503,7 @@ app.get("/parte-texto", async (req, res) => {
     }
 
     let query = `
-      SELECT grado, apellidos, nombres, cedula, tipo_novedad
+      SELECT p.grado, p.apellidos, p.nombres, p.cedula, n.tipo_novedad
       FROM personal p
       LEFT JOIN novedades n
         ON p.cedula = n.cedula
