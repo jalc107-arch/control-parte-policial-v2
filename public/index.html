@@ -431,6 +431,20 @@ data.data.sort((a, b) => {
     }
 
     async function generarParte() {
+      const novedades = document.querySelectorAll("[id^='novedad-']");
+
+let hayNovedades = false;
+
+novedades.forEach(n => {
+  if (n.value && n.value !== "") {
+    hayNovedades = true;
+  }
+});
+
+if (!hayNovedades) {
+  alert("Debes registrar al menos una novedad");
+  return;
+}
       const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
       const unidad = document.getElementById("unidad_select").value;
       const grado = document.getElementById("grado").value.trim();
