@@ -577,6 +577,24 @@ personas.forEach(p => {
   }
 }
 
+function construirTextoQRUbicacion() {
+  const lat = document.getElementById("latitud").value || "";
+  const lng = document.getElementById("longitud").value || "";
+  const fecha = new Date().toLocaleString("es-CO", {
+    timeZone: "America/Bogota",
+    hour12: false
+  });
+
+  if (!lat || !lng) {
+    return "";
+  }
+
+  return `UBICACION PARTE
+LAT: ${lat}
+LNG: ${lng}
+FECHA: ${fecha}`;
+}
+    
    async function descargarPDF() {
   const contenido = document.getElementById("resultado").innerText.trim();
 
@@ -629,14 +647,58 @@ personas.forEach(p => {
       }
     }
 
+    const qrTexto = construirTextoQRUbicacion();
+    const qrUrl = qrTexto
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
+      : "";
+
     const ventana = window.open("", "_blank");
     ventana.document.write(`
       <html>
         <head>
           <title>Parte PDF</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+            }
+            .encabezado {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 20px;
+            }
+            .titulo {
+              font-size: 18px;
+              font-weight: bold;
+            }
+            .qr-box {
+              text-align: center;
+            }
+            .qr-box img {
+              width: 130px;
+              height: 130px;
+            }
+            pre {
+              white-space: pre-wrap;
+              font-family: Arial, sans-serif;
+              font-size: 14px;
+            }
+          </style>
         </head>
         <body>
+          <div class="encabezado">
+            <div class="titulo">PARTE DE PERSONAL</div>
+            ${qrUrl ? `
+              <div class="qr-box">
+                <img src="${qrUrl}" alt="QR ubicación" />
+                <div>Ubicación</div>
+              </div>
+            ` : ""}
+          </div>
+
           <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+
           <script>
             window.print();
           <\/script>
@@ -650,7 +712,6 @@ personas.forEach(p => {
     alert("Error guardando o generando PDF");
   }
 }
-
     cargarEstructura();
   </script>
 
