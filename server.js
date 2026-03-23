@@ -14,41 +14,145 @@ const __dirname = path.dirname(__filename);
 
 const upload = multer({ dest: "uploads/" });
 
-function validarHorarioParte() {
-  const now = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Bogota" })
-  );
+function obtenerPartesFechaBogota() {
+  const partes = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "America/Bogota",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    weekday: "short",
+    hour12: false
+  }).formatToParts(new Date());
 
-  const hora = now.getHours();
-  const minutos = now.getMinutes();
-  const total = hora * 60 + minutos;
+  const get = (type) => partes.find(p => p.type === type)?.value || "";
 
-  const dia = now.getDay(); // 0 domingo, 6 sábado
-  const esFinDeSemana = dia === 0 || dia === 6;
-
-  const limiteManana = esFinDeSemana ? (8 * 60 + 15) : (7 * 60 + 15);
-  const limiteNoche = 18 * 60 + 30;
-
-  let tipo = "";
-  let extemporaneo = false;
-  let esMediodia = false;
-
- if (total >= (11 * 60 + 30) && total < (12 * 60 + 30)) {
-    esMediodia = true;
-  }
-
-  if (total <= limiteManana) {
-    tipo = "mañana";
-  } else if (total <= limiteNoche) {
-    tipo = "noche";
-  } else {
-    tipo = "noche";
-    extemporaneo = true;
-  }
-
-  return { tipo, extemporaneo, esMediodia };
+  return {
+    year: parseInt(get("year") || "0", 10),
+    month: parseInt(get("month") || "0", 10),
+    day: parseInt(get("day") || "0", 10),
+    hour: parseInt(get("hour") || "0", 10),
+    minute: parseInt(get("minute") || "0", 10),
+    weekday: get("weekday")
+  };
 }
 
+function obtenerFechaBogotaSQL() {
+  const { year, month, day } = obtenerPartesFechaBogota();
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function obtenerFechaTextoBogota() {
+  const fecha = new Intl.DateTimeFormat("es-CO", {
+    timeZone: "America/Bogota",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+
+  const hora = new Intl.DateTimeFormat("es-CO", {
+    timeZone: "America/Bogota",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(new Date());
+
+  return `${fecha.replace(",", "")} ${hora}`;
+}
+
+function validarHorarioParte() {
+  const ahora = obtenerPartesFechaBogota();
+  const total = ahora.hour * 60 + ahora.minute;
+  const esFinDeSemana = ahora.weekday === "Sat" || ahora.weekday === "Sun";
+
+  // Nota: festivos no están implementados aún.
+  // Si luego quieres incluirlos, aquí se agrega esa validación.
+  let tipo = null;
+  let estado = "bloqueado";
+  let mensaje = "⛔ Fuera del horario permitido para generar parte";
+  let esMediodia = false;
+  let extemporaneo = false;
+
+  // Mediodía: solo novedades
+  if (total >= (11 * 60 + 30) && total < (12 * 60 + 30)) {
+    return {
+      tipo: null,
+      estado: "mediodia",
+      mensaje: "⛔ En esta franja solo se pueden registrar novedades al mediodía",
+      esMediodia: true,
+      extemporaneo: false,
+      esFinDeSemana
+    };
+  }
+
+  if (!esFinDeSemana) {
+    // Lunes a viernes
+
+    // Mañana normal: 04:00 a 07:15
+    if (total >= (4 * 60) && total <= (7 * 60 + 15)) {
+      return {
+        tipo: "mañana",
+        estado: "permitido",
+        mensaje: "OK",
+        esMediodia: false,
+        extemporaneo: false,
+        esFinDeSemana
+      };
+    }
+
+    // Mañana extraordinario: 07:16 a 08:00
+    if (total > (7 * 60 + 15) && total <= (8 * 60)) {
+      return {
+        tipo: "mañana",
+        estado: "extraordinario",
+        mensaje: "⚠️ Parte extraordinario de mañana",
+        esMediodia: false,
+        extemporaneo: true,
+        esFinDeSemana
+      };
+    }
+
+    // Noche normal: 17:30 a 18:30
+    if (total >= (17 * 60 + 30) && total <= (18 * 60 + 30)) {
+      return {
+        tipo: "noche",
+        estado: "permitido",
+        mensaje: "OK",
+        esMediodia: false,
+        extemporaneo: false,
+        esFinDeSemana
+      };
+    }
+  } else {
+    // Sábado / domingo
+    // Mantengo la regla que venías manejando: mañana hasta 08:15 y noche hasta 18:30
+
+    if (total >= (4 * 60) && total <= (8 * 60 + 15)) {
+      return {
+        tipo: "mañana",
+        estado: "permitido",
+        mensaje: "OK",
+        esMediodia: false,
+        extemporaneo: false,
+        esFinDeSemana
+      };
+    }
+
+    if (total >= (17 * 60 + 30) && total <= (18 * 60 + 30)) {
+      return {
+        tipo: "noche",
+        estado: "permitido",
+        mensaje: "OK",
+        esMediodia: false,
+        extemporaneo: false,
+        esFinDeSemana
+      };
+    }
+  }
+
+  return { tipo, estado, mensaje, esMediodia, extemporaneo, esFinDeSemana };
+}
 
 // Middlewares
 app.use(express.json());
@@ -94,18 +198,51 @@ app.get("/health", async (req, res) => {
 // =========================
 // PARTES
 // =========================
+// Esta ruta queda lista para cuando luego quieras guardar el parte oficial.
 app.post("/partes", async (req, res) => {
-  const { estacion, fecha, novedad } = req.body;
+  const {
+    tipo,
+    unidad,
+    subunidad,
+    estacion,
+    grado_responsable,
+    nombre_responsable,
+    cedula_responsable,
+    telefono_responsable,
+    texto_parte
+  } = req.body;
 
   try {
     const result = await pool.query(
-      "INSERT INTO partes (estacion, fecha, novedad) VALUES ($1, $2, $3) RETURNING *",
-      [estacion, fecha, novedad]
+      `INSERT INTO partes (
+        tipo,
+        unidad,
+        subunidad,
+        estacion,
+        grado_responsable,
+        nombre_responsable,
+        cedula_responsable,
+        telefono_responsable,
+        texto_parte
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING *`,
+      [
+        tipo || null,
+        unidad || null,
+        subunidad || null,
+        estacion || null,
+        grado_responsable || null,
+        nombre_responsable || null,
+        cedula_responsable || null,
+        telefono_responsable || null,
+        texto_parte || null
+      ]
     );
 
-    res.json(result.rows[0]);
+    res.json({ ok: true, data: result.rows[0] });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 
@@ -136,9 +273,9 @@ app.post("/validar-responsable", async (req, res) => {
 
     const persona = result.rows[0];
 
-    const grado = (persona.grado || "").toUpperCase();
-    const cargo = (persona.cargo || "").toUpperCase();
-    const rol = (persona.rol || "").toUpperCase();
+    const grado = (persona.grado || "").toUpperCase().trim().replace(/\s+/g, "");
+    const cargo = (persona.cargo || "").toUpperCase().trim();
+    const rol = (persona.rol || "").toUpperCase().trim();
 
     const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
     const esOficial =
@@ -153,26 +290,27 @@ app.post("/validar-responsable", async (req, res) => {
     const puedeGenerarParte =
       esOficial ||
       cargosPermitidos.includes(cargo) ||
-      rol === "OPERADOR_PARTE";
+      rol === "OPERADOR_PARTE" ||
+      rol === "ADMIN_EXCEL";
 
     const puedeSubirExcel =
       esOficial ||
       rol === "ADMIN_EXCEL";
 
     res.json({
-  ok: puedeGenerarParte,
-  puedeSubirExcel,
-  nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
-  grado: persona.grado || "",
-  cedula: persona.cedula || "",
-  telefono: persona.telefono || "",
-  unidad: persona.unidad || "",
-  subunidad: persona.subunidad || "",
-  estacion: persona.estacion || "",
-  organico: persona.organico || "",
-  rol: rol,
-  esOficial
-});
+      ok: puedeGenerarParte,
+      puedeSubirExcel,
+      nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
+      grado: persona.grado || "",
+      cedula: persona.cedula || "",
+      telefono: persona.telefono || "",
+      unidad: persona.unidad || "",
+      subunidad: persona.subunidad || "",
+      estacion: persona.estacion || "",
+      organico: persona.organico || "",
+      rol,
+      esOficial
+    });
   } catch (error) {
     res.status(500).json({
       ok: false,
@@ -205,37 +343,38 @@ app.post("/subir-excel", upload.single("archivo"), async (req, res) => {
     let actualizados = 0;
     let omitidos = 0;
 
-   for (const row of datos) {
-  const cedula = String(row["CÉDULA"] || row["CEDULA"] || "").trim();
+    for (const row of datos) {
+      const cedula = String(row["CÉDULA"] || row["CEDULA"] || "").trim();
 
-  if (!cedula) {
-    omitidos++;
-    continue;
-  }
+      if (!cedula) {
+        omitidos++;
+        continue;
+      }
 
-  const existe = await pool.query(
-    "SELECT id FROM personal WHERE cedula = $1 LIMIT 1",
-    [cedula]
-  );
+      const existe = await pool.query(
+        "SELECT id FROM personal WHERE cedula = $1 LIMIT 1",
+        [cedula]
+      );
 
-  const payload = [
-    String(row["GRADO"] || "").trim(),
-    String(row["APELLIDOS"] || "").trim(),
-    String(row["NOMBRES"] || "").trim(),
-    cedula,
-    String(row["TELEFONO"] || row["TELÉFONO"] || "").trim(),
-    String(row["CORREO"] || "").trim(),
-    String(row["UNIDAD"] || row["UNIDAD1"] || "").trim(),
-    String(row["SUBUNIDAD"] || "").trim(),
-    String(row["ESTACIÓN"] || row["ESTACION"] || "").trim(),
-    String(row["ORGÁNICO"] || row["ORGANICO"] || "").trim(),
-    String(row["ASIGNACIÓN"] || row["ASIGNACION"] || "").trim(),
-    String(row["TURNO"] || "").trim(),
-    String(row["APTITUD"] || "").trim(),
-    String(row["CARGO"] || "").trim(),
-    String(row["ROL"] || "").trim(),
-    true
-  ];
+      const payload = [
+        String(row["GRADO"] || "").trim(),
+        String(row["APELLIDOS"] || "").trim(),
+        String(row["NOMBRES"] || "").trim(),
+        cedula,
+        String(row["TELEFONO"] || row["TELÉFONO"] || "").trim(),
+        String(row["CORREO"] || "").trim(),
+        String(row["UNIDAD"] || row["UNIDAD1"] || "").trim(),
+        String(row["SUBUNIDAD"] || "").trim(),
+        String(row["ESTACIÓN"] || row["ESTACION"] || "").trim(),
+        String(row["ORGÁNICO"] || row["ORGANICO"] || "").trim(),
+        String(row["ASIGNACIÓN"] || row["ASIGNACION"] || "").trim(),
+        String(row["TURNO"] || "").trim(),
+        String(row["APTITUD"] || "").trim(),
+        String(row["CARGO"] || "").trim(),
+        String(row["ROL"] || "").trim(),
+        true
+      ];
+
       if (existe.rows.length > 0) {
         await pool.query(
           `
@@ -306,7 +445,7 @@ app.post("/subir-excel", upload.single("archivo"), async (req, res) => {
 });
 
 // =========================
-// ESTRUCTURA UNIDAD / SUBUNIDAD / ESTACION
+// ESTRUCTURA UNIDAD / SUBUNIDAD / ESTACION / ORGANICO
 // =========================
 app.get("/estructura", async (req, res) => {
   try {
@@ -326,10 +465,9 @@ app.get("/estructura", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 // =========================
 // CARGAR PERSONAL FILTRADO
-// unidad y subunidad obligatorias
-// estacion opcional
 // =========================
 app.post("/personal-filtrado", async (req, res) => {
   const { unidad, subunidad, estacion, organico } = req.body;
@@ -401,6 +539,12 @@ app.post("/personal-filtrado", async (req, res) => {
     });
   }
 });
+
+// =========================
+// GUARDAR NOVEDADES
+// =========================
+// Nota: esta ruta hoy sigue guardando cuando la llaman.
+// Si luego quieres bloquear el guardado fuera de horario, te preparo ese ajuste.
 app.post("/guardar-novedades", async (req, res) => {
   const { novedades, estacion } = req.body;
 
@@ -410,69 +554,113 @@ app.post("/guardar-novedades", async (req, res) => {
     }
 
     for (const n of novedades) {
-  if (!n.cedula || !n.tipo) continue;
+      if (!n.cedula || !n.tipo) continue;
 
-  await pool.query(
-    `INSERT INTO novedades (cedula, estacion, tipo_novedad)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (cedula, fecha)
-     DO UPDATE SET
-       estacion = EXCLUDED.estacion,
-       tipo_novedad = EXCLUDED.tipo_novedad`,
-    [n.cedula, estacion, n.tipo]
-  );
-}
+      await pool.query(
+        `INSERT INTO novedades (cedula, estacion, tipo_novedad, fecha)
+         VALUES ($1, $2, $3, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date)
+         ON CONFLICT (cedula, fecha)
+         DO UPDATE SET
+           estacion = EXCLUDED.estacion,
+           tipo_novedad = EXCLUDED.tipo_novedad`,
+        [n.cedula, estacion, n.tipo]
+      );
+    }
+
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ ok: false, error: error.message });
   }
 });
 
+// =========================
+// VALIDAR SI EL PARTE ES OFICIAL O SOLO CONSULTA
+// =========================
 app.get("/validar-parte", async (req, res) => {
   try {
-   const grado = (req.query.grado || "").toUpperCase().trim();
-    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
-    const esOficial = gradosOficiales.some(g => grado === g);
-    
-    const { tipo, extemporaneo, esMediodia } = validarHorarioParte();
+    const grado = (req.query.grado || "").toUpperCase().trim().replace(/\s+/g, "");
+    const rol = (req.query.rol || "").toUpperCase().trim();
 
-    // 🔴 AQUÍ ESTÁ LA CLAVE
-    if (esMediodia && !esOficial) {
+    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
+    const esOficial =
+      gradosOficiales.includes(grado) || grado.includes("OFICIAL");
+
+    const esExento = esOficial || rol === "ADMIN_EXCEL";
+
+    const { tipo, estado, mensaje, esMediodia, extemporaneo } = validarHorarioParte();
+
+    // Exentos: oficiales y admin_excel
+    if (esExento) {
+      return res.json({
+        ok: true,
+        tipo: tipo || "manual",
+        estado,
+        mensaje: "OK",
+        esMediodia: false,
+        extemporaneo,
+        guardarOficial: true
+      });
+    }
+
+    // Mediodía: solo novedades para no exentos
+    if (esMediodia) {
       return res.json({
         ok: false,
-        mensaje: "⛔ Solo se pueden registrar novedades al mediodía",
+        mensaje,
         esMediodia: true
       });
     }
 
-    const hoy = new Date().toISOString().slice(0, 10);
+    // Fuera de horario oficial: solo consulta, no guarda
+    if (estado === "bloqueado") {
+      return res.json({
+        ok: true,
+        tipo: null,
+        estado: "bloqueado",
+        mensaje: "⚠️ Parte solo de consulta. No quedará guardado en la plataforma.",
+        esMediodia: false,
+        extemporaneo: false,
+        guardarOficial: false
+      });
+    }
+
+    const hoy = obtenerFechaBogotaSQL();
 
     const existe = await pool.query(
-      `SELECT COUNT(*) 
-       FROM partes 
-       WHERE DATE(fecha) = $1 
+      `SELECT COUNT(*)
+       FROM partes
+       WHERE DATE(fecha) = $1
        AND tipo = $2`,
       [hoy, tipo]
     );
 
-    if (parseInt(existe.rows[0].count) > 0) {
+    if (parseInt(existe.rows[0].count, 10) > 0) {
       return res.json({
         ok: false,
         mensaje: `⚠️ Ya se registró el parte de ${tipo}`
       });
     }
 
-    res.json({
+    return res.json({
       ok: true,
       tipo,
-      extemporaneo
+      estado,
+      mensaje,
+      esMediodia: false,
+      extemporaneo,
+      guardarOficial: true
     });
-
   } catch (error) {
-    res.status(500).json({ ok: false, error: error.message });
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
   }
 });
 
+// =========================
+// GENERAR TEXTO DEL PARTE
+// =========================
 app.get("/parte-texto", async (req, res) => {
   const {
     estacion = "",
@@ -500,11 +688,16 @@ app.get("/parte-texto", async (req, res) => {
     }
 
     let query = `
-      SELECT p.grado, p.apellidos, p.nombres, p.cedula, n.tipo_novedad
+      SELECT
+        p.grado,
+        p.apellidos,
+        p.nombres,
+        p.cedula,
+        n.tipo_novedad
       FROM personal p
       LEFT JOIN novedades n
         ON p.cedula = n.cedula
-        AND n.fecha = CURRENT_DATE
+        AND n.fecha = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date
       WHERE p.activo = true
         AND p.unidad = $1
     `;
@@ -548,18 +741,23 @@ app.get("/parte-texto", async (req, res) => {
     `;
 
     const result = await pool.query(query, params);
-
     const personal = result.rows;
 
-    const disponibles = personal.filter(p => !p.tipo_novedad || p.tipo_novedad === "");
-    const conNovedad = personal.filter(p => p.tipo_novedad && p.tipo_novedad !== "");
+    const disponibles = personal.filter(
+      p => !p.tipo_novedad || p.tipo_novedad === ""
+    );
+
+    const conNovedad = personal.filter(
+      p => p.tipo_novedad && p.tipo_novedad !== ""
+    );
 
     let texto = "";
-    const { extemporaneo } = validarHorarioParte();
 
-if (extemporaneo) {
-  texto += "⚠️ PARTE EXTEMPORÁNEO\n\n";
-}
+    const { extemporaneo } = validarHorarioParte();
+    if (extemporaneo) {
+      texto += "⚠️ PARTE EXTEMPORÁNEO\n\n";
+    }
+
     texto += `PARTE DE PERSONAL\n`;
     texto += `UNIDAD: ${unidad}\n`;
     if (estacion) texto += `ESTACIÓN: ${estacion}\n`;
@@ -567,21 +765,7 @@ if (extemporaneo) {
     texto += `ELABORADO POR: ${grado} ${nombre}\n`;
     texto += `CÉDULA: ${cedula}\n`;
     texto += `TELÉFONO: ${telefono}\n`;
-    const fecha = new Intl.DateTimeFormat("es-CO", {
-  timeZone: "America/Bogota",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit"
-}).format(new Date());
-
-const hora = new Intl.DateTimeFormat("es-CO", {
-  timeZone: "America/Bogota",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false
-}).format(new Date());
-
-texto += `FECHA: ${fecha} ${hora}\n`;
+    texto += `FECHA: ${obtenerFechaTextoBogota()}\n`;
     texto += `\n`;
 
     texto += `PERSONAL DISPONIBLE: ${disponibles.length}\n`;
@@ -605,6 +789,7 @@ texto += `FECHA: ${fecha} ${hora}\n`;
     });
   }
 });
+
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
