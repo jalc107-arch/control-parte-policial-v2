@@ -343,6 +343,12 @@
     }
 
     async function cargarPersonal() {
+      const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
+
+if (!cedulaValidada) {
+  alert("Primero debes validar al responsable");
+  return;
+}
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
       const estacion = document.getElementById("estacion_select").value;
