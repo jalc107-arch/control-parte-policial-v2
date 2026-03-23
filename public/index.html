@@ -391,6 +391,7 @@ if (!cedulaValidada) {
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
       const estacion = document.getElementById("estacion_select").value;
+      const organico = document.getElementById("organico_select")?.value || "";
 
       if (!unidad || !subunidad) {
         alert("Unidad y subunidad son obligatorias");
