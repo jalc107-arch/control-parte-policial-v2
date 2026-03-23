@@ -505,60 +505,49 @@ async function guardarNovedades() {
 }
     
      async function generarParte() {
-      const novedades = document.querySelectorAll("[id^='novedad-']");
+  const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+  const unidad = document.getElementById("unidad_select").value;
+  const grado = document.getElementById("grado").value.trim();
+  const nombre = document.getElementById("nombre_elabora").value.trim();
+  const cedula = document.getElementById("cedula_elabora").value.trim();
+  const telefono = document.getElementById("telefono_elabora").value.trim();
+  const organico = document.getElementById("organico_select").value;
+  const resultado = document.getElementById("resultado");
 
-let hayNovedades = false;
-
-novedades.forEach(n => {
-  if (n.value && n.value !== "") {
-    hayNovedades = true;
+  if (!estacion && !organico) {
+    resultado.innerText = "Debes seleccionar estación u orgánico.";
+    return;
   }
-});
 
-if (!estacion && !organico) {
-  resultado.innerText = "Debes seleccionar estación u orgánico.";
-  return;
-}     
-      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-      const unidad = document.getElementById("unidad_select").value;
-      const grado = document.getElementById("grado").value.trim();
-      const nombre = document.getElementById("nombre_elabora").value.trim();
-      const cedula = document.getElementById("cedula_elabora").value.trim();
-      const telefono = document.getElementById("telefono_elabora").value.trim();
-       const organico = document.getElementById("organico_select").value;
+  const validar = await fetch("/validar-parte");
+  const dataVal = await validar.json();
 
-      const resultado = document.getElementById("resultado");
+  if (!dataVal.ok) {
+    alert(dataVal.mensaje);
+    return;
+  }
 
-       const validar = await fetch("/validar-parte");
-const dataVal = await validar.json();
+  try {
+    const url = `/parte-texto?estacion=${encodeURIComponent(estacion)}&organico=${encodeURIComponent(organico)}&unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
 
-if (!dataVal.ok) {
-  alert(dataVal.mensaje);
-  return;
-}
-    
-      if (!estacion) {
-        resultado.innerText = "Debes seleccionar una estación.";
-        return;
-      }
+    const res = await fetch(url);
+    const data = await res.json();
 
-      try {
-        const url = `/parte-texto?estacion=${encodeURIComponent(estacion)}&organico=${encodeURIComponent(organico)}&unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
-
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (!data.ok) {
-          resultado.innerText = "Error: " + (data.error || "No se pudo generar el parte");
-          return;
-        }
-
-        resultado.innerText = data.texto;
-      } catch (error) {
-        console.error(error);
-        resultado.innerText = "Error conectando con el servidor";
-      }
+    if (!data.ok) {
+      resultado.innerText = "Error: " + (data.error || "No se pudo generar el parte");
+      return;
     }
+
+    resultado.style.color = dataVal.extemporaneo ? "red" : "black";
+    resultado.innerText = dataVal.extemporaneo
+      ? "⚠️ REPORTE EXTEMPORÁNEO\n\n" + data.texto
+      : data.texto;
+
+  } catch (error) {
+    console.error(error);
+    resultado.innerText = "Error conectando con el servidor";
+  }
+}
 
     function descargarPDF() {
       const contenido = document.getElementById("resultado").innerText.trim();
