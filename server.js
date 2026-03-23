@@ -319,7 +319,18 @@ app.post("/personal-filtrado", async (req, res) => {
       params.push(estacion);
     }
 
-    query += ` ORDER BY apellidos, nombres`;
+    query += `
+  ORDER BY
+    CASE
+      WHEN UPPER(grado) IN ('CR', 'TC', 'MY', 'CT', 'TE', 'ST', 'OF') THEN 1
+      WHEN UPPER(grado) IN ('SI', 'SI2', 'SI3', 'SI4', 'NE') THEN 2
+      WHEN UPPER(grado) = 'PT' THEN 3
+      WHEN UPPER(grado) = 'PP' THEN 4
+      ELSE 5
+    END,
+    apellidos,
+    nombres
+`;
 
     const result = await pool.query(query, params);
 
