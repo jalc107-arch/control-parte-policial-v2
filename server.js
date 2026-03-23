@@ -693,7 +693,7 @@ app.get("/parte-texto", async (req, res) => {
         p.apellidos,
         p.nombres,
         p.cedula,
-        n.tipo_novedad
+        COALESCE(n.tipo_novedad, '') AS tipo_novedad
       FROM personal p
       LEFT JOIN novedades n
         ON p.cedula = n.cedula
@@ -743,13 +743,37 @@ app.get("/parte-texto", async (req, res) => {
     const result = await pool.query(query, params);
     const personal = result.rows;
 
-    const disponibles = personal.filter(
-      p => !p.tipo_novedad || p.tipo_novedad === ""
-    );
+    const esOficial = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
+    const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
+    const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
+    const esAuxiliar = (g) => ["AUX"].includes((g || "").toUpperCase());
 
-    const conNovedad = personal.filter(
-      p => p.tipo_novedad && p.tipo_novedad !== ""
-    );
+    function contarGrupo(lista) {
+      return {
+        oficiales: lista.filter(p => esOficial(p.grado)).length,
+        ejecutivo: lista.filter(p => esEjecutivo(p.grado)).length,
+        patrulleros: lista.filter(p => esPatrullero(p.grado)).length,
+        auxiliares: lista.filter(p => esAuxiliar(p.grado)).length
+      };
+    }
+
+    function formatoConteo(c) {
+      return `${c.oficiales}-${c.ejecutivo}-${c.patrulleros}-${c.auxiliares}`;
+    }
+
+    const disponibles = personal.filter(p => !p.tipo_novedad || p.tipo_novedad.trim() === "");
+    const conNovedad = personal.filter(p => p.tipo_novedad && p.tipo_novedad.trim() !== "");
+
+    const fuerzaEfectiva = contarGrupo(personal);
+    const fuerzaDisponible = contarGrupo(disponibles);
+    const fuerzaNovedades = contarGrupo(conNovedad);
+
+    const novedadesPorTipo = {};
+    for (const p of conNovedad) {
+      const tipo = (p.tipo_novedad || "").trim().toUpperCase();
+      if (!novedadesPorTipo[tipo]) novedadesPorTipo[tipo] = [];
+      novedadesPorTipo[tipo].push(p);
+    }
 
     let texto = "";
 
@@ -765,18 +789,43 @@ app.get("/parte-texto", async (req, res) => {
     texto += `ELABORADO POR: ${grado} ${nombre}\n`;
     texto += `CÉDULA: ${cedula}\n`;
     texto += `TELÉFONO: ${telefono}\n`;
-    texto += `FECHA: ${obtenerFechaTextoBogota()}\n`;
-    texto += `\n`;
+    texto += `FECHA: ${obtenerFechaTextoBogota()}\n\n`;
 
-    texto += `PERSONAL DISPONIBLE: ${disponibles.length}\n`;
-    disponibles.forEach(p => {
-      texto += `- ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+    texto += `FUERZA EFECTIVA       ${formatoConteo(fuerzaEfectiva)}\n`;
+    texto += `FUERZA DISPONIBLE     ${formatoConteo(fuerzaDisponible)}\n`;
+    texto += `NOVEDADES             ${formatoConteo(fuerzaNovedades)}\n\n`;
+
+    texto += `DISPONIBLES ${formatoConteo(fuerzaDisponible)}\n`;
+    disponibles.forEach((p, i) => {
+      texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}\n`;
     });
 
-    texto += `\nPERSONAL CON NOVEDAD: ${conNovedad.length}\n`;
-    conNovedad.forEach(p => {
-      texto += `- ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""} - ${p.tipo_novedad}\n`;
-    });
+    texto += `\nNOVEDADES ${formatoConteo(fuerzaNovedades)}\n\n`;
+
+    const ordenTipos = [
+      "SERVICIO",
+      "PERMISO",
+      "VACACIONES",
+      "CITA MEDICA",
+      "LICENCIA",
+      "INCAPACIDAD"
+    ];
+
+    const tiposExistentes = [
+      ...ordenTipos.filter(t => novedadesPorTipo[t]),
+      ...Object.keys(novedadesPorTipo).filter(t => !ordenTipos.includes(t))
+    ];
+
+    for (const tipo of tiposExistentes) {
+      const lista = novedadesPorTipo[tipo];
+      const conteoTipo = contarGrupo(lista);
+
+      texto += `${tipo} ${formatoConteo(conteoTipo)}\n`;
+      lista.forEach((p, i) => {
+        texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}\n`;
+      });
+      texto += `\n`;
+    }
 
     res.json({
       ok: true,
@@ -789,7 +838,6 @@ app.get("/parte-texto", async (req, res) => {
     });
   }
 });
-
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
