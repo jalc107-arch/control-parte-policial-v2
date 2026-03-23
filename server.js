@@ -373,18 +373,18 @@ app.post("/guardar-novedades", async (req, res) => {
     }
 
     for (const n of novedades) {
-      if (!n.cedula || !n.tipo) continue;
+  if (!n.cedula || !n.tipo) continue;
 
-      await pool.query(
-  `INSERT INTO novedades (cedula, estacion, tipo_novedad)
-   VALUES ($1, $2, $3)
-   ON CONFLICT (cedula, fecha)
-   DO UPDATE SET
-     estacion = EXCLUDED.estacion,
-     tipo_novedad = EXCLUDED.tipo_novedad`,
-  [n.cedula, estacion, n.tipo]
-);
-
+  await pool.query(
+    `INSERT INTO novedades (cedula, estacion, tipo_novedad)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (cedula, fecha)
+     DO UPDATE SET
+       estacion = EXCLUDED.estacion,
+       tipo_novedad = EXCLUDED.tipo_novedad`,
+    [n.cedula, estacion, n.tipo]
+  );
+}
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ ok: false, error: error.message });
