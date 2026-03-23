@@ -426,6 +426,41 @@ data.data.sort((a, b) => {
       }
     }
 
+async function guardarNovedades() {
+  const personas = document.querySelectorAll(".persona");
+  const estacion = document.getElementById("estacion_select").value;
+
+  const novedades = [];
+
+  personas.forEach(p => {
+    const select = p.querySelector("select");
+    const cedula = select.id.replace("novedad-", "");
+    const tipo = select.value;
+
+    novedades.push({ cedula, tipo });
+  });
+
+  try {
+    const res = await fetch("/guardar-novedades", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ novedades, estacion })
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+      alert("Novedades guardadas correctamente ✅");
+    } else {
+      alert("Error al guardar ❌");
+    }
+  } catch (error) {
+    alert("Error de conexión ❌");
+  }
+}
+    
     async function guardarNovedades() {
       alert("Esta parte la conectamos después de verificar que el Excel cargó bien.");
     }
