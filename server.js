@@ -278,10 +278,11 @@ app.get("/estructura", async (req, res) => {
       SELECT DISTINCT
         unidad,
         subunidad,
-        estacion
+        estacion,
+        organico
       FROM personal
       WHERE activo = true
-      ORDER BY unidad, subunidad, estacion
+      ORDER BY unidad, subunidad, estacion, organico
     `);
 
     res.json(result.rows);
@@ -289,7 +290,6 @@ app.get("/estructura", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 // =========================
 // CARGAR PERSONAL FILTRADO
 // unidad y subunidad obligatorias
