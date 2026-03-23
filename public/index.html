@@ -170,6 +170,8 @@
       formData.append("archivo", input.files[0]);
 
       try {
+        alert("voy a enviar el archivo");
+        
         const res = await fetch("/subir-excel", {
           method: "POST",
           body: formData
