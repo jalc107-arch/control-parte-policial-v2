@@ -188,6 +188,9 @@
     async function validarResponsable() {
       const cedula = document.getElementById("cedula_responsable").value.trim();
 
+      document.getElementById("lista").innerHTML = "";
+      document.getElementById("resultado").innerText = "";
+
       if (!cedula) {
         alert("Ingresa la cédula");
         return;
