@@ -356,6 +356,31 @@
       });
     }
 
+    function cargarOrganicos() {
+  const unidad = document.getElementById("unidad_select").value;
+  const subunidad = document.getElementById("subunidad_select").value;
+  const estacion = document.getElementById("estacion_select").value;
+
+  const organicoSelect = document.getElementById("organico_select");
+
+  organicoSelect.innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+
+  const filtrados = estructuraGlobal.filter(x =>
+    x.unidad === unidad &&
+    x.subunidad === subunidad &&
+    x.estacion === estacion
+  );
+
+  const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
+
+  organicos.forEach(o => {
+    const option = document.createElement("option");
+    option.value = o;
+    option.textContent = o;
+    organicoSelect.appendChild(option);
+  });
+}
+
     async function cargarPersonal() {
       const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
 
