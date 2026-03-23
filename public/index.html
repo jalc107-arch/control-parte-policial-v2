@@ -218,6 +218,24 @@
         document.getElementById("cedula_elabora").value = data.cedula || "";
         document.getElementById("telefono_elabora").value = data.telefono || "";
 
+        if (!data.esOficial) {
+  document.getElementById("unidad_select").value = data.unidad || "";
+  cargarSubunidades();
+
+  document.getElementById("subunidad_select").value = data.subunidad || "";
+  cargarEstaciones();
+
+  document.getElementById("estacion_select").value = data.estacion || "";
+
+  document.getElementById("unidad_select").disabled = true;
+  document.getElementById("subunidad_select").disabled = true;
+  document.getElementById("estacion_select").disabled = true;
+} else {
+  document.getElementById("unidad_select").disabled = false;
+  document.getElementById("subunidad_select").disabled = false;
+  document.getElementById("estacion_select").disabled = false;
+}
+
         if (data.puedeSubirExcel) {
           document.getElementById("bloqueExcel").style.display = "block";
         } else {
