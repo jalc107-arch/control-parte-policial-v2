@@ -167,37 +167,37 @@ app.post("/subir-excel", upload.single("archivo"), async (req, res) => {
     let actualizados = 0;
     let omitidos = 0;
 
-    for (const row of datos) {
-      const cedula = String(row["CEDULA"] || "").trim();
-      if (!cedula) {
-        omitidos++;
-        continue;
-      }
+   for (const row of datos) {
+  const cedula = String(row["CÉDULA"] || row["CEDULA"] || "").trim();
 
-      const existe = await pool.query(
-        "SELECT id FROM personal WHERE cedula = $1 LIMIT 1",
-        [cedula]
-      );
+  if (!cedula) {
+    omitidos++;
+    continue;
+  }
 
-      const payload = [
-        String(row["GRADO"] || "").trim(),
-        String(row["APELLIDOS"] || "").trim(),
-        String(row["NOMBRES"] || "").trim(),
-        cedula,
-        String(row["TELEFONO"] || "").trim(),
-        String(row["CORREO"] || "").trim(),
-        String(row["UNIDAD"] || row["UNIDAD1"] || "").trim(),
-        String(row["SUBUNIDAD"] || "").trim(),
-        String(row["ESTACIÓN"] || row["ESTACION"] || "").trim(),
-        String(row["ORGANICO"] || "").trim(),
-        String(row["ASIGNACION"] || "").trim(),
-        String(row["TURNO"] || "").trim(),
-        String(row["APTITUD"] || "").trim(),
-        String(row["CARGO"] || "").trim(),
-        String(row["ROL"] || "").trim(),
-        true
-      ];
+  const existe = await pool.query(
+    "SELECT id FROM personal WHERE cedula = $1 LIMIT 1",
+    [cedula]
+  );
 
+  const payload = [
+    String(row["GRADO"] || "").trim(),
+    String(row["APELLIDOS"] || "").trim(),
+    String(row["NOMBRES"] || "").trim(),
+    cedula,
+    String(row["TELEFONO"] || row["TELÉFONO"] || "").trim(),
+    String(row["CORREO"] || "").trim(),
+    String(row["UNIDAD"] || row["UNIDAD1"] || "").trim(),
+    String(row["SUBUNIDAD"] || "").trim(),
+    String(row["ESTACIÓN"] || row["ESTACION"] || "").trim(),
+    String(row["ORGÁNICO"] || row["ORGANICO"] || "").trim(),
+    String(row["ASIGNACIÓN"] || row["ASIGNACION"] || "").trim(),
+    String(row["TURNO"] || "").trim(),
+    String(row["APTITUD"] || "").trim(),
+    String(row["CARGO"] || "").trim(),
+    String(row["ROL"] || "").trim(),
+    true
+  ];
       if (existe.rows.length > 0) {
         await pool.query(
           `
