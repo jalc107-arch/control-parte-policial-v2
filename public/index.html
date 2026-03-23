@@ -371,6 +371,23 @@
           return;
         }
 
+        const ordenGrados = [
+  "CR","TC","MY","CT","TE","ST",
+  "CM","SC","IJ","IT","SI",
+  "PT","PP",
+  "AUX"
+];
+
+data.data.sort((a, b) => {
+  const ga = (a.grado || "").toUpperCase();
+  const gb = (b.grado || "").toUpperCase();
+
+  const ia = ordenGrados.indexOf(ga);
+  const ib = ordenGrados.indexOf(gb);
+
+  return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+});
+
         data.data.forEach(p => {
           const div = document.createElement("div");
           div.className = "persona";
