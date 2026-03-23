@@ -257,31 +257,28 @@
         console.error(error);
       }
     }
+    
+   function cargarSubunidades() {
+  const unidad = document.getElementById("unidad_select").value;
+  const subunidadSelect = document.getElementById("subunidad_select");
 
-    function cargarSubunidades() {
-      const unidad = document.getElementById("unidad_select").value;
-      const subunidadSelect = document.getElementById("subunidad_select");
-      const estacionSelect = document.getElementById("estacion_select");
+  const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
 
-      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-      estacionSelect.innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+  const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
 
-      const subunidades = [
-        ...new Set(
-          estructuraGlobal
-            .filter(x => x.unidad === unidad)
-            .map(x => x.subunidad)
-            .filter(Boolean)
-        )
-      ];
+  subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
 
-      subunidades.forEach(subunidad => {
-        const option = document.createElement("option");
-        option.value = subunidad;
-        option.textContent = subunidad;
-        subunidadSelect.appendChild(option);
-      });
-    }
+  subunidades.forEach(sub => {
+    const option = document.createElement("option");
+    option.value = sub;
+    option.textContent = sub;
+    subunidadSelect.appendChild(option);
+  });
+
+  // limpiar estaciones
+  document.getElementById("estacion_select").innerHTML =
+    '<option value="">Seleccionar ESTACIÓN</option>';
+}
 
     function cargarEstaciones() {
       const unidad = document.getElementById("unidad_select").value;
