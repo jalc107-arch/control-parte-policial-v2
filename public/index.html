@@ -269,6 +269,12 @@
         } else {
           document.getElementById("bloqueExcel").style.display = "none";
         }
+
+        if (data.esOficial || data.rol === "ADMIN_EXCEL") {
+          document.getElementById("bloqueOrganico").style.display = "block";
+        } else {
+          document.getElementById("bloqueOrganico").style.display = "none";
+        }
       } catch (error) {
         console.error(error);
         alert("Error validando responsable");
