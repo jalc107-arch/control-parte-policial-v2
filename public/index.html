@@ -404,7 +404,7 @@ if (!cedulaValidada) {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ unidad, subunidad, estacion })
+          body: JSON.stringify({ unidad, subunidad, estacion, organico })
         });
 
         const data = await res.json();
