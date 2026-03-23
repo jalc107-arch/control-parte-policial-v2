@@ -578,18 +578,37 @@ personas.forEach(p => {
 }
 
 function construirTextoQRUbicacion() {
-  const lat = document.getElementById("latitud").value || "";
-  const lng = document.getElementById("longitud").value || "";
+  let lat = document.getElementById("latitud").value || "";
+  let lng = document.getElementById("longitud").value || "";
+  const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+
   const fecha = new Date().toLocaleString("es-CO", {
     timeZone: "America/Bogota",
     hour12: false
   });
 
+  const mapaEstaciones = {
+    "CIUDAD BOLIVAR": { lat: "4.532", lng: "-74.155" },
+    "CANDELARIA": { lat: "4.597", lng: "-74.073" },
+    "SANTA FE": { lat: "4.609", lng: "-74.083" },
+    "BOSA": { lat: "4.613", lng: "-74.185" },
+    "KENNEDY": { lat: "4.627", lng: "-74.153" }
+  };
+
   if (!lat || !lng) {
-    return "";
+    console.log("Usando ubicación por estación");
+
+    if (mapaEstaciones[estacion]) {
+      lat = mapaEstaciones[estacion].lat;
+      lng = mapaEstaciones[estacion].lng;
+    } else {
+      console.log("No hay ubicación ni estación configurada");
+      return "";
+    }
   }
 
   return `UBICACION PARTE
+ESTACION: ${estacion}
 LAT: ${lat}
 LNG: ${lng}
 FECHA: ${fecha}`;
@@ -642,14 +661,14 @@ FECHA: ${fecha}`;
       const dataGuardar = await resGuardar.json();
 
       if (!dataGuardar.ok) {
-  console.log("No se guardó:", dataGuardar.mensaje);
+        console.log("No se guardó:", dataGuardar.mensaje);
 
-  // ⚠️ SOLO mostrar alerta si es un error real
-  if (!dataGuardar.mensaje?.includes("Ya se registró")) {
-    alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
-    return;
-  }
-}
+        if (!dataGuardar.mensaje?.includes("Ya se registró")) {
+          alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
+          return;
+        }
+      }
+    }
 
     const qrTexto = construirTextoQRUbicacion();
     const qrUrl = qrTexto
