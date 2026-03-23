@@ -661,7 +661,7 @@ app.get("/validar-parte", async (req, res) => {
 // =========================
 // GENERAR TEXTO DEL PARTE
 // =========================
-app.get("/parte-texto", async (req, res) => {
+app.post("/parte-texto", async (req, res) => {
   const {
     estacion = "",
     organico = "",
@@ -671,6 +671,8 @@ app.get("/parte-texto", async (req, res) => {
     cedula = "",
     telefono = ""
   } = req.query;
+
+  const novedadesPantalla = Array.isArray(req.body?.novedades) ? req.body.novedades : [];
 
   try {
     if (!unidad) {
@@ -692,12 +694,8 @@ app.get("/parte-texto", async (req, res) => {
         p.grado,
         p.apellidos,
         p.nombres,
-        p.cedula,
-        COALESCE(n.tipo_novedad, '') AS tipo_novedad
+        p.cedula
       FROM personal p
-      LEFT JOIN novedades n
-        ON p.cedula = n.cedula
-        AND n.fecha = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date
       WHERE p.activo = true
         AND p.unidad = $1
     `;
@@ -741,7 +739,16 @@ app.get("/parte-texto", async (req, res) => {
     `;
 
     const result = await pool.query(query, params);
-    const personal = result.rows;
+
+    const mapaNovedades = {};
+    novedadesPantalla.forEach(n => {
+      mapaNovedades[String(n.cedula || "").trim()] = String(n.tipo || "").trim().toUpperCase();
+    });
+
+    const personal = result.rows.map(p => ({
+      ...p,
+      tipo_novedad: mapaNovedades[String(p.cedula)] || ""
+    }));
 
     const esOficial = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
     const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
@@ -761,8 +768,8 @@ app.get("/parte-texto", async (req, res) => {
       return `${c.oficiales}-${c.ejecutivo}-${c.patrulleros}-${c.auxiliares}`;
     }
 
-    const disponibles = personal.filter(p => !p.tipo_novedad || p.tipo_novedad.trim() === "");
-    const conNovedad = personal.filter(p => p.tipo_novedad && p.tipo_novedad.trim() !== "");
+    const disponibles = personal.filter(p => !p.tipo_novedad || p.tipo_novedad === "");
+    const conNovedad = personal.filter(p => p.tipo_novedad && p.tipo_novedad !== "");
 
     const fuerzaEfectiva = contarGrupo(personal);
     const fuerzaDisponible = contarGrupo(disponibles);
@@ -770,7 +777,7 @@ app.get("/parte-texto", async (req, res) => {
 
     const novedadesPorTipo = {};
     for (const p of conNovedad) {
-      const tipo = (p.tipo_novedad || "").trim().toUpperCase();
+      const tipo = p.tipo_novedad;
       if (!novedadesPorTipo[tipo]) novedadesPorTipo[tipo] = [];
       novedadesPorTipo[tipo].push(p);
     }
