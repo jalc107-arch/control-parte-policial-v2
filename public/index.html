@@ -97,58 +97,56 @@
   <div class="card">
 
     <div class="seccion">
-  <h2>1. Validar responsable</h2>
-  <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
-  <br>
-  <button onclick="validarResponsable()">Validar responsable</button>
-  <div id="datos_responsable" style="margin-top:10px; font-weight:bold;"></div>
+      <h2>1. Validar responsable</h2>
+      <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
+      <br>
+      <button onclick="validarResponsable()">Validar responsable</button>
+      <div id="datos_responsable" style="margin-top:10px; font-weight:bold;"></div>
 
-  <!-- ocultos -->
-  <div style="display:none;">
-    <input id="grado" />
-    <input id="nombre_elabora" />
-    <input id="cedula_elabora" />
-    <input id="telefono_elabora" />
-    <input id="latitud" />
-    <input id="longitud" />
-  </div>
-</div>
+      <div style="display:none;">
+        <input id="grado" />
+        <input id="nombre_elabora" />
+        <input id="cedula_elabora" />
+        <input id="telefono_elabora" />
+        <input id="latitud" />
+        <input id="longitud" />
+      </div>
+    </div>
 
     <div class="seccion" id="bloqueExcel" style="display:block;">
-  <h2>1. Subir Excel</h2>
-  <input type="file" id="fileExcel" accept=".xlsx" />
-  <button onclick="alert('boton excel'); subirExcel()">Subir Excel</button>
-</div>
+      <h2>2. Subir Excel</h2>
+      <input type="file" id="fileExcel" accept=".xlsx" />
+      <button onclick="subirExcel()">Subir Excel</button>
+    </div>
 
     <div class="seccion">
-      <div class="seccion">
-  <h2>2. Seleccionar ubicación</h2>
+      <h2>3. Seleccionar ubicación</h2>
 
-  <select id="unidad_select" onchange="cargarSubunidades()">
-    <option value="">Seleccionar UNIDAD</option>
-  </select>
-  <br>
+      <select id="unidad_select" onchange="cargarSubunidades()">
+        <option value="">Seleccionar UNIDAD</option>
+      </select>
+      <br>
 
-  <select id="subunidad_select" onchange="cargarEstaciones()">
-    <option value="">Seleccionar SUBUNIDAD</option>
-  </select>
-  <br>
+      <select id="subunidad_select" onchange="cargarEstaciones()">
+        <option value="">Seleccionar SUBUNIDAD</option>
+      </select>
+      <br>
 
-  <select id="estacion_select">
-    <option value="">Seleccionar ESTACIÓN</option>
-  </select>
-  <br>
+      <select id="estacion_select">
+        <option value="">Seleccionar ESTACIÓN</option>
+      </select>
+      <br>
 
-  <button onclick="cargarPersonal()">Cargar Personal</button>
-</div>
+      <button onclick="cargarPersonal()">Cargar Personal</button>
+    </div>
 
     <div class="seccion">
-      <h2>3. Novedades por persona</h2>
+      <h2>4. Novedades por persona</h2>
       <div id="lista"></div>
       <button onclick="guardarNovedades()">Guardar Novedades</button>
     </div>
 
-      <div class="seccion">
+    <div class="seccion">
       <h2>5. Generar parte</h2>
       <button onclick="generarParte()">Generar Parte</button>
       <button onclick="descargarPDF()">Descargar PDF</button>
@@ -157,55 +155,184 @@
 
   </div>
 
- async function subirExcel() {
-  alert("ENTRÓ A LA FUNCIÓN");
+  <script>
+    let estructuraGlobal = [];
 
-  const input = document.getElementById("fileExcel");
+    async function subirExcel() {
+      const input = document.getElementById("fileExcel");
 
-  alert("clic en subirExcel");
+      if (!input.files.length) {
+        alert("Selecciona un archivo Excel");
+        return;
+      }
 
-  if (!input.files.length) {
-    alert("Selecciona un archivo Excel");
-    return;
-  }
+      const formData = new FormData();
+      formData.append("archivo", input.files[0]);
 
-  const formData = new FormData();
-  formData.append("archivo", input.files[0]);
+      try {
+        const res = await fetch("/subir-excel", {
+          method: "POST",
+          body: formData
+        });
 
-  try {
-    alert("voy a enviar el archivo");
+        const data = await res.text();
+        alert(data);
 
-    const res = await fetch("/subir-excel", {
-      method: "POST",
-      body: formData
-    });
+        await cargarEstructura();
+      } catch (error) {
+        console.error(error);
+        alert("Error subiendo Excel: " + error.message);
+      }
+    }
 
-    const data = await res.text();
-    alert("respuesta: " + data);
+    async function validarResponsable() {
+      const cedula = document.getElementById("cedula_responsable").value.trim();
 
-  } catch (error) {
-    console.error(error);
-    alert("Error subiendo Excel: " + error.message);
-  }
-}
-
-    async function cargarPersonal() {
-      const estacion = document.getElementById("estacion").value.trim().toUpperCase();
-
-      if (!estacion) {
-        alert("Escribe una estación");
+      if (!cedula) {
+        alert("Ingresa la cédula");
         return;
       }
 
       try {
-        const res = await fetch(`/personal/${estacion}`);
+        const res = await fetch("/validar-responsable", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ cedula })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          document.getElementById("datos_responsable").innerText = "No autorizado";
+          document.getElementById("bloqueExcel").style.display = "none";
+          return;
+        }
+
+        document.getElementById("datos_responsable").innerText =
+          `${data.grado} - ${data.nombre}`;
+
+        document.getElementById("grado").value = data.grado || "";
+        document.getElementById("nombre_elabora").value = data.nombre || "";
+        document.getElementById("cedula_elabora").value = data.cedula || "";
+        document.getElementById("telefono_elabora").value = data.telefono || "";
+
+        if (data.puedeSubirExcel) {
+          document.getElementById("bloqueExcel").style.display = "block";
+        } else {
+          document.getElementById("bloqueExcel").style.display = "none";
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Error validando responsable");
+      }
+    }
+
+    async function cargarEstructura() {
+      try {
+        const res = await fetch("/estructura");
+        const data = await res.json();
+
+        estructuraGlobal = data;
+
+        const unidadSelect = document.getElementById("unidad_select");
+        unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
+
+        const unidades = [...new Set(data.map(x => x.unidad).filter(Boolean))];
+
+        unidades.forEach(unidad => {
+          const option = document.createElement("option");
+          option.value = unidad;
+          option.textContent = unidad;
+          unidadSelect.appendChild(option);
+        });
+
+        document.getElementById("subunidad_select").innerHTML =
+          '<option value="">Seleccionar SUBUNIDAD</option>';
+
+        document.getElementById("estacion_select").innerHTML =
+          '<option value="">Seleccionar ESTACIÓN</option>';
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function cargarSubunidades() {
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidadSelect = document.getElementById("subunidad_select");
+      const estacionSelect = document.getElementById("estacion_select");
+
+      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+      estacionSelect.innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+
+      const subunidades = [
+        ...new Set(
+          estructuraGlobal
+            .filter(x => x.unidad === unidad)
+            .map(x => x.subunidad)
+            .filter(Boolean)
+        )
+      ];
+
+      subunidades.forEach(subunidad => {
+        const option = document.createElement("option");
+        option.value = subunidad;
+        option.textContent = subunidad;
+        subunidadSelect.appendChild(option);
+      });
+    }
+
+    function cargarEstaciones() {
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const estacionSelect = document.getElementById("estacion_select");
+
+      estacionSelect.innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+
+      const estaciones = [
+        ...new Set(
+          estructuraGlobal
+            .filter(x => x.unidad === unidad && x.subunidad === subunidad)
+            .map(x => x.estacion)
+            .filter(Boolean)
+        )
+      ];
+
+      estaciones.forEach(estacion => {
+        const option = document.createElement("option");
+        option.value = estacion;
+        option.textContent = estacion;
+        estacionSelect.appendChild(option);
+      });
+    }
+
+    async function cargarPersonal() {
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const estacion = document.getElementById("estacion_select").value;
+
+      if (!unidad || !subunidad) {
+        alert("Unidad y subunidad son obligatorias");
+        return;
+      }
+
+      try {
+        const res = await fetch("/personal-filtrado", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ unidad, subunidad, estacion })
+        });
+
         const data = await res.json();
 
         const contenedor = document.getElementById("lista");
         contenedor.innerHTML = "";
 
         if (!data.ok || !data.data || data.data.length === 0) {
-          contenedor.innerHTML = "<p>No hay personal para esa estación.</p>";
+          contenedor.innerHTML = "<p>No hay personal para ese filtro.</p>";
           return;
         }
 
@@ -235,7 +362,6 @@
             document.getElementById("longitud").value = pos.coords.longitude;
           });
         }
-
       } catch (error) {
         console.error(error);
         alert("Error cargando personal");
@@ -243,41 +369,12 @@
     }
 
     async function guardarNovedades() {
-      const estacion = document.getElementById("estacion").value.trim().toUpperCase();
-      const selects = document.querySelectorAll("select[id^='novedad-']");
-
-      if (!estacion) {
-        alert("Escribe una estación");
-        return;
-      }
-
-      try {
-        for (const s of selects) {
-          if (!s.value) continue;
-
-          const cedula = s.id.replace("novedad-", "");
-
-          await fetch("/novedades", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              cedula,
-              estacion,
-              tipo_novedad: s.value
-            })
-          });
-        }
-
-        alert("Novedades guardadas correctamente");
-      } catch (error) {
-        console.error(error);
-        alert("Error guardando novedades");
-      }
+      alert("Esta parte la conectamos después de verificar que el Excel cargó bien.");
     }
 
     async function generarParte() {
-      const estacion = document.getElementById("estacion").value.trim().toUpperCase();
-      const unidad = document.getElementById("unidad").value;
+      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+      const unidad = document.getElementById("unidad_select").value;
       const grado = document.getElementById("grado").value.trim();
       const nombre = document.getElementById("nombre_elabora").value.trim();
       const cedula = document.getElementById("cedula_elabora").value.trim();
@@ -286,7 +383,7 @@
       const resultado = document.getElementById("resultado");
 
       if (!estacion) {
-        resultado.innerText = "Debes escribir una estación.";
+        resultado.innerText = "Debes seleccionar una estación.";
         return;
       }
 
@@ -332,54 +429,8 @@
       `);
       ventana.document.close();
     }
-<script>
-async function validarResponsable() {
-  const cedula = document.getElementById("cedula_responsable").value.trim();
 
-  if (!cedula) {
-    alert("Ingresa la cédula");
-    return;
-  }
-
-  try {
-    const res = await fetch("/validar-responsable", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ cedula })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      document.getElementById("datos_responsable").innerText = "No autorizado";
-      document.getElementById("bloqueExcel").style.display = "none";
-      return;
-    }
-
-    // Mostrar info
-    document.getElementById("datos_responsable").innerText =
-      `${data.grado} - ${data.nombre}`;
-
-    // Guardar datos ocultos
-    document.getElementById("grado").value = data.grado || "";
-    document.getElementById("nombre_elabora").value = data.nombre || "";
-    document.getElementById("cedula_elabora").value = data.cedula || "";
-    document.getElementById("telefono_elabora").value = data.telefono || "";
-
-    // 🔥 Permiso Excel
-    if (data.puedeSubirExcel) {
-      document.getElementById("bloqueExcel").style.display = "block";
-    } else {
-      document.getElementById("bloqueExcel").style.display = "none";
-    }
-
-  } catch (error) {
-    console.error(error);
-    alert("Error validando responsable");
-  }
-}
+    cargarEstructura();
   </script>
 
 </body>
