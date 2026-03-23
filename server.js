@@ -13,6 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const upload = multer({ dest: "uploads/" });
+
 function validarHorarioParte() {
   const now = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Bogota" })
@@ -32,7 +33,7 @@ function validarHorarioParte() {
   let extemporaneo = false;
   let esMediodia = false;
 
-  if (total >= 11 * 60 && total < 14 * 60) {
+ if (total >= (11 * 60 + 30) && total < (12 * 60 + 30)) {
     esMediodia = true;
   }
 
