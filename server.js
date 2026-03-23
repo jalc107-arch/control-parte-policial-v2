@@ -430,8 +430,7 @@ app.post("/guardar-novedades", async (req, res) => {
 
 app.get("/validar-parte", async (req, res) => {
   try {
-    const grado = (req.query.grado || "").toUpperCase();
-
+    const grado = (req.query.grado || "").toUpperCase().trim();
     const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
 
     const esOficial =
