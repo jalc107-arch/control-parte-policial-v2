@@ -205,10 +205,27 @@
         const data = await res.json();
 
         if (!data.ok) {
-          document.getElementById("datos_responsable").innerText = "No autorizado";
-          document.getElementById("bloqueExcel").style.display = "none";
-          return;
-        }
+  document.getElementById("datos_responsable").innerText = "No autorizado";
+  document.getElementById("bloqueExcel").style.display = "none";
+
+  document.getElementById("unidad_select").value = "";
+  document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+  document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+
+  document.getElementById("unidad_select").disabled = true;
+  document.getElementById("subunidad_select").disabled = true;
+  document.getElementById("estacion_select").disabled = true;
+
+  document.getElementById("lista").innerHTML = "";
+  document.getElementById("resultado").innerText = "";
+
+  document.getElementById("grado").value = "";
+  document.getElementById("nombre_elabora").value = "";
+  document.getElementById("cedula_elabora").value = "";
+  document.getElementById("telefono_elabora").value = "";
+
+  return;
+}
 
         document.getElementById("datos_responsable").innerText =
           `${data.grado} - ${data.nombre}`;
