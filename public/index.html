@@ -520,7 +520,8 @@ async function guardarNovedades() {
   }
 
   const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
-  const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}`);
+  const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+  const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
   const dataVal = await validar.json();
 
   if (!dataVal.ok) {
