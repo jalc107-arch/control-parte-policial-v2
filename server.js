@@ -555,6 +555,11 @@ app.get("/parte-texto", async (req, res) => {
     const conNovedad = personal.filter(p => p.tipo_novedad && p.tipo_novedad !== "");
 
     let texto = "";
+    const { extemporaneo } = validarHorarioParte();
+
+if (extemporaneo) {
+  texto += "⚠️ PARTE EXTEMPORÁNEO\n\n";
+}
     texto += `PARTE DE PERSONAL\n`;
     texto += `UNIDAD: ${unidad}\n`;
     if (estacion) texto += `ESTACIÓN: ${estacion}\n`;
