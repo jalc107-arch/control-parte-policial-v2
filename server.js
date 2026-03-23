@@ -865,9 +865,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
 
 const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
 const esOficial = gradosOficiales.some(g => grado === g);
-
-const { tipo, extemporaneo } = validarHorarioParte();
-
+const { tipo: tipoHorario, extemporaneo } = validarHorarioParte();
 // 🔴 SOLO oficiales pueden guardar fuera de horario
 if (!esOficial && extemporaneo) {
   return res.json({
