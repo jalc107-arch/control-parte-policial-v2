@@ -426,6 +426,45 @@ app.post("/guardar-novedades", async (req, res) => {
     res.status(500).json({ ok: false, error: error.message });
   }
 });
+app.get("/validar-parte", async (req, res) => {
+  try {
+    const { tipo, extemporaneo, esMediodia } = validarHorarioParte();
+
+    if (esMediodia) {
+      return res.json({
+        ok: false,
+        mensaje: "⛔ Solo se pueden registrar novedades al mediodía",
+        esMediodia: true
+      });
+    }
+
+    const hoy = new Date().toISOString().slice(0, 10);
+
+    const existe = await pool.query(
+      `SELECT COUNT(*) 
+       FROM partes 
+       WHERE DATE(fecha) = $1 
+       AND tipo = $2`,
+      [hoy, tipo]
+    );
+
+    if (parseInt(existe.rows[0].count) > 0) {
+      return res.json({
+        ok: false,
+        mensaje: `⚠️ Ya se registró el parte de ${tipo}`
+      });
+    }
+
+    res.json({
+      ok: true,
+      tipo,
+      extemporaneo
+    });
+
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
