@@ -297,6 +297,7 @@ app.get("/estructura", async (req, res) => {
 // =========================
 app.post("/personal-filtrado", async (req, res) => {
   const { unidad, subunidad, estacion, organico } = req.body;
+
   try {
     if (!unidad || !subunidad) {
       return res.status(400).json({
@@ -314,47 +315,42 @@ app.post("/personal-filtrado", async (req, res) => {
     `;
 
     const params = [unidad, subunidad];
+    let index = 3;
 
     if (estacion && estacion.trim() !== "") {
-  query += ` AND estacion = $3`;
-  params.push(estacion);
-}
+      query += ` AND estacion = $${index}`;
+      params.push(estacion);
+      index++;
+    }
 
-if (organico && organico.trim() !== "") {
-  query += ` AND organico = $4`;
-  params.push(organico);
-}
+    if (organico && organico.trim() !== "") {
+      query += ` AND organico = $${index}`;
+      params.push(organico);
+      index++;
+    }
 
     query += `
-  ORDER BY
-    CASE UPPER(grado)
-      -- OFICIALES
-      WHEN 'CR' THEN 1
-      WHEN 'TC' THEN 2
-      WHEN 'MY' THEN 3
-      WHEN 'CT' THEN 4
-      WHEN 'TE' THEN 5
-      WHEN 'ST' THEN 6
-
-      -- NIVEL EJECUTIVO
-      WHEN 'CM' THEN 7
-      WHEN 'SC' THEN 8
-      WHEN 'IJ' THEN 9
-      WHEN 'IT' THEN 10
-      WHEN 'SI' THEN 11
-
-      -- PATRULLEROS
-      WHEN 'PT' THEN 12
-      WHEN 'PP' THEN 13
-
-      -- AUXILIAR
-      WHEN 'AUX' THEN 14
-
-      ELSE 99
-    END,
-    apellidos,
-    nombres
-`;
+      ORDER BY
+        CASE UPPER(grado)
+          WHEN 'CR' THEN 1
+          WHEN 'TC' THEN 2
+          WHEN 'MY' THEN 3
+          WHEN 'CT' THEN 4
+          WHEN 'TE' THEN 5
+          WHEN 'ST' THEN 6
+          WHEN 'CM' THEN 7
+          WHEN 'SC' THEN 8
+          WHEN 'IJ' THEN 9
+          WHEN 'IT' THEN 10
+          WHEN 'SI' THEN 11
+          WHEN 'PT' THEN 12
+          WHEN 'PP' THEN 13
+          WHEN 'AUX' THEN 14
+          ELSE 99
+        END,
+        apellidos,
+        nombres
+    `;
 
     const result = await pool.query(query, params);
 
@@ -369,7 +365,6 @@ if (organico && organico.trim() !== "") {
     });
   }
 });
-
 app.post("/guardar-novedades", async (req, res) => {
   const { novedades, estacion } = req.body;
 
