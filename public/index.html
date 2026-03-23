@@ -157,33 +157,35 @@
 
   </div>
 
-  <script>
-    async function subirExcel() {
-      const input = document.getElementById("fileExcel");
+ async function subirExcel() {
+  const input = document.getElementById("fileExcel");
 
-      if (!input.files.length) {
-        alert("Selecciona un archivo Excel");
-        return;
-      }
+  alert("clic en subirExcel");
 
-      const formData = new FormData();
-      formData.append("archivo", input.files[0]);
+  if (!input.files.length) {
+    alert("Selecciona un archivo Excel");
+    return;
+  }
 
-      try {
-        alert("voy a enviar el archivo");
-        
-        const res = await fetch("/subir-excel", {
-          method: "POST",
-          body: formData
-        });
+  const formData = new FormData();
+  formData.append("archivo", input.files[0]);
 
-        const data = await res.text();
-        alert(data);
-      } catch (error) {
-        console.error(error);
-        alert("Error subiendo Excel");
-      }
-    }
+  try {
+    alert("voy a enviar el archivo");
+
+    const res = await fetch("/subir-excel", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.text();
+    alert("respuesta: " + data);
+
+  } catch (error) {
+    console.error(error);
+    alert("Error subiendo Excel: " + error.message);
+  }
+}
 
     async function cargarPersonal() {
       const estacion = document.getElementById("estacion").value.trim().toUpperCase();
