@@ -736,17 +736,22 @@ FECHA: ${fecha}`;
         })
       });
 
-      const dataGuardar = await resGuardar.json();
+     let dataGuardar = {};
 
-      if (!dataGuardar.ok) {
-        console.log("No se guardó:", dataGuardar.mensaje);
+try {
+  dataGuardar = await resGuardar.json();
+} catch (e) {
+  console.warn("Respuesta no es JSON, se ignora");
+}
 
-        if (!dataGuardar.mensaje?.includes("Ya se registró")) {
-          ventana.close();
-          alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
-          return;
-        }
-      }
+if (dataGuardar && dataGuardar.ok === false) {
+  console.log("No se guardó:", dataGuardar.mensaje);
+
+  if (!(dataGuardar.mensaje || "").includes("Ya se registró")) {
+  alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
+  return;
+}
+}
     }
 
     const fotoBase64 = await procesarFotoConSello();
