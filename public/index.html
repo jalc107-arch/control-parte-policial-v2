@@ -180,6 +180,38 @@
       <pre id="resultado"></pre>
     </div>
 
+    <!-- =========================
+         6. CONSULTA GENERAL DE NOVEDADES
+    ========================= -->
+    <div class="seccion" id="bloqueConsultaGeneral" style="display:none;">
+      <h2>6. Consulta general de novedades</h2>
+
+      <select id="consulta_unidad">
+        <option value="">Seleccionar UNIDAD</option>
+      </select>
+      <br>
+
+      <select id="consulta_subunidad">
+        <option value="">Seleccionar SUBUNIDAD</option>
+      </select>
+      <br>
+
+      <select id="consulta_estacion">
+        <option value="">Todas las ESTACIONES</option>
+      </select>
+      <br>
+
+      <select id="consulta_organico">
+        <option value="">Todos los ORGÁNICOS</option>
+      </select>
+      <br>
+
+      <button onclick="consultarNovedades()">Consultar novedades</button>
+
+      <pre id="resultado_general"></pre>
+      <pre id="resultado_detalle"></pre>
+    </div>
+
   </div>
 
   <script>
@@ -225,6 +257,8 @@
 
       document.getElementById("lista").innerHTML = "";
       document.getElementById("resultado").innerText = "";
+      document.getElementById("resultado_general").innerText = "";
+      document.getElementById("resultado_detalle").innerText = "";
 
       if (!cedula) {
         alert("Ingresa la cédula");
@@ -246,6 +280,7 @@
           document.getElementById("datos_responsable").innerText = "No autorizado";
           document.getElementById("bloqueExcel").style.display = "none";
           document.getElementById("bloqueOrganico").style.display = "none";
+          document.getElementById("bloqueConsultaGeneral").style.display = "none";
 
           document.getElementById("unidad_select").value = "";
           document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
@@ -292,8 +327,32 @@
           document.getElementById("estacion_select").disabled = false;
         }
 
+        if (data.esOficial || data.rol === "ADMIN_EXCEL") {
+          document.getElementById("bloqueOrganico").style.display = "block";
+          document.getElementById("bloqueConsultaGeneral").style.display = "block";
+        } else {
+          document.getElementById("bloqueOrganico").style.display = "none";
+          document.getElementById("bloqueConsultaGeneral").style.display = "none";
+        }
+
         document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
-        document.getElementById("bloqueOrganico").style.display = (data.esOficial || data.rol === "ADMIN_EXCEL") ? "block" : "none";
+
+        cargarFiltrosConsulta();
+
+        if (data.esOficial || data.rol === "ADMIN_EXCEL") {
+          document.getElementById("consulta_unidad").value = data.unidad || "";
+          cargarConsultaSubunidades();
+          document.getElementById("consulta_subunidad").value = data.subunidad || "";
+          cargarConsultaEstacionesYOrganicos();
+
+          if (data.estacion) {
+            document.getElementById("consulta_estacion").value = data.estacion;
+          }
+
+          if (data.organico) {
+            document.getElementById("consulta_organico").value = data.organico;
+          }
+        }
 
       } catch (error) {
         console.error(error);
@@ -326,6 +385,8 @@
         document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
         document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
         document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+
+        cargarFiltrosConsulta();
       } catch (error) {
         console.error(error);
       }
@@ -467,27 +528,27 @@
           div.innerHTML = `
             <b>${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}</b>
             <select id="novedad-${p.cedula}">
-  <option value="">DISPONIBLE</option>
-  <option value="SERVICIO">SERVICIO</option>
-  <option value="PERMISO">PERMISO</option>
-  <option value="VACACIONES">VACACIONES</option>
-  <option value="CURSO ASCENSO">CURSO ASCENSO</option>
-  <option value="COMISION EXTERIOR">COMISION EXTERIOR</option>
-  <option value="COMISION DE SERVICIO">COMISION DE SERVICIO</option>
-  <option value="HOSPITALIZADO">HOSPITALIZADO</option>
-  <option value="FRANQUICIA">FRANQUICIA</option>
-  <option value="RETARDADOS DE LA FORMACION">RETARDADOS DE LA FORMACION</option>
-  <option value="PLAN ELECTORAL">PLAN ELECTORAL</option>
-  <option value="PERMISO NAVIDEÑO">PERMISO NAVIDEÑO</option>
-  <option value="PERMISO SEMANA SANTA">PERMISO SEMANA SANTA</option>
-  <option value="PERMISO EXTRAORDINARIOS">PERMISO EXTRAORDINARIOS</option>
-  <option value="LICENCIA LUTO">LICENCIA LUTO</option>
-  <option value="LICENCIA MATERNIDAD">LICENCIA MATERNIDAD</option>
-  <option value="HORARIO FLEXIBLE">HORARIO FLEXIBLE</option>
-  <option value="FUERA DE LA FORMACION">FUERA DE LA FORMACION</option>
-  <option value="CITA MEDICA">CITA MEDICA</option>
-<option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
-<option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
+              <option value="">DISPONIBLE</option>
+              <option value="SERVICIO">SERVICIO</option>
+              <option value="PERMISO">PERMISO</option>
+              <option value="VACACIONES">VACACIONES</option>
+              <option value="CURSO ASCENSO">CURSO ASCENSO</option>
+              <option value="COMISION EXTERIOR">COMISION EXTERIOR</option>
+              <option value="COMISION DE SERVICIO">COMISION DE SERVICIO</option>
+              <option value="HOSPITALIZADO">HOSPITALIZADO</option>
+              <option value="FRANQUICIA">FRANQUICIA</option>
+              <option value="RETARDADOS DE LA FORMACION">RETARDADOS DE LA FORMACION</option>
+              <option value="PLAN ELECTORAL">PLAN ELECTORAL</option>
+              <option value="PERMISO NAVIDEÑO">PERMISO NAVIDEÑO</option>
+              <option value="PERMISO SEMANA SANTA">PERMISO SEMANA SANTA</option>
+              <option value="PERMISO EXTRAORDINARIOS">PERMISO EXTRAORDINARIOS</option>
+              <option value="LICENCIA LUTO">LICENCIA LUTO</option>
+              <option value="LICENCIA MATERNIDAD">LICENCIA MATERNIDAD</option>
+              <option value="HORARIO FLEXIBLE">HORARIO FLEXIBLE</option>
+              <option value="FUERA DE LA FORMACION">FUERA DE LA FORMACION</option>
+              <option value="CITA MEDICA">CITA MEDICA</option>
+              <option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
+              <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
             </select>
           `;
 
@@ -534,25 +595,25 @@
 
       try {
         const grado = document.getElementById("grado").value.trim();
-const rol = (document.getElementById("bloqueExcel").style.display === "block")
-  ? "ADMIN_EXCEL"
-  : "OPERADOR_PARTE";
+        const rol = (document.getElementById("bloqueExcel").style.display === "block")
+          ? "ADMIN_EXCEL"
+          : "OPERADOR_PARTE";
 
-const res = await fetch("/guardar-novedades", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ novedades, estacion, grado, rol })
-});
+        const res = await fetch("/guardar-novedades", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ novedades, estacion, grado, rol })
+        });
 
         const data = await res.json();
 
-       if (data.ok) {
-  alert(data.mensaje || "Novedades guardadas correctamente ✅");
-} else {
-  alert(data.mensaje || data.error || "Error al guardar ❌");
-}
+        if (data.ok) {
+          alert(data.mensaje || "Novedades guardadas correctamente ✅");
+        } else {
+          alert(data.mensaje || data.error || "Error al guardar ❌");
+        }
       } catch (error) {
         alert("Error de conexión ❌");
       }
@@ -790,8 +851,14 @@ FECHA: ${fecha}`;
           }
 
           if (dataGuardar && dataGuardar.ok === false) {
-            if (!(dataGuardar.mensaje || "").includes("Ya se registró")) {
-              alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
+            const mensajeGuardar = dataGuardar.mensaje || dataGuardar.error || "";
+
+            if (mensajeGuardar.includes("Ya se registró")) {
+              console.warn("Parte ya registrado, se genera PDF sin guardar.");
+            } else if (mensajeGuardar.includes("Fuera de horario")) {
+              console.warn("Fuera de horario, se genera PDF en modo consulta.");
+            } else {
+              alert(mensajeGuardar || "No se pudo guardar el parte");
               return;
             }
           }
@@ -933,6 +1000,179 @@ FECHA: ${fecha}`;
         alert("Error PDF: " + (error.message || error));
       }
     }
+
+    /* =========================
+       CARGAR FILTROS CONSULTA GENERAL
+    ========================= */
+    function cargarFiltrosConsulta() {
+      const unidadSelect = document.getElementById("consulta_unidad");
+      const subunidadSelect = document.getElementById("consulta_subunidad");
+      const estacionSelect = document.getElementById("consulta_estacion");
+      const organicoSelect = document.getElementById("consulta_organico");
+
+      if (!unidadSelect || !subunidadSelect || !estacionSelect || !organicoSelect) return;
+
+      unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
+      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
+      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+
+      const unidades = [...new Set(estructuraGlobal.map(x => x.unidad).filter(Boolean))];
+
+      unidades.forEach(unidad => {
+        const option = document.createElement("option");
+        option.value = unidad;
+        option.textContent = unidad;
+        unidadSelect.appendChild(option);
+      });
+    }
+
+    /* =========================
+       CONSULTA: SUBUNIDADES
+    ========================= */
+    function cargarConsultaSubunidades() {
+      const unidad = document.getElementById("consulta_unidad").value;
+      const subunidadSelect = document.getElementById("consulta_subunidad");
+      const estacionSelect = document.getElementById("consulta_estacion");
+      const organicoSelect = document.getElementById("consulta_organico");
+
+      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
+      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+
+      const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+      const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
+
+      subunidades.forEach(sub => {
+        const option = document.createElement("option");
+        option.value = sub;
+        option.textContent = sub;
+        subunidadSelect.appendChild(option);
+      });
+    }
+
+    /* =========================
+       CONSULTA: ESTACIONES Y ORGÁNICOS
+    ========================= */
+    function cargarConsultaEstacionesYOrganicos() {
+      const unidad = document.getElementById("consulta_unidad").value;
+      const subunidad = document.getElementById("consulta_subunidad").value;
+      const estacionSelect = document.getElementById("consulta_estacion");
+      const organicoSelect = document.getElementById("consulta_organico");
+
+      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
+      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+
+      const filtrados = estructuraGlobal.filter(x =>
+        x.unidad === unidad &&
+        x.subunidad === subunidad
+      );
+
+      const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))];
+      const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
+
+      estaciones.forEach(est => {
+        const option = document.createElement("option");
+        option.value = est;
+        option.textContent = est;
+        estacionSelect.appendChild(option);
+      });
+
+      organicos.forEach(org => {
+        const option = document.createElement("option");
+        option.value = org;
+        option.textContent = org;
+        organicoSelect.appendChild(option);
+      });
+    }
+
+    /* =========================
+       CONSULTAR NOVEDADES
+    ========================= */
+    async function consultarNovedades() {
+      const unidad = document.getElementById("consulta_unidad").value;
+      const subunidad = document.getElementById("consulta_subunidad").value;
+      const estacion = document.getElementById("consulta_estacion").value;
+      const organico = document.getElementById("consulta_organico").value;
+      const grado = document.getElementById("grado").value.trim();
+      const rol = (document.getElementById("bloqueExcel").style.display === "block")
+        ? "ADMIN_EXCEL"
+        : "OPERADOR_PARTE";
+
+      const generalBox = document.getElementById("resultado_general");
+      const detalleBox = document.getElementById("resultado_detalle");
+
+      generalBox.innerText = "";
+      detalleBox.innerText = "";
+
+      if (!unidad || !subunidad) {
+        alert("Unidad y subunidad son obligatorias");
+        return;
+      }
+
+      try {
+        const res = await fetch("/consulta-novedades", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            unidad,
+            subunidad,
+            estacion,
+            organico,
+            grado,
+            rol
+          })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          alert(data.error || "No se pudo consultar novedades");
+          return;
+        }
+
+        let textoGeneral = "GENERAL\n\n";
+        data.general.forEach(item => {
+          textoGeneral += `${item.tipo.padEnd(35, " ")} ${item.conteo.padEnd(12, " ")} ${item.total}\n`;
+        });
+
+        let textoDetalle = "DETALLE INDIVIDUAL\n\n";
+        data.detalleAgrupado.forEach(grupo => {
+          textoDetalle += `${grupo.tipo} ${grupo.conteo}   ${grupo.total}\n`;
+
+          grupo.personas.forEach((p, i) => {
+            textoDetalle += `${i + 1}. ${p.grado} | ${p.apellidos} | ${p.nombres} | ${p.cedula} | ${p.telefono} | ${p.estacion}\n`;
+          });
+
+          textoDetalle += `\n`;
+        });
+
+        generalBox.innerText = textoGeneral;
+        detalleBox.innerText = textoDetalle;
+
+      } catch (error) {
+        console.error(error);
+        alert("Error consultando novedades");
+      }
+    }
+
+    /* =========================
+       EVENTOS FILTROS CONSULTA
+    ========================= */
+    document.addEventListener("DOMContentLoaded", () => {
+      const consultaUnidad = document.getElementById("consulta_unidad");
+      const consultaSubunidad = document.getElementById("consulta_subunidad");
+
+      if (consultaUnidad) {
+        consultaUnidad.addEventListener("change", cargarConsultaSubunidades);
+      }
+
+      if (consultaSubunidad) {
+        consultaSubunidad.addEventListener("change", cargarConsultaEstacionesYOrganicos);
+      }
+    });
 
     /* =========================
        INICIO
