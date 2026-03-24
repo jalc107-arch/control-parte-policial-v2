@@ -987,6 +987,179 @@ app.post("/guardar-parte-pdf", async (req, res) => {
     });
   }
 });
+
+// =========================
+// CONSULTA GENERAL DE NOVEDADES
+// =========================
+app.post("/consulta-novedades", async (req, res) => {
+  const { unidad, subunidad, estacion, organico } = req.body;
+
+  try {
+    if (!unidad || !subunidad) {
+      return res.status(400).json({
+        ok: false,
+        error: "Unidad y subunidad son obligatorias"
+      });
+    }
+
+    let query = `
+      SELECT
+        p.grado,
+        p.apellidos,
+        p.nombres,
+        p.cedula,
+        p.telefono,
+        p.estacion,
+        COALESCE(n.tipo_novedad, '') AS tipo_novedad
+      FROM personal p
+      LEFT JOIN novedades n
+        ON p.cedula = n.cedula
+        AND n.fecha = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date
+      WHERE p.activo = true
+        AND p.unidad = $1
+        AND p.subunidad = $2
+    `;
+
+    const params = [unidad, subunidad];
+    let index = 3;
+
+    if (estacion && estacion.trim() !== "") {
+      query += ` AND p.estacion = $${index}`;
+      params.push(estacion);
+      index++;
+    }
+
+    if (organico && organico.trim() !== "") {
+      query += ` AND p.organico = $${index}`;
+      params.push(organico);
+      index++;
+    }
+
+    query += `
+      ORDER BY
+        CASE UPPER(p.grado)
+          WHEN 'CR' THEN 1
+          WHEN 'TC' THEN 2
+          WHEN 'MY' THEN 3
+          WHEN 'CT' THEN 4
+          WHEN 'TE' THEN 5
+          WHEN 'ST' THEN 6
+          WHEN 'CM' THEN 7
+          WHEN 'SC' THEN 8
+          WHEN 'IJ' THEN 9
+          WHEN 'IT' THEN 10
+          WHEN 'SI' THEN 11
+          WHEN 'PT' THEN 12
+          WHEN 'PP' THEN 13
+          WHEN 'AUX' THEN 14
+          ELSE 99
+        END,
+        p.apellidos,
+        p.nombres
+    `;
+
+    const result = await pool.query(query, params);
+    const personal = result.rows.map(p => ({
+      ...p,
+      tipo_novedad: (p.tipo_novedad || "").trim().toUpperCase()
+    }));
+
+    const esOficial = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
+    const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
+    const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
+    const esAuxiliar = (g) => ["AUX"].includes((g || "").toUpperCase());
+
+    function contarGrupo(lista) {
+      return {
+        oficiales: lista.filter(p => esOficial(p.grado)).length,
+        ejecutivo: lista.filter(p => esEjecutivo(p.grado)).length,
+        patrulleros: lista.filter(p => esPatrullero(p.grado)).length,
+        auxiliares: lista.filter(p => esAuxiliar(p.grado)).length
+      };
+    }
+
+    function formatoConteo(c) {
+      return `${c.oficiales}-${c.ejecutivo}-${c.patrulleros}-${c.auxiliares}`;
+    }
+
+    const agrupados = {};
+
+    personal.forEach(p => {
+      const tipo = p.tipo_novedad && p.tipo_novedad !== "" ? p.tipo_novedad : "DISPONIBLE";
+      if (!agrupados[tipo]) agrupados[tipo] = [];
+      agrupados[tipo].push(p);
+    });
+
+    const ordenTipos = [
+      "DISPONIBLE",
+      "SERVICIO",
+      "COMISION DE SERVICIO",
+      "COMISION EXTERIOR",
+      "PLAN ELECTORAL",
+      "PERMISO",
+      "PERMISO EXTRAORDINARIOS",
+      "PERMISO NAVIDEÑO",
+      "PERMISO SEMANA SANTA",
+      "VACACIONES",
+      "FRANQUICIA",
+      "LICENCIA LUTO",
+      "LICENCIA MATERNIDAD",
+      "HOSPITALIZADO",
+      "CITA MEDICA",
+      "CURSO ASCENSO",
+      "RETARDADOS DE LA FORMACION",
+      "FUERA DE LA FORMACION",
+      "HORARIO FLEXIBLE",
+      "CUMPLE FUNCIONES DIFERENTES DE POLCO",
+      "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
+    ];
+
+    const general = [];
+    const detalleAgrupado = [];
+
+    const tiposExistentes = [
+      ...ordenTipos.filter(t => agrupados[t]),
+      ...Object.keys(agrupados).filter(t => !ordenTipos.includes(t))
+    ];
+
+    for (const tipo of tiposExistentes) {
+      const lista = agrupados[tipo];
+      const conteo = contarGrupo(lista);
+      const total = lista.length;
+
+      general.push({
+        tipo,
+        conteo: formatoConteo(conteo),
+        total
+      });
+
+      detalleAgrupado.push({
+        tipo,
+        conteo: formatoConteo(conteo),
+        total,
+        personas: lista.map(p => ({
+          grado: p.grado || "",
+          apellidos: p.apellidos || "",
+          nombres: p.nombres || "",
+          cedula: p.cedula || "",
+          telefono: p.telefono || "",
+          estacion: p.estacion || ""
+        }))
+      });
+    }
+
+    return res.json({
+      ok: true,
+      general,
+      detalleAgrupado
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
