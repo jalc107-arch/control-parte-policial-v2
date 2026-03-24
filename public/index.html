@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Control de Partes</title>
   <style>
+    /* =========================
+       ESTILOS GENERALES
+    ========================= */
     body {
       font-family: Arial, sans-serif;
       background: #0b3d91;
@@ -96,6 +99,9 @@
 
   <div class="card">
 
+    <!-- =========================
+         1. VALIDAR RESPONSABLE
+    ========================= -->
     <div class="seccion">
       <h2>1. Validar responsable</h2>
       <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
@@ -113,12 +119,18 @@
       </div>
     </div>
 
+    <!-- =========================
+         2. SUBIR EXCEL
+    ========================= -->
     <div class="seccion" id="bloqueExcel" style="display:none;">
       <h2>2. Subir Excel</h2>
       <input type="file" id="fileExcel" accept=".xlsx" />
       <button onclick="subirExcel()">Subir Excel</button>
     </div>
 
+    <!-- =========================
+         3. SELECCIONAR UBICACIÓN
+    ========================= -->
     <div class="seccion">
       <h2>3. Seleccionar ubicación</h2>
 
@@ -138,36 +150,47 @@
       <br>
 
       <div id="bloqueOrganico" style="display:none;">
-  <select id="organico_select">
-    <option value="">Seleccionar ORGÁNICO</option>
-  </select>
-  <br>
-</div>
-   
-     
+        <select id="organico_select">
+          <option value="">Seleccionar ORGÁNICO</option>
+        </select>
+        <br>
+      </div>
+
       <button onclick="cargarPersonal()">Cargar Personal</button>
     </div>
 
+    <!-- =========================
+         4. NOVEDADES
+    ========================= -->
     <div class="seccion">
       <h2>4. Novedades por persona</h2>
       <div id="lista"></div>
       <button onclick="guardarNovedades()">Guardar Novedades</button>
     </div>
 
-   <div class="seccion">
-  <h2>5. Generar parte</h2>
-  <button onclick="generarParte()">Generar Parte</button>
-  <button onclick="descargarPDF()">Descargar PDF</button>
-  <br>
-  <input type="file" id="foto_parte" accept="image/*" capture="environment">
-  <pre id="resultado"></pre>
-</div>
+    <!-- =========================
+         5. GENERAR PARTE
+    ========================= -->
+    <div class="seccion">
+      <h2>5. Generar parte</h2>
+      <button onclick="generarParte()">Generar Parte</button>
+      <button onclick="descargarPDF()">Descargar PDF</button>
+      <br>
+      <input type="file" id="foto_parte" accept="image/*" capture="environment">
+      <pre id="resultado"></pre>
+    </div>
 
   </div>
 
   <script>
+    /* =========================
+       VARIABLES GLOBALES
+    ========================= */
     let estructuraGlobal = [];
 
+    /* =========================
+       SUBIR EXCEL
+    ========================= */
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
 
@@ -187,7 +210,6 @@
 
         const data = await res.text();
         alert(data);
-
         await cargarEstructura();
       } catch (error) {
         console.error(error);
@@ -195,6 +217,9 @@
       }
     }
 
+    /* =========================
+       VALIDAR RESPONSABLE
+    ========================= */
     async function validarResponsable() {
       const cedula = document.getElementById("cedula_responsable").value.trim();
 
@@ -218,71 +243,67 @@
         const data = await res.json();
 
         if (!data.ok) {
-  document.getElementById("datos_responsable").innerText = "No autorizado";
-  document.getElementById("bloqueExcel").style.display = "none";
+          document.getElementById("datos_responsable").innerText = "No autorizado";
+          document.getElementById("bloqueExcel").style.display = "none";
+          document.getElementById("bloqueOrganico").style.display = "none";
 
-  document.getElementById("unidad_select").value = "";
-  document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-  document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+          document.getElementById("unidad_select").value = "";
+          document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+          document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+          document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
-  document.getElementById("unidad_select").disabled = true;
-  document.getElementById("subunidad_select").disabled = true;
-  document.getElementById("estacion_select").disabled = true;
+          document.getElementById("unidad_select").disabled = true;
+          document.getElementById("subunidad_select").disabled = true;
+          document.getElementById("estacion_select").disabled = true;
 
-  document.getElementById("lista").innerHTML = "";
-  document.getElementById("resultado").innerText = "";
+          document.getElementById("grado").value = "";
+          document.getElementById("nombre_elabora").value = "";
+          document.getElementById("cedula_elabora").value = "";
+          document.getElementById("telefono_elabora").value = "";
+          return;
+        }
 
-  document.getElementById("grado").value = "";
-  document.getElementById("nombre_elabora").value = "";
-  document.getElementById("cedula_elabora").value = "";
-  document.getElementById("telefono_elabora").value = "";
-
-  return;
-}
-
-        document.getElementById("datos_responsable").innerText =
-          `${data.grado} - ${data.nombre}`;
-
+        document.getElementById("datos_responsable").innerText = `${data.grado} - ${data.nombre}`;
         document.getElementById("grado").value = data.grado || "";
         document.getElementById("nombre_elabora").value = data.nombre || "";
         document.getElementById("cedula_elabora").value = data.cedula || "";
         document.getElementById("telefono_elabora").value = data.telefono || "";
 
         if (!data.esOficial) {
-  document.getElementById("unidad_select").value = data.unidad || "";
-  cargarSubunidades();
+          document.getElementById("unidad_select").value = data.unidad || "";
+          cargarSubunidades();
 
-  document.getElementById("subunidad_select").value = data.subunidad || "";
-  cargarEstaciones();
+          document.getElementById("subunidad_select").value = data.subunidad || "";
+          cargarEstaciones();
 
-  document.getElementById("estacion_select").value = data.estacion || "";
+          document.getElementById("estacion_select").value = data.estacion || "";
 
-  document.getElementById("unidad_select").disabled = true;
-  document.getElementById("subunidad_select").disabled = true;
-  document.getElementById("estacion_select").disabled = true;
-} else {
-  document.getElementById("unidad_select").disabled = false;
-  document.getElementById("subunidad_select").disabled = false;
-  document.getElementById("estacion_select").disabled = false;
-}
+          if (data.esOficial || data.rol === "ADMIN_EXCEL") {
+            cargarOrganicos();
+            document.getElementById("organico_select").value = data.organico || "";
+          }
 
-        if (data.puedeSubirExcel) {
-          document.getElementById("bloqueExcel").style.display = "block";
+          document.getElementById("unidad_select").disabled = true;
+          document.getElementById("subunidad_select").disabled = true;
+          document.getElementById("estacion_select").disabled = true;
         } else {
-          document.getElementById("bloqueExcel").style.display = "none";
+          document.getElementById("unidad_select").disabled = false;
+          document.getElementById("subunidad_select").disabled = false;
+          document.getElementById("estacion_select").disabled = false;
         }
 
-        if (data.esOficial || data.rol === "ADMIN_EXCEL") {
-          document.getElementById("bloqueOrganico").style.display = "block";
-        } else {
-          document.getElementById("bloqueOrganico").style.display = "none";
-        }
+        document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
+        document.getElementById("bloqueOrganico").style.display = (data.esOficial || data.rol === "ADMIN_EXCEL") ? "block" : "none";
+
       } catch (error) {
         console.error(error);
         alert("Error validando responsable");
       }
     }
 
+    /* =========================
+       CARGAR ESTRUCTURA
+    ========================= */
     async function cargarEstructura() {
       try {
         const res = await fetch("/estructura");
@@ -302,38 +323,40 @@
           unidadSelect.appendChild(option);
         });
 
-        document.getElementById("subunidad_select").innerHTML =
-          '<option value="">Seleccionar SUBUNIDAD</option>';
-
-        document.getElementById("estacion_select").innerHTML =
-          '<option value="">Seleccionar ESTACIÓN</option>';
+        document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+        document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+        document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
       } catch (error) {
         console.error(error);
       }
     }
-    
-   function cargarSubunidades() {
-  const unidad = document.getElementById("unidad_select").value;
-  const subunidadSelect = document.getElementById("subunidad_select");
 
-  const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+    /* =========================
+       CARGAR SUBUNIDADES
+    ========================= */
+    function cargarSubunidades() {
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidadSelect = document.getElementById("subunidad_select");
 
-  const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
+      const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+      const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
 
-  subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
 
-  subunidades.forEach(sub => {
-    const option = document.createElement("option");
-    option.value = sub;
-    option.textContent = sub;
-    subunidadSelect.appendChild(option);
-  });
+      subunidades.forEach(sub => {
+        const option = document.createElement("option");
+        option.value = sub;
+        option.textContent = sub;
+        subunidadSelect.appendChild(option);
+      });
 
-  // limpiar estaciones
-  document.getElementById("estacion_select").innerHTML =
-    '<option value="">Seleccionar ESTACIÓN</option>';
-}
+      document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+      document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+    }
 
+    /* =========================
+       CARGAR ESTACIONES
+    ========================= */
     function cargarEstaciones() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
@@ -358,41 +381,47 @@
       });
     }
 
+    /* =========================
+       CARGAR ORGÁNICOS
+    ========================= */
     function cargarOrganicos() {
-  const unidad = document.getElementById("unidad_select").value;
-  const subunidad = document.getElementById("subunidad_select").value;
-  const estacion = document.getElementById("estacion_select").value;
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const estacion = document.getElementById("estacion_select").value;
+      const organicoSelect = document.getElementById("organico_select");
 
-  const organicoSelect = document.getElementById("organico_select");
+      organicoSelect.innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
-  organicoSelect.innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+      let filtrados = estructuraGlobal.filter(x =>
+        x.unidad === unidad &&
+        x.subunidad === subunidad
+      );
 
-  let filtrados = estructuraGlobal.filter(x =>
-    x.unidad === unidad &&
-    x.subunidad === subunidad
-  );
+      if (estacion && estacion.trim() !== "") {
+        filtrados = filtrados.filter(x => x.estacion === estacion);
+      }
 
-  if (estacion && estacion.trim() !== "") {
-    filtrados = filtrados.filter(x => x.estacion === estacion);
-  }
+      const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
 
-  const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
+      organicos.forEach(o => {
+        const option = document.createElement("option");
+        option.value = o;
+        option.textContent = o;
+        organicoSelect.appendChild(option);
+      });
+    }
 
-  organicos.forEach(o => {
-    const option = document.createElement("option");
-    option.value = o;
-    option.textContent = o;
-    organicoSelect.appendChild(option);
-  });
-}
-
+    /* =========================
+       CARGAR PERSONAL
+    ========================= */
     async function cargarPersonal() {
       const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
 
-if (!cedulaValidada) {
-  alert("Primero debes validar al responsable");
-  return;
-}
+      if (!cedulaValidada) {
+        alert("Primero debes validar al responsable");
+        return;
+      }
+
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
       const estacion = document.getElementById("estacion_select").value;
@@ -413,7 +442,6 @@ if (!cedulaValidada) {
         });
 
         const data = await res.json();
-
         const contenedor = document.getElementById("lista");
         contenedor.innerHTML = "";
 
@@ -422,22 +450,15 @@ if (!cedulaValidada) {
           return;
         }
 
-        const ordenGrados = [
-  "CR","TC","MY","CT","TE","ST",
-  "CM","SC","IJ","IT","SI",
-  "PT","PP",
-  "AUX"
-];
+        const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
 
-data.data.sort((a, b) => {
-  const ga = (a.grado || "").toUpperCase();
-  const gb = (b.grado || "").toUpperCase();
-
-  const ia = ordenGrados.indexOf(ga);
-  const ib = ordenGrados.indexOf(gb);
-
-  return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-});
+        data.data.sort((a, b) => {
+          const ga = (a.grado || "").toUpperCase();
+          const gb = (b.grado || "").toUpperCase();
+          const ia = ordenGrados.indexOf(ga);
+          const ib = ordenGrados.indexOf(gb);
+          return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+        });
 
         data.data.forEach(p => {
           const div = document.createElement("div");
@@ -471,420 +492,432 @@ data.data.sort((a, b) => {
       }
     }
 
-async function guardarNovedades() {
-  const personas = document.querySelectorAll(".persona");
-  const estacion = document.getElementById("estacion_select").value;
-
-  const novedades = [];
-
-  const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
-  
-  const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}`);
-  const dataVal = await validar.json();
-
-if (!dataVal.guardarOficial) {
-  alert("⚠️ Fuera de horario. Solo puedes generar parte en modo consulta.");
-  return;
-}
-
-  personas.forEach(p => {
-    const select = p.querySelector("select");
-    const cedula = select.id.replace("novedad-", "");
-    const tipo = select.value;
-
-    novedades.push({ cedula, tipo });
-  });
-
-  try {
-    const res = await fetch("/guardar-novedades", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ novedades, estacion })
-    });
-
-    const data = await res.json();
-
-    if (data.ok) {
-      alert("Novedades guardadas correctamente ✅");
-    } else {
-      alert("Error al guardar ❌");
-    }
-  } catch (error) {
-    alert("Error de conexión ❌");
-  }
-}
-    
-     async function generarParte() {
-  const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-  const unidad = document.getElementById("unidad_select").value;
-  const grado = document.getElementById("grado").value.trim();
-  const nombre = document.getElementById("nombre_elabora").value.trim();
-  const cedula = document.getElementById("cedula_elabora").value.trim();
-  const telefono = document.getElementById("telefono_elabora").value.trim();
-  const organico = document.getElementById("organico_select").value;
-  const resultado = document.getElementById("resultado");
-
-  if (!estacion && !organico) {
-    resultado.innerText = "Debes seleccionar estación u orgánico.";
-    return;
-  }
-
-  const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
-  const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
-  const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
-  const dataVal = await validar.json();
-
-  if (!dataVal.ok) {
-    alert(dataVal.mensaje);
-    return;
-  }
-const personas = document.querySelectorAll(".persona");
-const novedadesSeleccionadas = [];
-
-personas.forEach(p => {
-  const select = p.querySelector("select");
-  const cedulaPersona = select.id.replace("novedad-", "");
-  const tipo = select.value || "";
-  novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
-});
-  try {
-    const url = `/parte-texto?estacion=${encodeURIComponent(estacion)}&organico=${encodeURIComponent(organico)}&unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
-
-    const res = await fetch(url, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    novedades: novedadesSeleccionadas
-  })
-});
-    const data = await res.json();
-
-    if (!data.ok) {
-      resultado.innerText = "Error: " + (data.error || "No se pudo generar el parte");
-      return;
-    }
-
-    resultado.style.color = dataVal.extemporaneo ? "red" : "black";
-    resultado.innerText = dataVal.extemporaneo
-      ? "⚠️ REPORTE EXTEMPORÁNEO\n\n" + data.texto
-      : data.texto;
-
-  } catch (error) {
-    console.error(error);
-    resultado.innerText = "Error conectando con el servidor";
-  }
-}
-
-function construirTextoQRUbicacion() {
-  let lat = document.getElementById("latitud").value || "";
-  let lng = document.getElementById("longitud").value || "";
-  const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-
-  const fecha = new Date().toLocaleString("es-CO", {
-    timeZone: "America/Bogota",
-    hour12: false
-  });
-
-  const mapaEstaciones = {
-    "CIUDAD BOLIVAR": { lat: "4.532", lng: "-74.155" },
-    "CANDELARIA": { lat: "4.597", lng: "-74.073" },
-    "SANTA FE": { lat: "4.609", lng: "-74.083" },
-    "BOSA": { lat: "4.613", lng: "-74.185" },
-    "KENNEDY": { lat: "4.627", lng: "-74.153" }
-  };
-
-  if (!lat || !lng) {
-    console.log("Usando ubicación por estación");
-
-    if (mapaEstaciones[estacion]) {
-      lat = mapaEstaciones[estacion].lat;
-      lng = mapaEstaciones[estacion].lng;
-    } else {
-      console.log("No hay ubicación ni estación configurada");
-      return "";
-    }
-  }
-
-  return `UBICACION PARTE
-ESTACION: ${estacion}
-LAT: ${lat}
-LNG: ${lng}
-FECHA: ${fecha}`;
-}
-
-    async function procesarFotoConSello() {
-  const input = document.getElementById("foto_parte");
-
-  if (!input.files.length) return "";
-
-  const file = input.files[0];
-
-  const img = new Image();
-  const reader = new FileReader();
-
-  return new Promise((resolve) => {
-    reader.onload = function (e) {
-      img.src = e.target.result;
-    };
-
-    img.onload = function () {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      // Dibujar imagen original
-      ctx.drawImage(img, 0, 0);
-
-      // 🔥 DATOS DEL SELLO
+    /* =========================
+       GUARDAR NOVEDADES
+    ========================= */
+    async function guardarNovedades() {
+      const personas = document.querySelectorAll(".persona");
       const estacion = document.getElementById("estacion_select").value;
-      const lat = document.getElementById("latitud").value || "N/A";
-      const lng = document.getElementById("longitud").value || "N/A";
+      const novedades = [];
+
+      const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
+      const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+
+      const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
+      const dataVal = await validar.json();
+
+      if (!dataVal.guardarOficial) {
+        alert("⚠️ Fuera de horario. Solo puedes generar parte en modo consulta.");
+        return;
+      }
+
+      personas.forEach(p => {
+        const select = p.querySelector("select");
+        const cedula = select.id.replace("novedad-", "");
+        const tipo = select.value;
+        novedades.push({ cedula, tipo });
+      });
+
+      try {
+        const res = await fetch("/guardar-novedades", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ novedades, estacion })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          alert("Novedades guardadas correctamente ✅");
+        } else {
+          alert("Error al guardar ❌");
+        }
+      } catch (error) {
+        alert("Error de conexión ❌");
+      }
+    }
+
+    /* =========================
+       GENERAR PARTE
+    ========================= */
+    async function generarParte() {
+      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+      const unidad = document.getElementById("unidad_select").value;
+      const grado = document.getElementById("grado").value.trim();
+      const nombre = document.getElementById("nombre_elabora").value.trim();
+      const cedula = document.getElementById("cedula_elabora").value.trim();
+      const telefono = document.getElementById("telefono_elabora").value.trim();
+      const organico = document.getElementById("organico_select").value;
+      const resultado = document.getElementById("resultado");
+
+      if (!estacion && !organico) {
+        resultado.innerText = "Debes seleccionar estación u orgánico.";
+        return;
+      }
+
+      const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
+      const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+
+      const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
+      const dataVal = await validar.json();
+
+      if (!dataVal.ok) {
+        alert(dataVal.mensaje);
+        return;
+      }
+
+      const personas = document.querySelectorAll(".persona");
+      const novedadesSeleccionadas = [];
+
+      personas.forEach(p => {
+        const select = p.querySelector("select");
+        const cedulaPersona = select.id.replace("novedad-", "");
+        const tipo = select.value || "";
+        novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
+      });
+
+      try {
+        const url = `/parte-texto?estacion=${encodeURIComponent(estacion)}&organico=${encodeURIComponent(organico)}&unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            novedades: novedadesSeleccionadas
+          })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          resultado.innerText = "Error: " + (data.error || "No se pudo generar el parte");
+          return;
+        }
+
+        resultado.style.color = dataVal.extemporaneo ? "red" : "black";
+        resultado.innerText = dataVal.extemporaneo
+          ? "⚠️ REPORTE EXTEMPORÁNEO\n\n" + data.texto
+          : data.texto;
+
+      } catch (error) {
+        console.error(error);
+        resultado.innerText = "Error conectando con el servidor";
+      }
+    }
+
+    /* =========================
+       CONSTRUIR TEXTO QR
+    ========================= */
+    function construirTextoQRUbicacion() {
+      let lat = document.getElementById("latitud").value || "";
+      let lng = document.getElementById("longitud").value || "";
+      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
 
       const fecha = new Date().toLocaleString("es-CO", {
         timeZone: "America/Bogota",
         hour12: false
       });
 
-      // 🔥 ESTILO DEL SELLO
-      ctx.fillStyle = "rgba(0,0,0,0.6)";
-      ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
+      const mapaEstaciones = {
+        "CIUDAD BOLIVAR": { lat: "4.532", lng: "-74.155" },
+        "CANDELARIA": { lat: "4.597", lng: "-74.073" },
+        "SANTA FE": { lat: "4.609", lng: "-74.083" },
+        "BOSA": { lat: "4.613", lng: "-74.185" },
+        "KENNEDY": { lat: "4.627", lng: "-74.153" }
+      };
 
-      ctx.fillStyle = "#00FF00";
-      ctx.font = "20px Arial";
+      if (!lat || !lng) {
+        if (mapaEstaciones[estacion]) {
+          lat = mapaEstaciones[estacion].lat;
+          lng = mapaEstaciones[estacion].lng;
+        } else {
+          return "";
+        }
+      }
 
-      ctx.fillText(`ESTACION: ${estacion}`, 20, canvas.height - 80);
-      ctx.fillText(`FECHA: ${fecha}`, 20, canvas.height - 50);
-      ctx.fillText(`LAT: ${lat}  LNG: ${lng}`, 20, canvas.height - 20);
+      return `UBICACION PARTE
+ESTACION: ${estacion}
+LAT: ${lat}
+LNG: ${lng}
+FECHA: ${fecha}`;
+    }
 
-      const finalBase64 = canvas.toDataURL("image/jpeg", 0.9);
+    /* =========================
+       PROCESAR FOTO CON SELLO
+    ========================= */
+    async function procesarFotoConSello() {
+      const input = document.getElementById("foto_parte");
 
-      resolve(finalBase64);
-    };
+      if (!input.files.length) return "";
 
-    reader.readAsDataURL(file);
-  });
-}
-    
-   async function descargarPDF() {
- let contenido = document.getElementById("resultado").innerText.trim();
-contenido = contenido.replace(/^⚠️ REPORTE EXTEMPORÁNEO\s*\n\s*/i, "");
-contenido = contenido.replace(/^PARTE DE PERSONAL\s*\n/i, "");
+      const file = input.files[0];
+      const img = new Image();
+      const reader = new FileReader();
 
-  if (!contenido) {
-    alert("Primero genera el parte");
-    return;
-  }
+      return new Promise((resolve) => {
+        reader.onload = function (e) {
+          img.src = e.target.result;
+        };
 
-  // 🔥 Abrir ventana INMEDIATAMENTE para que no la bloquee el celular
-  const ventana = window.open("", "_blank");
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
 
-  if (!ventana) {
-    alert("El navegador bloqueó la ventana del PDF. Permite ventanas emergentes.");
-    return;
-  }
+          canvas.width = img.width;
+          canvas.height = img.height;
 
-  // Mensaje temporal mientras procesa
-  ventana.document.write(`
-    <html>
-      <head>
-        <title>Generando PDF...</title>
-      </head>
-      <body style="font-family: Arial, sans-serif; padding: 20px;">
-        Generando PDF, por favor espera...
-      </body>
-    </html>
-  `);
-  ventana.document.close();
+          ctx.drawImage(img, 0, 0);
 
-  const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-  const unidad = document.getElementById("unidad_select").value;
-  const subunidad = document.getElementById("subunidad_select").value;
-  const grado = document.getElementById("grado").value.trim();
-  const nombre = document.getElementById("nombre_elabora").value.trim();
-  const cedula = document.getElementById("cedula_elabora").value.trim();
-  const telefono = document.getElementById("telefono_elabora").value.trim();
+          const estacion = document.getElementById("estacion_select").value;
+          const lat = document.getElementById("latitud").value || "N/A";
+          const lng = document.getElementById("longitud").value || "N/A";
 
-  const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
-  const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block")
-    ? "ADMIN_EXCEL"
-    : "OPERADOR_PARTE";
+          const fecha = new Date().toLocaleString("es-CO", {
+            timeZone: "America/Bogota",
+            hour12: false
+          });
 
-  try {
-    const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
-    const dataVal = await validar.json();
+          ctx.fillStyle = "rgba(0,0,0,0.6)";
+          ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
 
-    if (dataVal.guardarOficial) {
-      const resGuardar = await fetch("/guardar-parte-pdf", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          tipo: dataVal.tipo || null,
-          unidad,
-          subunidad,
-          estacion,
-          grado_responsable: grado,
-          nombre_responsable: nombre,
-          cedula_responsable: cedula,
-          telefono_responsable: telefono,
-          texto_parte: contenido
-        })
+          ctx.fillStyle = "#00FF00";
+          ctx.font = "20px Arial";
+          ctx.fillText(`ESTACION: ${estacion}`, 20, canvas.height - 80);
+          ctx.fillText(`FECHA: ${fecha}`, 20, canvas.height - 50);
+          ctx.fillText(`LAT: ${lat}  LNG: ${lng}`, 20, canvas.height - 20);
+
+          resolve(canvas.toDataURL("image/jpeg", 0.9));
+        };
+
+        reader.readAsDataURL(file);
       });
-
-     let dataGuardar = {};
-
-try {
-  dataGuardar = await resGuardar.json();
-} catch (e) {
-  console.warn("Respuesta no es JSON, se ignora");
-}
-
-if (dataGuardar && dataGuardar.ok === false) {
-  console.log("No se guardó:", dataGuardar.mensaje);
-
-  if (!(dataGuardar.mensaje || "").includes("Ya se registró")) {
-  alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
-  return;
-}
-}
     }
 
-    const fotoBase64 = await procesarFotoConSello();
-    const qrTexto = construirTextoQRUbicacion();
-    const qrUrl = qrTexto
-      ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
-      : "";
+    /* =========================
+       DESCARGAR PDF
+    ========================= */
+    async function descargarPDF() {
+      let contenido = document.getElementById("resultado").innerText.trim();
+      contenido = contenido.replace(/^⚠️ REPORTE EXTEMPORÁNEO\s*\n\s*/i, "");
+      contenido = contenido.replace(/^PARTE DE PERSONAL\s*\n/i, "");
 
-    ventana.document.open();
-    ventana.document.write(`
-      <html>
-        <head>
-          <title>Parte PDF</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
+      if (!contenido) {
+        alert("Primero genera el parte");
+        return;
+      }
+
+      const ventana = window.open("", "_blank");
+
+      if (!ventana) {
+        alert("El navegador bloqueó la ventana del PDF. Permite ventanas emergentes.");
+        return;
+      }
+
+      ventana.document.write(`
+        <html>
+          <head>
+            <title>Generando PDF...</title>
+          </head>
+          <body style="font-family: Arial, sans-serif; padding: 20px;">
+            Generando PDF, por favor espera...
+          </body>
+        </html>
+      `);
+      ventana.document.close();
+
+      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const grado = document.getElementById("grado").value.trim();
+      const nombre = document.getElementById("nombre_elabora").value.trim();
+      const cedula = document.getElementById("cedula_elabora").value.trim();
+      const telefono = document.getElementById("telefono_elabora").value.trim();
+
+      const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
+      const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+
+      try {
+        const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
+        const dataVal = await validar.json();
+
+        if (dataVal.guardarOficial) {
+          const resGuardar = await fetch("/guardar-parte-pdf", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              tipo: dataVal.tipo || null,
+              unidad,
+              subunidad,
+              estacion,
+              grado_responsable: grado,
+              nombre_responsable: nombre,
+              cedula_responsable: cedula,
+              telefono_responsable: telefono,
+              texto_parte: contenido
+            })
+          });
+
+          let dataGuardar = {};
+          try {
+            dataGuardar = await resGuardar.json();
+          } catch (e) {
+            console.warn("Respuesta no es JSON, se ignora");
+          }
+
+          if (dataGuardar && dataGuardar.ok === false) {
+            if (!(dataGuardar.mensaje || "").includes("Ya se registró")) {
+              alert(dataGuardar.mensaje || dataGuardar.error || "No se pudo guardar el parte");
+              return;
             }
-            .marca-agua {
-              position: fixed;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%) rotate(-30deg);
-              font-size: 60px;
-              color: rgba(0, 0, 0, 0.08);
-              font-weight: bold;
-              white-space: nowrap;
-              z-index: 0;
-              pointer-events: none;
-            }
-            .encabezado {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 1;
-}
+          }
+        }
 
-.lado-derecho {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 14px;
-}
+        const fotoBase64 = await procesarFotoConSello();
+        const qrTexto = construirTextoQRUbicacion();
+        const qrUrl = qrTexto
+          ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
+          : "";
 
-.qr-box,
-.foto-box {
-  text-align: center;
-}
+        ventana.document.open();
+        ventana.document.write(`
+          <html>
+            <head>
+              <title>Parte PDF</title>
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  padding: 20px;
+                }
 
-.qr-box img {
-  width: 95px;
-  height: 95px;
-}
+                .marca-agua {
+                  position: fixed;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%) rotate(-30deg);
+                  font-size: 60px;
+                  color: rgba(0, 0, 0, 0.08);
+                  font-weight: bold;
+                  white-space: nowrap;
+                  z-index: 0;
+                  pointer-events: none;
+                }
 
-.foto-box img {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 6px;
-  border: 1px solid #bbb;
-}
+                .encabezado {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                  gap: 20px;
+                  margin-bottom: 20px;
+                  width: 100%;
+                  position: relative;
+                  z-index: 1;
+                }
 
-.label {
-  font-size: 10px;
-  text-align: center;
-  margin-top: 4px;
-}
+                .titulo {
+                  font-size: 20px;
+                  font-weight: bold;
+                  margin-top: 10px;
+                  flex: 1;
+                }
 
-.titulo {
-  font-size: 20px;
-  font-weight: bold;
-  margin-top: 10px;
-}
+                .lado-derecho {
+                  display: flex;
+                  flex-direction: row;
+                  flex-wrap: nowrap;
+                  align-items: flex-start;
+                  justify-content: flex-end;
+                  gap: 14px;
+                  min-width: 230px;
+                }
 
-.lado-derecho {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 14px;
-}
-          </style>
-        </head>
-        <body>
-          <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
+                .qr-box,
+                .foto-box {
+                  text-align: center;
+                }
 
-<div class="encabezado">
-  <div class="titulo">REGISTRO DEL PARTE</div>
+                .qr-box img {
+                  width: 95px;
+                  height: 95px;
+                }
 
-  <div class="lado-derecho">
+                .foto-box img {
+                  width: 120px;
+                  height: 120px;
+                  object-fit: cover;
+                  border-radius: 6px;
+                  border: 1px solid #bbb;
+                }
 
-  ${qrUrl ? `
-    <div class="qr-box">
-      <img src="${qrUrl}" />
-      <div class="label">Ubicación</div>
-    </div>
-  ` : ""}
+                .label {
+                  font-size: 10px;
+                  text-align: center;
+                  margin-top: 4px;
+                }
 
-  ${fotoBase64 ? `
-    <div class="foto-box">
-      <img src="${fotoBase64}" />
-      <div class="label">Evidencia</div>
-    </div>
-  ` : ""}
+                pre {
+                  white-space: pre-wrap;
+                  font-family: "Courier New", monospace;
+                  font-size: 14px;
+                  position: relative;
+                  z-index: 1;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
 
-</div>
-</div>
-          <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
-         
-          <script>
-            window.print();
-          <\/script>
-        </body>
-      </html>
-    `);
-    ventana.document.close();
+              <div class="encabezado">
+                <div class="titulo">REGISTRO DEL PARTE</div>
 
-} catch (error) {
-  console.error("ERROR PDF:", error);
+                <div class="lado-derecho">
+                  ${qrUrl ? `
+                    <div class="qr-box">
+                      <img src="${qrUrl}" />
+                      <div class="label">Ubicación</div>
+                    </div>
+                  ` : ""}
 
-  try {
-    if (ventana && !ventana.closed) {
-      ventana.close();
+                  ${fotoBase64 ? `
+                    <div class="foto-box">
+                      <img src="${fotoBase64}" />
+                      <div class="label">Evidencia</div>
+                    </div>
+                  ` : ""}
+                </div>
+              </div>
+
+              <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+
+              <script>
+                window.print();
+              <\/script>
+            </body>
+          </html>
+        `);
+        ventana.document.close();
+
+      } catch (error) {
+        console.error("ERROR PDF:", error);
+
+        try {
+          if (ventana && !ventana.closed) {
+            ventana.close();
+          }
+        } catch (_) {}
+
+        alert("Error PDF: " + (error.message || error));
+      }
     }
-  } catch (_) {}
 
-  alert("Error PDF: " + (error.message || error));
-}
-}
-    
+    /* =========================
+       INICIO
+    ========================= */
     cargarEstructura();
   </script>
 
