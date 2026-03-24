@@ -861,33 +861,40 @@ app.post("/guardar-parte-pdf", async (req, res) => {
     texto_parte
   } = req.body;
 
- const grado = (grado_responsable || "").toUpperCase().trim().replace(/\s+/g, "");
+  const grado = (grado_responsable || "").toUpperCase().trim().replace(/\s+/g, "");
 
-const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
-const esOficial =
-  gradosOficiales.includes(grado) || grado.includes("OFICIAL");
+  const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
+  const esOficial =
+    gradosOficiales.includes(grado) || grado.includes("OFICIAL");
 
-const { estado, esMediodia } = validarHorarioParte();
+  const { estado, esMediodia } = validarHorarioParte();
 
-// ✅ Oficiales pueden guardar siempre
-if (!esOficial) {
-  // ⛔ Mediodía: no se guarda parte, solo novedades
-  if (esMediodia) {
+  // ✅ Oficiales pueden guardar siempre
+  if (!esOficial) {
+    // ⛔ Mediodía: solo novedades
+    if (esMediodia) {
+      return res.json({
+        ok: false,
+        mensaje: "⛔ Al mediodía solo se registran novedades. No se guarda parte."
+      });
+    }
+
+    // ⛔ Fuera del horario permitido
+    if (estado === "bloqueado") {
+      return res.json({
+        ok: false,
+        mensaje: "⛔ Fuera de horario. No se puede guardar el parte."
+      });
+    }
+  }
+
+  if (!tipo && !esOficial) {
     return res.json({
       ok: false,
-      mensaje: "⛔ Al mediodía solo se registran novedades. No se guarda parte."
+      mensaje: "⛔ No hay tipo de parte válido para guardar."
     });
   }
 
-  // ⛔ Solo se bloquea si realmente está fuera de horario
-  if (estado === "bloqueado") {
-    return res.json({
-      ok: false,
-      mensaje: "⛔ Fuera de horario. No se puede guardar el parte."
-    });
-  }
-}
-  
   try {
     const result = await pool.query(
       `INSERT INTO partes (
