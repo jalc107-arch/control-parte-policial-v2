@@ -76,9 +76,12 @@
       color: black;
       padding: 15px;
       border-radius: 5px;
-      white-space: pre-wrap;
+      white-space: pre;
       margin-top: 15px;
       overflow-x: auto;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     #lista {
@@ -283,10 +286,11 @@
 
       document.getElementById("lista").innerHTML = "";
       document.getElementById("resultado").innerText = "";
-      const general = document.getElementById("resultado_general");
-      const detalle = document.getElementById("resultado_detalle");
-      if (general) general.innerText = "";
-      if (detalle) detalle.innerText = "";
+
+      const generalBox = document.getElementById("resultado_general");
+      const detalleBox = document.getElementById("resultado_detalle");
+      if (generalBox) generalBox.innerText = "";
+      if (detalleBox) detalleBox.innerText = "";
 
       if (!cedula) {
         alert("Ingresa la cédula");
@@ -1032,13 +1036,15 @@ FECHA: ${fecha}`;
       const subunidadSelect = document.getElementById("consulta_subunidad");
       const estacionSelect = document.getElementById("consulta_estacion");
       const organicoSelect = document.getElementById("consulta_organico");
+      const tipoSelect = document.getElementById("consulta_tipo");
 
-      if (!unidadSelect || !subunidadSelect || !estacionSelect || !organicoSelect) return;
+      if (!unidadSelect || !subunidadSelect || !estacionSelect || !organicoSelect || !tipoSelect) return;
 
       unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
       subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
       estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
       organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+      tipoSelect.value = "";
 
       const unidades = [...new Set(estructuraGlobal.map(x => x.unidad).filter(Boolean))];
 
@@ -1159,16 +1165,27 @@ FECHA: ${fecha}`;
         }
 
         let textoGeneral = "GENERAL\n\n";
+        textoGeneral += "TIPO".padEnd(35, " ") + "CONTEO".padEnd(15, " ") + "TOTAL\n";
+        textoGeneral += "-".repeat(58) + "\n";
+
         data.general.forEach(item => {
-          textoGeneral += `${item.tipo.padEnd(35, " ")} ${item.conteo.padEnd(12, " ")} ${item.total}\n`;
+          textoGeneral += `${String(item.tipo || "").padEnd(35, " ")}${String(item.conteo || "").padEnd(15, " ")}${String(item.total || 0)}\n`;
         });
 
         let textoDetalle = "DETALLE INDIVIDUAL\n\n";
+
         data.detalleAgrupado.forEach(grupo => {
           textoDetalle += `${grupo.tipo} ${grupo.conteo}   ${grupo.total}\n`;
+          textoDetalle += "-".repeat(110) + "\n";
 
           grupo.personas.forEach((p, i) => {
-            textoDetalle += `${i + 1}. ${p.grado} | ${p.apellidos} | ${p.nombres} | ${p.cedula} | ${p.telefono} | ${p.estacion}\n`;
+            textoDetalle += `${String(i + 1).padStart(3, " ")}. `
+              + `${String(p.grado || "").padEnd(4, " ")} | `
+              + `${String(p.apellidos || "").padEnd(20, " ")} | `
+              + `${String(p.nombres || "").padEnd(20, " ")} | `
+              + `${String(p.cedula || "").padEnd(12, " ")} | `
+              + `${String(p.telefono || "").padEnd(12, " ")} | `
+              + `${String(p.estacion || "")}\n`;
           });
 
           textoDetalle += `\n`;
