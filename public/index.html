@@ -206,6 +206,32 @@
       </select>
       <br>
 
+      <select id="consulta_tipo">
+        <option value="">TODOS</option>
+        <option value="DISPONIBLE">SOLO DISPONIBLES</option>
+        <option value="SERVICIO">SOLO SERVICIO</option>
+        <option value="PERMISO">SOLO PERMISO</option>
+        <option value="VACACIONES">SOLO VACACIONES</option>
+        <option value="FRANQUICIA">SOLO FRANQUICIA</option>
+        <option value="COMISION DE SERVICIO">SOLO COMISION DE SERVICIO</option>
+        <option value="COMISION EXTERIOR">SOLO COMISION EXTERIOR</option>
+        <option value="PLAN ELECTORAL">SOLO PLAN ELECTORAL</option>
+        <option value="PERMISO EXTRAORDINARIOS">SOLO PERMISO EXTRAORDINARIOS</option>
+        <option value="PERMISO NAVIDEÑO">SOLO PERMISO NAVIDEÑO</option>
+        <option value="PERMISO SEMANA SANTA">SOLO PERMISO SEMANA SANTA</option>
+        <option value="LICENCIA LUTO">SOLO LICENCIA LUTO</option>
+        <option value="LICENCIA MATERNIDAD">SOLO LICENCIA MATERNIDAD</option>
+        <option value="HOSPITALIZADO">SOLO HOSPITALIZADO</option>
+        <option value="CITA MEDICA">SOLO CITA MEDICA</option>
+        <option value="CURSO ASCENSO">SOLO CURSO ASCENSO</option>
+        <option value="RETARDADOS DE LA FORMACION">SOLO RETARDADOS DE LA FORMACION</option>
+        <option value="FUERA DE LA FORMACION">SOLO FUERA DE LA FORMACION</option>
+        <option value="HORARIO FLEXIBLE">SOLO HORARIO FLEXIBLE</option>
+        <option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">SOLO CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
+        <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">SOLO NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
+      </select>
+      <br>
+
       <button onclick="consultarNovedades()">Consultar novedades</button>
 
       <pre id="resultado_general"></pre>
@@ -257,8 +283,10 @@
 
       document.getElementById("lista").innerHTML = "";
       document.getElementById("resultado").innerText = "";
-      document.getElementById("resultado_general").innerText = "";
-      document.getElementById("resultado_detalle").innerText = "";
+      const general = document.getElementById("resultado_general");
+      const detalle = document.getElementById("resultado_detalle");
+      if (general) general.innerText = "";
+      if (detalle) detalle.innerText = "";
 
       if (!cedula) {
         alert("Ingresa la cédula");
@@ -313,11 +341,6 @@
 
           document.getElementById("estacion_select").value = data.estacion || "";
 
-          if (data.esOficial || data.rol === "ADMIN_EXCEL") {
-            cargarOrganicos();
-            document.getElementById("organico_select").value = data.organico || "";
-          }
-
           document.getElementById("unidad_select").disabled = true;
           document.getElementById("subunidad_select").disabled = true;
           document.getElementById("estacion_select").disabled = true;
@@ -327,6 +350,8 @@
           document.getElementById("estacion_select").disabled = false;
         }
 
+        document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
+
         if (data.esOficial || data.rol === "ADMIN_EXCEL") {
           document.getElementById("bloqueOrganico").style.display = "block";
           document.getElementById("bloqueConsultaGeneral").style.display = "block";
@@ -334,8 +359,6 @@
           document.getElementById("bloqueOrganico").style.display = "none";
           document.getElementById("bloqueConsultaGeneral").style.display = "none";
         }
-
-        document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
 
         cargarFiltrosConsulta();
 
@@ -1094,6 +1117,7 @@ FECHA: ${fecha}`;
       const subunidad = document.getElementById("consulta_subunidad").value;
       const estacion = document.getElementById("consulta_estacion").value;
       const organico = document.getElementById("consulta_organico").value;
+      const tipoFiltro = document.getElementById("consulta_tipo").value;
       const grado = document.getElementById("grado").value.trim();
       const rol = (document.getElementById("bloqueExcel").style.display === "block")
         ? "ADMIN_EXCEL"
@@ -1122,7 +1146,8 @@ FECHA: ${fecha}`;
             estacion,
             organico,
             grado,
-            rol
+            rol,
+            tipoFiltro
           })
         });
 
