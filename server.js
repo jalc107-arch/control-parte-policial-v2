@@ -543,14 +543,34 @@ app.post("/personal-filtrado", async (req, res) => {
 // =========================
 // GUARDAR NOVEDADES
 // =========================
-// Nota: esta ruta hoy sigue guardando cuando la llaman.
-// Si luego quieres bloquear el guardado fuera de horario, te preparo ese ajuste.
 app.post("/guardar-novedades", async (req, res) => {
-  const { novedades, estacion } = req.body;
+  const { novedades, estacion, grado = "", rol = "" } = req.body;
 
   try {
     if (!novedades || !Array.isArray(novedades)) {
       return res.status(400).json({ ok: false, error: "Datos inválidos" });
+    }
+
+    const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
+    const rolLimpio = String(rol).toUpperCase().trim();
+
+    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
+    const esOficial =
+      gradosOficiales.includes(gradoLimpio) || gradoLimpio.includes("OFICIAL");
+
+    const esExento = esOficial || rolLimpio === "ADMIN_EXCEL";
+
+    const { estado, esMediodia } = validarHorarioParte();
+
+    // Exentos pueden guardar siempre
+    if (!esExento) {
+      // Permitido al mediodía
+      if (!esMediodia && estado === "bloqueado") {
+        return res.json({
+          ok: false,
+          mensaje: "⚠️ Fuera de horario. Solo puedes trabajar en modo consulta, sin guardar novedades."
+        });
+      }
     }
 
     for (const n of novedades) {
@@ -567,9 +587,14 @@ app.post("/guardar-novedades", async (req, res) => {
       );
     }
 
-    res.json({ ok: true });
+    return res.json({
+      ok: true,
+      mensaje: esMediodia
+        ? "Novedades guardadas correctamente en franja de mediodía ✅"
+        : "Novedades guardadas correctamente ✅"
+    });
   } catch (error) {
-    res.status(500).json({ ok: false, error: error.message });
+    return res.status(500).json({ ok: false, error: error.message });
   }
 });
 
