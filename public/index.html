@@ -856,23 +856,6 @@ if (dataGuardar && dataGuardar.ok === false) {
 
   </div>
 </div>
-
-  ${qrUrl ? `
-    <div class="qr-box">
-      <img src="${qrUrl}" />
-      <div>Ubicación</div>
-    </div>
-  ` : ""}
-
-  ${fotoBase64 ? `
-    <div>
-      <img src="${fotoBase64}" style="width:140px;" />
-      <div style="font-size:10px;">Evidencia</div>
-    </div>
-  ` : ""}
-
-</div>
-
           <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
          
           <script>
