@@ -154,12 +154,14 @@
       <button onclick="guardarNovedades()">Guardar Novedades</button>
     </div>
 
-    <div class="seccion">
-      <h2>5. Generar parte</h2>
-      <button onclick="generarParte()">Generar Parte</button>
-      <button onclick="descargarPDF()">Descargar PDF</button>
-      <pre id="resultado"></pre>
-    </div>
+   <div class="seccion">
+  <h2>5. Generar parte</h2>
+  <button onclick="generarParte()">Generar Parte</button>
+  <button onclick="descargarPDF()">Descargar PDF</button>
+  <br>
+  <input type="file" id="foto_parte" accept="image/*" capture="environment">
+  <pre id="resultado"></pre>
+</div>
 
   </div>
 
@@ -613,6 +615,61 @@ LAT: ${lat}
 LNG: ${lng}
 FECHA: ${fecha}`;
 }
+
+    async function procesarFotoConSello() {
+  const input = document.getElementById("foto_parte");
+
+  if (!input.files.length) return "";
+
+  const file = input.files[0];
+
+  const img = new Image();
+  const reader = new FileReader();
+
+  return new Promise((resolve) => {
+    reader.onload = function (e) {
+      img.src = e.target.result;
+    };
+
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Dibujar imagen original
+      ctx.drawImage(img, 0, 0);
+
+      // 🔥 DATOS DEL SELLO
+      const estacion = document.getElementById("estacion_select").value;
+      const lat = document.getElementById("latitud").value || "N/A";
+      const lng = document.getElementById("longitud").value || "N/A";
+
+      const fecha = new Date().toLocaleString("es-CO", {
+        timeZone: "America/Bogota",
+        hour12: false
+      });
+
+      // 🔥 ESTILO DEL SELLO
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
+
+      ctx.fillStyle = "#00FF00";
+      ctx.font = "20px Arial";
+
+      ctx.fillText(`ESTACION: ${estacion}`, 20, canvas.height - 80);
+      ctx.fillText(`FECHA: ${fecha}`, 20, canvas.height - 50);
+      ctx.fillText(`LAT: ${lat}  LNG: ${lng}`, 20, canvas.height - 20);
+
+      const finalBase64 = canvas.toDataURL("image/jpeg", 0.9);
+
+      resolve(finalBase64);
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
     
    async function descargarPDF() {
   const contenido = document.getElementById("resultado").innerText.trim();
@@ -692,6 +749,7 @@ FECHA: ${fecha}`;
       }
     }
 
+    const fotoBase64 = await procesarFotoConSello();
     const qrTexto = construirTextoQRUbicacion();
     const qrUrl = qrTexto
       ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
