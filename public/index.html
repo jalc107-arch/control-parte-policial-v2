@@ -808,15 +808,23 @@ FECHA: ${fecha}`;
         <body>
           <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
 
-          <div class="encabezado">
-            <div class="titulo">PARTE DE PERSONAL</div>
-            ${qrUrl ? `
-              <div class="qr-box">
-                <img src="${qrUrl}" alt="QR ubicación" />
-                <div>Ubicación</div>
-              </div>
-            ` : ""}
-          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+
+  ${qrUrl ? `
+    <div class="qr-box">
+      <img src="${qrUrl}" />
+      <div>Ubicación</div>
+    </div>
+  ` : ""}
+
+  ${fotoBase64 ? `
+    <div>
+      <img src="${fotoBase64}" style="width:140px;" />
+      <div style="font-size:10px;">Evidencia</div>
+    </div>
+  ` : ""}
+
+</div>
 
           <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
           ${fotoBase64 ? `
