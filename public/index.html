@@ -672,7 +672,9 @@ FECHA: ${fecha}`;
 }
     
    async function descargarPDF() {
-  const contenido = document.getElementById("resultado").innerText.trim();
+ let contenido = document.getElementById("resultado").innerText.trim();
+contenido = contenido.replace(/^⚠️ REPORTE EXTEMPORÁNEO\s*\n\s*/i, "");
+contenido = contenido.replace(/^PARTE DE PERSONAL\s*\n/i, "");
 
   if (!contenido) {
     alert("Primero genera el parte");
