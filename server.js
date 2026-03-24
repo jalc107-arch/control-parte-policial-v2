@@ -835,13 +835,41 @@ app.post("/parte-texto", async (req, res) => {
     texto += `\nNOVEDADES ${formatoConteo(fuerzaNovedades)}\n\n`;
 
     const ordenTipos = [
-      "SERVICIO",
-      "PERMISO",
-      "VACACIONES",
-      "CITA MEDICA",
-      "LICENCIA",
-      "INCAPACIDAD"
-    ];
+
+  // 🔵 1. SERVICIO OPERATIVO
+  "SERVICIO",
+  "COMISION DE SERVICIO",
+  "COMISION EXTERIOR",
+  "PLAN ELECTORAL",
+
+  // 🟡 2. PERMISOS
+  "PERMISO",
+  "PERMISO NAVIDEÑO",
+  "PERMISO SEMANA SANTA",
+  "PERMISO EXTRAORDINARIOS",
+
+  // 🟢 3. DESCANSO / AUSENCIAS PROGRAMADAS
+  "VACACIONES",
+  "FRANQUICIA",
+
+  // 🟣 4. LICENCIAS
+  "LICENCIA LUTO",
+  "LICENCIA MATERNIDAD",
+
+  // 🔴 5. SALUD
+  "HOSPITALIZADO",
+  "CITA MEDICA",
+
+  // 🟤 6. FORMACIÓN / CAPACITACIÓN
+  "CURSO ASCENSO",
+  "RETARDADOS DE LA FORMACION",
+  "FUERA DE LA FORMACION",
+
+  // ⚫ 7. CONDICIONES ESPECIALES
+  "HORARIO FLEXIBLE",
+  "CUMPLE FUNCIONES DIFERENTES DE POLCO",
+  "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
+];
 
     const tiposExistentes = [
       ...ordenTipos.filter(t => novedadesPorTipo[t]),
