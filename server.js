@@ -989,12 +989,41 @@ app.post("/guardar-parte-pdf", async (req, res) => {
 });
 
 // =========================
-// CONSULTA GENERAL DE NOVEDADES
+// CONSULTA GENERAL DE NOVEDADES (SOLO OFICIALES Y ADMIN)
 // =========================
 app.post("/consulta-novedades", async (req, res) => {
-  const { unidad, subunidad, estacion, organico } = req.body;
+  const {
+    unidad,
+    subunidad,
+    estacion,
+    organico,
+    grado = "",
+    rol = ""
+  } = req.body;
 
   try {
+    // =========================
+    // SEGURIDAD
+    // =========================
+    const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
+    const rolLimpio = String(rol).toUpperCase().trim();
+
+    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
+    const esOficial =
+      gradosOficiales.includes(gradoLimpio) || gradoLimpio.includes("OFICIAL");
+
+    const esAdmin = rolLimpio === "ADMIN_EXCEL";
+
+    if (!esOficial && !esAdmin) {
+      return res.status(403).json({
+        ok: false,
+        error: "No autorizado para consulta general"
+      });
+    }
+
+    // =========================
+    // VALIDACIÓN
+    // =========================
     if (!unidad || !subunidad) {
       return res.status(400).json({
         ok: false,
@@ -1002,6 +1031,9 @@ app.post("/consulta-novedades", async (req, res) => {
       });
     }
 
+    // =========================
+    // CONSULTA BASE
+    // =========================
     let query = `
       SELECT
         p.grado,
@@ -1059,19 +1091,26 @@ app.post("/consulta-novedades", async (req, res) => {
     `;
 
     const result = await pool.query(query, params);
+
+    // =========================
+    // NORMALIZAR DATOS
+    // =========================
     const personal = result.rows.map(p => ({
       ...p,
       tipo_novedad: (p.tipo_novedad || "").trim().toUpperCase()
     }));
 
-    const esOficial = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
+    // =========================
+    // FUNCIONES DE CONTEO
+    // =========================
+    const esOficialG = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
     const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
     const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
     const esAuxiliar = (g) => ["AUX"].includes((g || "").toUpperCase());
 
     function contarGrupo(lista) {
       return {
-        oficiales: lista.filter(p => esOficial(p.grado)).length,
+        oficiales: lista.filter(p => esOficialG(p.grado)).length,
         ejecutivo: lista.filter(p => esEjecutivo(p.grado)).length,
         patrulleros: lista.filter(p => esPatrullero(p.grado)).length,
         auxiliares: lista.filter(p => esAuxiliar(p.grado)).length
@@ -1082,6 +1121,9 @@ app.post("/consulta-novedades", async (req, res) => {
       return `${c.oficiales}-${c.ejecutivo}-${c.patrulleros}-${c.auxiliares}`;
     }
 
+    // =========================
+    // AGRUPAR
+    // =========================
     const agrupados = {};
 
     personal.forEach(p => {
@@ -1090,6 +1132,9 @@ app.post("/consulta-novedades", async (req, res) => {
       agrupados[tipo].push(p);
     });
 
+    // =========================
+    // ORDEN DE TIPOS
+    // =========================
     const ordenTipos = [
       "DISPONIBLE",
       "SERVICIO",
@@ -1122,6 +1167,9 @@ app.post("/consulta-novedades", async (req, res) => {
       ...Object.keys(agrupados).filter(t => !ordenTipos.includes(t))
     ];
 
+    // =========================
+    // CONSTRUIR RESPUESTA
+    // =========================
     for (const tipo of tiposExistentes) {
       const lista = agrupados[tipo];
       const conteo = contarGrupo(lista);
@@ -1148,11 +1196,15 @@ app.post("/consulta-novedades", async (req, res) => {
       });
     }
 
+    // =========================
+    // RESPUESTA FINAL
+    // =========================
     return res.json({
       ok: true,
       general,
       detalleAgrupado
     });
+
   } catch (error) {
     return res.status(500).json({
       ok: false,
