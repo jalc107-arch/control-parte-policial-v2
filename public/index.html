@@ -845,20 +845,22 @@ if (dataGuardar && dataGuardar.ok === false) {
   <div class="titulo">REGISTRO DEL PARTE</div>
 
   <div class="lado-derecho">
-    ${fotoBase64 ? `
-      <div class="foto-box">
-        <img src="${fotoBase64}" />
-        <div class="label">Evidencia</div>
-      </div>
-    ` : ""}
 
-    ${qrUrl ? `
-      <div class="qr-box">
-        <img src="${qrUrl}" />
-        <div class="label">Ubicación</div>
-      </div>
-    ` : ""}
-  </div>
+  ${qrUrl ? `
+    <div class="qr-box">
+      <img src="${qrUrl}" />
+      <div class="label">Ubicación</div>
+    </div>
+  ` : ""}
+
+  ${fotoBase64 ? `
+    <div class="foto-box">
+      <img src="${fotoBase64}" />
+      <div class="label">Evidencia</div>
+    </div>
+  ` : ""}
+
+</div>
 </div>
           <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
          
