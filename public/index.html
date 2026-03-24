@@ -856,12 +856,18 @@ FECHA: ${fecha}`;
     `);
     ventana.document.close();
 
-  } catch (error) {
-    console.error(error);
-    ventana.close();
-    alert("Error guardando o generando PDF");
-  }
+} catch (error) {
+  console.error("ERROR PDF:", error);
+
+  try {
+    if (ventana && !ventana.closed) {
+      ventana.close();
+    }
+  } catch (_) {}
+
+  alert("Error PDF: " + (error.message || error));
 }
+    
     cargarEstructura();
   </script>
 
