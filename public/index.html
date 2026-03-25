@@ -1190,6 +1190,24 @@ FECHA: ${fecha}`;
       return copia;
     }
 
+    function ordenarPorGrado(lista) {
+  const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+
+  return [...lista].sort((a, b) => {
+    const ga = (a.grado || "").toUpperCase();
+    const gb = (b.grado || "").toUpperCase();
+
+    const ia = orden.indexOf(ga);
+    const ib = orden.indexOf(gb);
+
+    if (ia === -1 && ib === -1) return 0;
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+
+    return ia - ib;
+  });
+}
+   
     function obtenerTipoActualPersona(persona) {
       return (persona.tipo_novedad || "").trim().toUpperCase();
     }
