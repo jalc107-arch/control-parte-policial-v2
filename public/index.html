@@ -1262,7 +1262,9 @@ FECHA: ${fecha}`;
         totalTomar = disponibles.length;
       }
 
-      const seleccionados = mezclarArray(disponibles).slice(0, totalTomar);
+      const seleccionados = ordenarPorGrado(
+  mezclarArray(disponibles).slice(0, totalTomar)
+);
 
       seleccionados.forEach(p => {
         p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
