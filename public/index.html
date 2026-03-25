@@ -1373,7 +1373,7 @@ FECHA: ${fecha}`;
       Object.keys(agrupados).forEach(grupo => {
         texto += `${grupo}\n`;
         texto += `${"-".repeat(40)}\n`;
-        agrupados[grupo].forEach((p, i) => {
+        ordenarPorGrado(agrupados[grupo]).forEach((p, i) => {
           texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
         });
         texto += `\n`;
