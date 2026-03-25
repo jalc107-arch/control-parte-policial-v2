@@ -1192,6 +1192,72 @@ app.post("/consulta-novedades", async (req, res) => {
 });
 
 // =========================
+// GUARDAR SERVICIOS EXTRAORDINARIOS
+// =========================
+app.post("/guardar-servicio-extraordinario", async (req, res) => {
+  const {
+    seleccionados = [],
+    responsable_cedula = "",
+    responsable_nombre = ""
+  } = req.body;
+
+  try {
+    if (!Array.isArray(seleccionados) || seleccionados.length === 0) {
+      return res.status(400).json({
+        ok: false,
+        error: "No se recibieron seleccionados"
+      });
+    }
+
+    const fecha = obtenerFechaBogotaSQL();
+
+    for (const p of seleccionados) {
+      await pool.query(
+        `
+        INSERT INTO servicios_extraordinarios (
+          cedula,
+          fecha,
+          unidad,
+          subunidad,
+          estacion,
+          organico,
+          grado,
+          apellidos,
+          nombres,
+          asignado_por_cedula,
+          asignado_por_nombre
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        `,
+        [
+          p.cedula || null,
+          fecha,
+          p.unidad || null,
+          p.subunidad || null,
+          p.estacion || null,
+          p.organico || null,
+          p.grado || null,
+          p.apellidos || null,
+          p.nombres || null,
+          responsable_cedula || null,
+          responsable_nombre || null
+        ]
+      );
+    }
+
+    return res.json({
+      ok: true,
+      mensaje: "Servicios extraordinarios guardados correctamente"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
+// =========================
 // LEVANTAR SERVIDOR
 // =========================
 app.listen(PORT, "0.0.0.0", () => {
