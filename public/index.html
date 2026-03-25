@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <title>Control de Partes</title>
   <style>
-    /* =========================
-       ESTILOS GENERALES
-    ========================= */
     body {
       font-family: Arial, sans-serif;
       background: #0b3d91;
@@ -25,7 +22,7 @@
       color: black;
       padding: 20px;
       border-radius: 10px;
-      max-width: 900px;
+      max-width: 980px;
       margin: auto;
       box-shadow: 0 0 15px rgba(0,0,0,0.3);
     }
@@ -40,7 +37,11 @@
 
     input, select {
       width: 70%;
-      max-width: 500px;
+      max-width: 540px;
+    }
+
+    select[multiple] {
+      height: 120px;
     }
 
     button {
@@ -67,7 +68,8 @@
     }
 
     .persona select {
-      width: 220px;
+      width: 260px;
+      max-width: 260px;
     }
 
     pre {
@@ -94,6 +96,13 @@
       border-top: 1px solid #ddd;
       padding-top: 20px;
     }
+
+    .ayuda {
+      font-size: 12px;
+      color: #444;
+      margin-top: 2px;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
@@ -102,9 +111,6 @@
 
   <div class="card">
 
-    <!-- =========================
-         1. VALIDAR RESPONSABLE
-    ========================= -->
     <div class="seccion">
       <h2>1. Validar responsable</h2>
       <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
@@ -122,18 +128,12 @@
       </div>
     </div>
 
-    <!-- =========================
-         2. SUBIR EXCEL
-    ========================= -->
     <div class="seccion" id="bloqueExcel" style="display:none;">
       <h2>2. Subir Excel</h2>
       <input type="file" id="fileExcel" accept=".xlsx" />
       <button onclick="subirExcel()">Subir Excel</button>
     </div>
 
-    <!-- =========================
-         3. SELECCIONAR UBICACIÓN
-    ========================= -->
     <div class="seccion">
       <h2>3. Seleccionar ubicación</h2>
 
@@ -162,18 +162,25 @@
       <button onclick="cargarPersonal()">Cargar Personal</button>
     </div>
 
-    <!-- =========================
-         4. NOVEDADES
-    ========================= -->
     <div class="seccion">
       <h2>4. Novedades por persona</h2>
       <div id="lista"></div>
       <button onclick="guardarNovedades()">Guardar Novedades</button>
     </div>
 
-    <!-- =========================
-         5. GENERAR PARTE
-    ========================= -->
+    <div class="seccion">
+      <h2>4.1 Apoyo automático a servicio extraordinario</h2>
+
+      <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad de disponibles a tomar" />
+      <br>
+
+      <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje de disponibles a tomar" />
+      <br>
+
+      <button onclick="aplicarServicioExtraordinario()">Aplicar servicio extraordinario</button>
+      <pre id="resultado_extra"></pre>
+    </div>
+
     <div class="seccion">
       <h2>5. Generar parte</h2>
       <button onclick="generarParte()">Generar Parte</button>
@@ -183,57 +190,48 @@
       <pre id="resultado"></pre>
     </div>
 
-    <!-- =========================
-         6. CONSULTA GENERAL DE NOVEDADES
-    ========================= -->
     <div class="seccion" id="bloqueConsultaGeneral" style="display:none;">
       <h2>6. Consulta general de novedades</h2>
 
       <select id="consulta_unidad">
         <option value="">Seleccionar UNIDAD</option>
       </select>
-      <br>
+      <div class="ayuda">Unidad: una sola</div>
 
-      <select id="consulta_subunidad">
-        <option value="">Seleccionar SUBUNIDAD</option>
-      </select>
-      <br>
+      <select id="consulta_subunidad" multiple></select>
+      <div class="ayuda">Subunidad: puedes escoger una, varias o ninguna (ninguna = todas)</div>
 
-      <select id="consulta_estacion">
-        <option value="">Todas las ESTACIONES</option>
-      </select>
-      <br>
+      <select id="consulta_estacion" multiple></select>
+      <div class="ayuda">Estaciones: puedes escoger una, varias o ninguna (ninguna = todas)</div>
 
-      <select id="consulta_organico">
-        <option value="">Todos los ORGÁNICOS</option>
-      </select>
-      <br>
+      <select id="consulta_organico" multiple></select>
+      <div class="ayuda">Orgánicos: puedes escoger uno, varios o ninguno (ninguno = todos)</div>
 
-      <select id="consulta_tipo">
-        <option value="">TODOS</option>
-        <option value="DISPONIBLE">SOLO DISPONIBLES</option>
-        <option value="SERVICIO">SOLO SERVICIO</option>
-        <option value="PERMISO">SOLO PERMISO</option>
-        <option value="VACACIONES">SOLO VACACIONES</option>
-        <option value="FRANQUICIA">SOLO FRANQUICIA</option>
-        <option value="COMISION DE SERVICIO">SOLO COMISION DE SERVICIO</option>
-        <option value="COMISION EXTERIOR">SOLO COMISION EXTERIOR</option>
-        <option value="PLAN ELECTORAL">SOLO PLAN ELECTORAL</option>
-        <option value="PERMISO EXTRAORDINARIOS">SOLO PERMISO EXTRAORDINARIOS</option>
-        <option value="PERMISO NAVIDEÑO">SOLO PERMISO NAVIDEÑO</option>
-        <option value="PERMISO SEMANA SANTA">SOLO PERMISO SEMANA SANTA</option>
-        <option value="LICENCIA LUTO">SOLO LICENCIA LUTO</option>
-        <option value="LICENCIA MATERNIDAD">SOLO LICENCIA MATERNIDAD</option>
-        <option value="HOSPITALIZADO">SOLO HOSPITALIZADO</option>
-        <option value="CITA MEDICA">SOLO CITA MEDICA</option>
-        <option value="CURSO ASCENSO">SOLO CURSO ASCENSO</option>
-        <option value="RETARDADOS DE LA FORMACION">SOLO RETARDADOS DE LA FORMACION</option>
-        <option value="FUERA DE LA FORMACION">SOLO FUERA DE LA FORMACION</option>
-        <option value="HORARIO FLEXIBLE">SOLO HORARIO FLEXIBLE</option>
-        <option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">SOLO CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
-        <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">SOLO NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
+      <select id="consulta_tipo" multiple>
+        <option value="DISPONIBLE">DISPONIBLE</option>
+        <option value="SERVICIO">SERVICIO</option>
+        <option value="SERVICIO EXTRAORDINARIO">SERVICIO EXTRAORDINARIO</option>
+        <option value="COMISION DE SERVICIO">COMISION DE SERVICIO</option>
+        <option value="COMISION EXTERIOR">COMISION EXTERIOR</option>
+        <option value="PLAN ELECTORAL">PLAN ELECTORAL</option>
+        <option value="PERMISO">PERMISO</option>
+        <option value="PERMISO EXTRAORDINARIOS">PERMISO EXTRAORDINARIOS</option>
+        <option value="PERMISO NAVIDEÑO">PERMISO NAVIDEÑO</option>
+        <option value="PERMISO SEMANA SANTA">PERMISO SEMANA SANTA</option>
+        <option value="VACACIONES">VACACIONES</option>
+        <option value="FRANQUICIA">FRANQUICIA</option>
+        <option value="LICENCIA LUTO">LICENCIA LUTO</option>
+        <option value="LICENCIA MATERNIDAD">LICENCIA MATERNIDAD</option>
+        <option value="HOSPITALIZADO">HOSPITALIZADO</option>
+        <option value="CITA MEDICA">CITA MEDICA</option>
+        <option value="CURSO ASCENSO">CURSO ASCENSO</option>
+        <option value="RETARDADOS DE LA FORMACION">RETARDADOS DE LA FORMACION</option>
+        <option value="FUERA DE LA FORMACION">FUERA DE LA FORMACION</option>
+        <option value="HORARIO FLEXIBLE">HORARIO FLEXIBLE</option>
+        <option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
+        <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
       </select>
-      <br>
+      <div class="ayuda">Novedad: puedes escoger una, varias o ninguna (ninguna = todas)</div>
 
       <button onclick="consultarNovedades()">Consultar novedades</button>
 
@@ -244,14 +242,14 @@
   </div>
 
   <script>
-    /* =========================
-       VARIABLES GLOBALES
-    ========================= */
     let estructuraGlobal = [];
 
-    /* =========================
-       SUBIR EXCEL
-    ========================= */
+    function obtenerValoresSeleccionados(id) {
+      const select = document.getElementById(id);
+      if (!select) return [];
+      return Array.from(select.selectedOptions).map(o => o.value).filter(Boolean);
+    }
+
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
 
@@ -278,15 +276,12 @@
       }
     }
 
-    /* =========================
-       VALIDAR RESPONSABLE
-    ========================= */
     async function validarResponsable() {
       const cedula = document.getElementById("cedula_responsable").value.trim();
 
       document.getElementById("lista").innerHTML = "";
       document.getElementById("resultado").innerText = "";
-
+      document.getElementById("resultado_extra").innerText = "";
       const generalBox = document.getElementById("resultado_general");
       const detalleBox = document.getElementById("resultado_detalle");
       if (generalBox) generalBox.innerText = "";
@@ -369,15 +364,25 @@
         if (data.esOficial || data.rol === "ADMIN_EXCEL") {
           document.getElementById("consulta_unidad").value = data.unidad || "";
           cargarConsultaSubunidades();
-          document.getElementById("consulta_subunidad").value = data.subunidad || "";
+
+          if (data.subunidad) {
+            const subOpt = Array.from(document.getElementById("consulta_subunidad").options)
+              .find(o => o.value === data.subunidad);
+            if (subOpt) subOpt.selected = true;
+          }
+
           cargarConsultaEstacionesYOrganicos();
 
           if (data.estacion) {
-            document.getElementById("consulta_estacion").value = data.estacion;
+            const estOpt = Array.from(document.getElementById("consulta_estacion").options)
+              .find(o => o.value === data.estacion);
+            if (estOpt) estOpt.selected = true;
           }
 
           if (data.organico) {
-            document.getElementById("consulta_organico").value = data.organico;
+            const orgOpt = Array.from(document.getElementById("consulta_organico").options)
+              .find(o => o.value === data.organico);
+            if (orgOpt) orgOpt.selected = true;
           }
         }
 
@@ -387,9 +392,6 @@
       }
     }
 
-    /* =========================
-       CARGAR ESTRUCTURA
-    ========================= */
     async function cargarEstructura() {
       try {
         const res = await fetch("/estructura");
@@ -419,9 +421,6 @@
       }
     }
 
-    /* =========================
-       CARGAR SUBUNIDADES
-    ========================= */
     function cargarSubunidades() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidadSelect = document.getElementById("subunidad_select");
@@ -442,9 +441,6 @@
       document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
     }
 
-    /* =========================
-       CARGAR ESTACIONES
-    ========================= */
     function cargarEstaciones() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
@@ -469,9 +465,6 @@
       });
     }
 
-    /* =========================
-       CARGAR ORGÁNICOS
-    ========================= */
     function cargarOrganicos() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
@@ -499,9 +492,6 @@
       });
     }
 
-    /* =========================
-       CARGAR PERSONAL
-    ========================= */
     async function cargarPersonal() {
       const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
 
@@ -557,6 +547,7 @@
             <select id="novedad-${p.cedula}">
               <option value="">DISPONIBLE</option>
               <option value="SERVICIO">SERVICIO</option>
+              <option value="SERVICIO EXTRAORDINARIO">SERVICIO EXTRAORDINARIO</option>
               <option value="PERMISO">PERMISO</option>
               <option value="VACACIONES">VACACIONES</option>
               <option value="CURSO ASCENSO">CURSO ASCENSO</option>
@@ -594,9 +585,6 @@
       }
     }
 
-    /* =========================
-       GUARDAR NOVEDADES
-    ========================= */
     async function guardarNovedades() {
       const personas = document.querySelectorAll(".persona");
       const estacion = document.getElementById("estacion_select").value;
@@ -646,9 +634,78 @@
       }
     }
 
-    /* =========================
-       GENERAR PARTE
-    ========================= */
+    function mezclarArray(array) {
+      const copia = [...array];
+      for (let i = copia.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
+      }
+      return copia;
+    }
+
+    function aplicarServicioExtraordinario() {
+      const personas = Array.from(document.querySelectorAll(".persona"));
+      const resultadoExtra = document.getElementById("resultado_extra");
+
+      resultadoExtra.innerText = "";
+
+      if (!personas.length) {
+        alert("Primero debes cargar el personal");
+        return;
+      }
+
+      const cantidad = parseInt(document.getElementById("cantidad_extra").value || "0", 10);
+      const porcentaje = parseInt(document.getElementById("porcentaje_extra").value || "0", 10);
+
+      if ((!cantidad || cantidad <= 0) && (!porcentaje || porcentaje <= 0)) {
+        alert("Debes ingresar una cantidad o un porcentaje");
+        return;
+      }
+
+      const disponibles = personas.filter(p => {
+        const select = p.querySelector("select");
+        return select && !select.value;
+      });
+
+      if (!disponibles.length) {
+        alert("No hay personal disponible para asignar");
+        return;
+      }
+
+      let totalTomar = 0;
+
+      if (cantidad && cantidad > 0) {
+        totalTomar = cantidad;
+      } else if (porcentaje && porcentaje > 0) {
+        totalTomar = Math.ceil((disponibles.length * porcentaje) / 100);
+      }
+
+      if (totalTomar > disponibles.length) {
+        totalTomar = disponibles.length;
+      }
+
+      const seleccionados = mezclarArray(disponibles).slice(0, totalTomar);
+
+      seleccionados.forEach(p => {
+        const select = p.querySelector("select");
+        if (select) {
+          select.value = "SERVICIO EXTRAORDINARIO";
+        }
+      });
+
+      let texto = "";
+      texto += `SERVICIO EXTRAORDINARIO APLICADO\n\n`;
+      texto += `DISPONIBLES ANTES: ${disponibles.length}\n`;
+      texto += `ASIGNADOS: ${seleccionados.length}\n\n`;
+
+      seleccionados.forEach((p, i) => {
+        const nombre = p.querySelector("b")?.innerText || "";
+        texto += `${i + 1}. ${nombre}\n`;
+      });
+
+      resultadoExtra.innerText = texto;
+    }
+
     async function generarParte() {
       const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
       const unidad = document.getElementById("unidad_select").value;
@@ -716,9 +773,6 @@
       }
     }
 
-    /* =========================
-       CONSTRUIR TEXTO QR
-    ========================= */
     function construirTextoQRUbicacion() {
       let lat = document.getElementById("latitud").value || "";
       let lng = document.getElementById("longitud").value || "";
@@ -753,9 +807,6 @@ LNG: ${lng}
 FECHA: ${fecha}`;
     }
 
-    /* =========================
-       PROCESAR FOTO CON SELLO
-    ========================= */
     async function procesarFotoConSello() {
       const input = document.getElementById("foto_parte");
 
@@ -804,9 +855,6 @@ FECHA: ${fecha}`;
       });
     }
 
-    /* =========================
-       DESCARGAR PDF
-    ========================= */
     async function descargarPDF() {
       let contenido = document.getElementById("resultado").innerText.trim();
       contenido = contenido.replace(/^⚠️ REPORTE EXTEMPORÁNEO\s*\n\s*/i, "");
@@ -1028,9 +1076,6 @@ FECHA: ${fecha}`;
       }
     }
 
-    /* =========================
-       CARGAR FILTROS CONSULTA GENERAL
-    ========================= */
     function cargarFiltrosConsulta() {
       const unidadSelect = document.getElementById("consulta_unidad");
       const subunidadSelect = document.getElementById("consulta_subunidad");
@@ -1041,10 +1086,9 @@ FECHA: ${fecha}`;
       if (!unidadSelect || !subunidadSelect || !estacionSelect || !organicoSelect || !tipoSelect) return;
 
       unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
-      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
-      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
-      tipoSelect.value = "";
+      subunidadSelect.innerHTML = "";
+      estacionSelect.innerHTML = "";
+      organicoSelect.innerHTML = "";
 
       const unidades = [...new Set(estructuraGlobal.map(x => x.unidad).filter(Boolean))];
 
@@ -1056,18 +1100,15 @@ FECHA: ${fecha}`;
       });
     }
 
-    /* =========================
-       CONSULTA: SUBUNIDADES
-    ========================= */
     function cargarConsultaSubunidades() {
       const unidad = document.getElementById("consulta_unidad").value;
       const subunidadSelect = document.getElementById("consulta_subunidad");
       const estacionSelect = document.getElementById("consulta_estacion");
       const organicoSelect = document.getElementById("consulta_organico");
 
-      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
-      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+      subunidadSelect.innerHTML = "";
+      estacionSelect.innerHTML = "";
+      organicoSelect.innerHTML = "";
 
       const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
       const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
@@ -1080,22 +1121,20 @@ FECHA: ${fecha}`;
       });
     }
 
-    /* =========================
-       CONSULTA: ESTACIONES Y ORGÁNICOS
-    ========================= */
     function cargarConsultaEstacionesYOrganicos() {
       const unidad = document.getElementById("consulta_unidad").value;
-      const subunidad = document.getElementById("consulta_subunidad").value;
+      const subunidades = obtenerValoresSeleccionados("consulta_subunidad");
       const estacionSelect = document.getElementById("consulta_estacion");
       const organicoSelect = document.getElementById("consulta_organico");
 
-      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
-      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+      estacionSelect.innerHTML = "";
+      organicoSelect.innerHTML = "";
 
-      const filtrados = estructuraGlobal.filter(x =>
-        x.unidad === unidad &&
-        x.subunidad === subunidad
-      );
+      let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+
+      if (subunidades.length > 0) {
+        filtrados = filtrados.filter(x => subunidades.includes(x.subunidad));
+      }
 
       const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))];
       const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
@@ -1115,15 +1154,13 @@ FECHA: ${fecha}`;
       });
     }
 
-    /* =========================
-       CONSULTAR NOVEDADES
-    ========================= */
     async function consultarNovedades() {
       const unidad = document.getElementById("consulta_unidad").value;
-      const subunidad = document.getElementById("consulta_subunidad").value;
-      const estacion = document.getElementById("consulta_estacion").value;
-      const organico = document.getElementById("consulta_organico").value;
-      const tipoFiltro = document.getElementById("consulta_tipo").value;
+      const subunidades = obtenerValoresSeleccionados("consulta_subunidad");
+      const estaciones = obtenerValoresSeleccionados("consulta_estacion");
+      const organicos = obtenerValoresSeleccionados("consulta_organico");
+      const tiposFiltro = obtenerValoresSeleccionados("consulta_tipo");
+
       const grado = document.getElementById("grado").value.trim();
       const rol = (document.getElementById("bloqueExcel").style.display === "block")
         ? "ADMIN_EXCEL"
@@ -1135,8 +1172,8 @@ FECHA: ${fecha}`;
       generalBox.innerText = "";
       detalleBox.innerText = "";
 
-      if (!unidad || !subunidad) {
-        alert("Unidad y subunidad son obligatorias");
+      if (!unidad) {
+        alert("Unidad es obligatoria");
         return;
       }
 
@@ -1148,12 +1185,12 @@ FECHA: ${fecha}`;
           },
           body: JSON.stringify({
             unidad,
-            subunidad,
-            estacion,
-            organico,
+            subunidades,
+            estaciones,
+            organicos,
             grado,
             rol,
-            tipoFiltro
+            tiposFiltro
           })
         });
 
@@ -1200,9 +1237,6 @@ FECHA: ${fecha}`;
       }
     }
 
-    /* =========================
-       EVENTOS FILTROS CONSULTA
-    ========================= */
     document.addEventListener("DOMContentLoaded", () => {
       const consultaUnidad = document.getElementById("consulta_unidad");
       const consultaSubunidad = document.getElementById("consulta_subunidad");
@@ -1216,9 +1250,6 @@ FECHA: ${fecha}`;
       }
     });
 
-    /* =========================
-       INICIO
-    ========================= */
     cargarEstructura();
   </script>
 
