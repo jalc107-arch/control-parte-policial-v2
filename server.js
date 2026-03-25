@@ -66,15 +66,12 @@ function validarHorarioParte() {
   const total = ahora.hour * 60 + ahora.minute;
   const esFinDeSemana = ahora.weekday === "Sat" || ahora.weekday === "Sun";
 
-  // Nota: festivos no están implementados aún.
-  // Si luego quieres incluirlos, aquí se agrega esa validación.
   let tipo = null;
   let estado = "bloqueado";
   let mensaje = "⛔ Fuera del horario permitido para generar parte";
   let esMediodia = false;
   let extemporaneo = false;
 
-  // Mediodía: solo novedades
   if (total >= (11 * 60 + 30) && total < (12 * 60 + 30)) {
     return {
       tipo: null,
@@ -87,9 +84,6 @@ function validarHorarioParte() {
   }
 
   if (!esFinDeSemana) {
-    // Lunes a viernes
-
-    // Mañana normal: 04:00 a 07:15
     if (total >= (4 * 60) && total <= (7 * 60 + 15)) {
       return {
         tipo: "mañana",
@@ -101,7 +95,6 @@ function validarHorarioParte() {
       };
     }
 
-    // Mañana extraordinario: 07:16 a 08:00
     if (total > (7 * 60 + 15) && total <= (8 * 60)) {
       return {
         tipo: "mañana",
@@ -113,7 +106,6 @@ function validarHorarioParte() {
       };
     }
 
-    // Noche normal: 17:30 a 18:30
     if (total >= (17 * 60 + 30) && total <= (18 * 60 + 30)) {
       return {
         tipo: "noche",
@@ -125,9 +117,6 @@ function validarHorarioParte() {
       };
     }
   } else {
-    // Sábado / domingo
-    // Mantengo la regla que venías manejando: mañana hasta 08:15 y noche hasta 18:30
-
     if (total >= (4 * 60) && total <= (8 * 60 + 15)) {
       return {
         tipo: "mañana",
@@ -198,7 +187,6 @@ app.get("/health", async (req, res) => {
 // =========================
 // PARTES
 // =========================
-// Esta ruta queda lista para cuando luego quieras guardar el parte oficial.
 app.post("/partes", async (req, res) => {
   const {
     tipo,
@@ -562,9 +550,7 @@ app.post("/guardar-novedades", async (req, res) => {
 
     const { estado, esMediodia } = validarHorarioParte();
 
-    // Exentos pueden guardar siempre
     if (!esExento) {
-      // Permitido al mediodía
       if (!esMediodia && estado === "bloqueado") {
         return res.json({
           ok: false,
@@ -614,7 +600,6 @@ app.get("/validar-parte", async (req, res) => {
 
     const { tipo, estado, mensaje, esMediodia, extemporaneo } = validarHorarioParte();
 
-    // Exentos: oficiales y admin_excel
     if (esExento) {
       return res.json({
         ok: true,
@@ -627,7 +612,6 @@ app.get("/validar-parte", async (req, res) => {
       });
     }
 
-    // Mediodía: solo novedades para no exentos
     if (esMediodia) {
       return res.json({
         ok: false,
@@ -636,7 +620,6 @@ app.get("/validar-parte", async (req, res) => {
       });
     }
 
-    // Fuera de horario oficial: solo consulta, no guarda
     if (estado === "bloqueado") {
       return res.json({
         ok: true,
@@ -835,41 +818,27 @@ app.post("/parte-texto", async (req, res) => {
     texto += `\nNOVEDADES ${formatoConteo(fuerzaNovedades)}\n\n`;
 
     const ordenTipos = [
-
-  // 🔵 1. SERVICIO OPERATIVO
-  "SERVICIO",
-  "COMISION DE SERVICIO",
-  "COMISION EXTERIOR",
-  "PLAN ELECTORAL",
-
-  // 🟡 2. PERMISOS
-  "PERMISO",
-  "PERMISO NAVIDEÑO",
-  "PERMISO SEMANA SANTA",
-  "PERMISO EXTRAORDINARIOS",
-
-  // 🟢 3. DESCANSO / AUSENCIAS PROGRAMADAS
-  "VACACIONES",
-  "FRANQUICIA",
-
-  // 🟣 4. LICENCIAS
-  "LICENCIA LUTO",
-  "LICENCIA MATERNIDAD",
-
-  // 🔴 5. SALUD
-  "HOSPITALIZADO",
-  "CITA MEDICA",
-
-  // 🟤 6. FORMACIÓN / CAPACITACIÓN
-  "CURSO ASCENSO",
-  "RETARDADOS DE LA FORMACION",
-  "FUERA DE LA FORMACION",
-
-  // ⚫ 7. CONDICIONES ESPECIALES
-  "HORARIO FLEXIBLE",
-  "CUMPLE FUNCIONES DIFERENTES DE POLCO",
-  "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
-];
+      "SERVICIO",
+      "COMISION DE SERVICIO",
+      "COMISION EXTERIOR",
+      "PLAN ELECTORAL",
+      "PERMISO",
+      "PERMISO NAVIDEÑO",
+      "PERMISO SEMANA SANTA",
+      "PERMISO EXTRAORDINARIOS",
+      "VACACIONES",
+      "FRANQUICIA",
+      "LICENCIA LUTO",
+      "LICENCIA MATERNIDAD",
+      "HOSPITALIZADO",
+      "CITA MEDICA",
+      "CURSO ASCENSO",
+      "RETARDADOS DE LA FORMACION",
+      "FUERA DE LA FORMACION",
+      "HORARIO FLEXIBLE",
+      "CUMPLE FUNCIONES DIFERENTES DE POLCO",
+      "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
+    ];
 
     const tiposExistentes = [
       ...ordenTipos.filter(t => novedadesPorTipo[t]),
@@ -898,6 +867,7 @@ app.post("/parte-texto", async (req, res) => {
     });
   }
 });
+
 // ==============================
 // GUARDA PARTE PDF
 // ==============================
@@ -922,9 +892,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
 
   const { estado, esMediodia } = validarHorarioParte();
 
-  // ✅ Oficiales pueden guardar siempre
   if (!esOficial) {
-    // ⛔ Mediodía: solo novedades
     if (esMediodia) {
       return res.json({
         ok: false,
@@ -932,7 +900,6 @@ app.post("/guardar-parte-pdf", async (req, res) => {
       });
     }
 
-    // ⛔ Fuera del horario permitido
     if (estado === "bloqueado") {
       return res.json({
         ok: false,
@@ -998,15 +965,14 @@ app.post("/consulta-novedades", async (req, res) => {
     estacion,
     organico,
     grado = "",
-    rol = ""
+    rol = "",
+    tipoFiltro = ""
   } = req.body;
 
   try {
-    // =========================
-    // SEGURIDAD
-    // =========================
     const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
     const rolLimpio = String(rol).toUpperCase().trim();
+    const filtroTipo = String(tipoFiltro || "").toUpperCase().trim();
 
     const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
     const esOficial =
@@ -1021,9 +987,6 @@ app.post("/consulta-novedades", async (req, res) => {
       });
     }
 
-    // =========================
-    // VALIDACIÓN
-    // =========================
     if (!unidad || !subunidad) {
       return res.status(400).json({
         ok: false,
@@ -1031,9 +994,6 @@ app.post("/consulta-novedades", async (req, res) => {
       });
     }
 
-    // =========================
-    // CONSULTA BASE
-    // =========================
     let query = `
       SELECT
         p.grado,
@@ -1092,17 +1052,11 @@ app.post("/consulta-novedades", async (req, res) => {
 
     const result = await pool.query(query, params);
 
-    // =========================
-    // NORMALIZAR DATOS
-    // =========================
     const personal = result.rows.map(p => ({
       ...p,
-      tipo_novedad: (p.tipo_novedad || "").trim().toUpperCase()
+      tipo_novedad: String(p.tipo_novedad || "").trim().toUpperCase()
     }));
 
-    // =========================
-    // FUNCIONES DE CONTEO
-    // =========================
     const esOficialG = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
     const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
     const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
@@ -1121,20 +1075,27 @@ app.post("/consulta-novedades", async (req, res) => {
       return `${c.oficiales}-${c.ejecutivo}-${c.patrulleros}-${c.auxiliares}`;
     }
 
-    // =========================
-    // AGRUPAR
-    // =========================
+    let personalFiltrado = personal;
+
+    if (filtroTipo) {
+      if (filtroTipo === "DISPONIBLE") {
+        personalFiltrado = personal.filter(p => !p.tipo_novedad || p.tipo_novedad === "");
+      } else {
+        personalFiltrado = personal.filter(p => p.tipo_novedad === filtroTipo);
+      }
+    }
+
+    const fuerzaEfectivaConteo = contarGrupo(personalFiltrado);
+    const fuerzaEfectivaTotal = personalFiltrado.length;
+
     const agrupados = {};
 
-    personal.forEach(p => {
+    personalFiltrado.forEach(p => {
       const tipo = p.tipo_novedad && p.tipo_novedad !== "" ? p.tipo_novedad : "DISPONIBLE";
       if (!agrupados[tipo]) agrupados[tipo] = [];
       agrupados[tipo].push(p);
     });
 
-    // =========================
-    // ORDEN DE TIPOS
-    // =========================
     const ordenTipos = [
       "DISPONIBLE",
       "SERVICIO",
@@ -1162,14 +1123,17 @@ app.post("/consulta-novedades", async (req, res) => {
     const general = [];
     const detalleAgrupado = [];
 
+    general.push({
+      tipo: "FUERZA EFECTIVA",
+      conteo: formatoConteo(fuerzaEfectivaConteo),
+      total: fuerzaEfectivaTotal
+    });
+
     const tiposExistentes = [
       ...ordenTipos.filter(t => agrupados[t]),
       ...Object.keys(agrupados).filter(t => !ordenTipos.includes(t))
     ];
 
-    // =========================
-    // CONSTRUIR RESPUESTA
-    // =========================
     for (const tipo of tiposExistentes) {
       const lista = agrupados[tipo];
       const conteo = contarGrupo(lista);
@@ -1196,15 +1160,11 @@ app.post("/consulta-novedades", async (req, res) => {
       });
     }
 
-    // =========================
-    // RESPUESTA FINAL
-    // =========================
     return res.json({
       ok: true,
       general,
       detalleAgrupado
     });
-
   } catch (error) {
     return res.status(500).json({
       ok: false,
@@ -1212,6 +1172,7 @@ app.post("/consulta-novedades", async (req, res) => {
     });
   }
 });
+
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
