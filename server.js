@@ -72,6 +72,7 @@ function validarHorarioParte() {
   let esMediodia = false;
   let extemporaneo = false;
 
+  // Mediodía: solo novedades
   if (total >= (11 * 60 + 30) && total < (12 * 60 + 30)) {
     return {
       tipo: null,
@@ -84,6 +85,7 @@ function validarHorarioParte() {
   }
 
   if (!esFinDeSemana) {
+    // Mañana normal
     if (total >= (4 * 60) && total <= (7 * 60 + 15)) {
       return {
         tipo: "mañana",
@@ -95,6 +97,7 @@ function validarHorarioParte() {
       };
     }
 
+    // Mañana extemporánea
     if (total > (7 * 60 + 15) && total <= (8 * 60)) {
       return {
         tipo: "mañana",
@@ -106,6 +109,7 @@ function validarHorarioParte() {
       };
     }
 
+    // Noche normal
     if (total >= (17 * 60 + 30) && total <= (18 * 60 + 30)) {
       return {
         tipo: "noche",
@@ -117,6 +121,7 @@ function validarHorarioParte() {
       };
     }
   } else {
+    // Fin de semana
     if (total >= (4 * 60) && total <= (8 * 60 + 15)) {
       return {
         tipo: "mañana",
@@ -149,6 +154,35 @@ function normalizarArrayValores(input) {
   return arr
     .map(v => String(v || "").trim())
     .filter(Boolean);
+}
+
+function esGradoOficial(grado = "") {
+  const limpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
+  const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
+  return gradosOficiales.includes(limpio) || limpio.includes("OFICIAL");
+}
+
+function construirOrdenGradoSQL(alias = "") {
+  const pref = alias ? `${alias}.` : "";
+  return `
+    CASE UPPER(${pref}grado)
+      WHEN 'CR' THEN 1
+      WHEN 'TC' THEN 2
+      WHEN 'MY' THEN 3
+      WHEN 'CT' THEN 4
+      WHEN 'TE' THEN 5
+      WHEN 'ST' THEN 6
+      WHEN 'CM' THEN 7
+      WHEN 'SC' THEN 8
+      WHEN 'IJ' THEN 9
+      WHEN 'IT' THEN 10
+      WHEN 'SI' THEN 11
+      WHEN 'PT' THEN 12
+      WHEN 'PP' THEN 13
+      WHEN 'AUX' THEN 14
+      ELSE 99
+    END
+  `;
 }
 
 // Middlewares
@@ -273,9 +307,7 @@ app.post("/validar-responsable", async (req, res) => {
     const cargo = (persona.cargo || "").toUpperCase().trim();
     const rol = (persona.rol || "").toUpperCase().trim();
 
-    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
-    const esOficial =
-      gradosOficiales.includes(grado) || grado.includes("OFICIAL");
+    const esOficial = esGradoOficial(grado);
 
     const cargosPermitidos = [
       "JEFE POLCO ESTACION",
@@ -501,23 +533,7 @@ app.post("/personal-filtrado", async (req, res) => {
 
     query += `
       ORDER BY
-        CASE UPPER(grado)
-          WHEN 'CR' THEN 1
-          WHEN 'TC' THEN 2
-          WHEN 'MY' THEN 3
-          WHEN 'CT' THEN 4
-          WHEN 'TE' THEN 5
-          WHEN 'ST' THEN 6
-          WHEN 'CM' THEN 7
-          WHEN 'SC' THEN 8
-          WHEN 'IJ' THEN 9
-          WHEN 'IT' THEN 10
-          WHEN 'SI' THEN 11
-          WHEN 'PT' THEN 12
-          WHEN 'PP' THEN 13
-          WHEN 'AUX' THEN 14
-          ELSE 99
-        END,
+        ${construirOrdenGradoSQL()},
         apellidos,
         nombres
     `;
@@ -550,10 +566,7 @@ app.post("/guardar-novedades", async (req, res) => {
     const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
     const rolLimpio = String(rol).toUpperCase().trim();
 
-    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
-    const esOficial =
-      gradosOficiales.includes(gradoLimpio) || gradoLimpio.includes("OFICIAL");
-
+    const esOficial = esGradoOficial(gradoLimpio);
     const esExento = esOficial || rolLimpio === "ADMIN_EXCEL";
 
     const { estado, esMediodia } = validarHorarioParte();
@@ -600,10 +613,7 @@ app.get("/validar-parte", async (req, res) => {
     const grado = (req.query.grado || "").toUpperCase().trim().replace(/\s+/g, "");
     const rol = (req.query.rol || "").toUpperCase().trim();
 
-    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
-    const esOficial =
-      gradosOficiales.includes(grado) || grado.includes("OFICIAL");
-
+    const esOficial = esGradoOficial(grado);
     const esExento = esOficial || rol === "ADMIN_EXCEL";
 
     const { tipo, estado, mensaje, esMediodia, extemporaneo } = validarHorarioParte();
@@ -733,23 +743,7 @@ app.post("/parte-texto", async (req, res) => {
 
     query += `
       ORDER BY
-        CASE UPPER(p.grado)
-          WHEN 'CR' THEN 1
-          WHEN 'TC' THEN 2
-          WHEN 'MY' THEN 3
-          WHEN 'CT' THEN 4
-          WHEN 'TE' THEN 5
-          WHEN 'ST' THEN 6
-          WHEN 'CM' THEN 7
-          WHEN 'SC' THEN 8
-          WHEN 'IJ' THEN 9
-          WHEN 'IT' THEN 10
-          WHEN 'SI' THEN 11
-          WHEN 'PT' THEN 12
-          WHEN 'PP' THEN 13
-          WHEN 'AUX' THEN 14
-          ELSE 99
-        END,
+        ${construirOrdenGradoSQL("p")},
         p.apellidos,
         p.nombres
     `;
@@ -766,14 +760,14 @@ app.post("/parte-texto", async (req, res) => {
       tipo_novedad: mapaNovedades[String(p.cedula)] || ""
     }));
 
-    const esOficial = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
+    const esOficialG = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
     const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
     const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
     const esAuxiliar = (g) => ["AUX"].includes((g || "").toUpperCase());
 
     function contarGrupo(lista) {
       return {
-        oficiales: lista.filter(p => esOficial(p.grado)).length,
+        oficiales: lista.filter(p => esOficialG(p.grado)).length,
         ejecutivo: lista.filter(p => esEjecutivo(p.grado)).length,
         patrulleros: lista.filter(p => esPatrullero(p.grado)).length,
         auxiliares: lista.filter(p => esAuxiliar(p.grado)).length
@@ -894,10 +888,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
   } = req.body;
 
   const grado = (grado_responsable || "").toUpperCase().trim().replace(/\s+/g, "");
-
-  const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
-  const esOficial =
-    gradosOficiales.includes(grado) || grado.includes("OFICIAL");
+  const esOficial = esGradoOficial(grado);
 
   const { estado, esMediodia } = validarHorarioParte();
 
@@ -982,10 +973,7 @@ app.post("/consulta-novedades", async (req, res) => {
     const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
     const rolLimpio = String(rol).toUpperCase().trim();
 
-    const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
-    const esOficial =
-      gradosOficiales.includes(gradoLimpio) || gradoLimpio.includes("OFICIAL");
-
+    const esOficial = esGradoOficial(gradoLimpio);
     const esAdmin = rolLimpio === "ADMIN_EXCEL";
 
     if (!esOficial && !esAdmin) {
@@ -1047,23 +1035,7 @@ app.post("/consulta-novedades", async (req, res) => {
 
     query += `
       ORDER BY
-        CASE UPPER(p.grado)
-          WHEN 'CR' THEN 1
-          WHEN 'TC' THEN 2
-          WHEN 'MY' THEN 3
-          WHEN 'CT' THEN 4
-          WHEN 'TE' THEN 5
-          WHEN 'ST' THEN 6
-          WHEN 'CM' THEN 7
-          WHEN 'SC' THEN 8
-          WHEN 'IJ' THEN 9
-          WHEN 'IT' THEN 10
-          WHEN 'SI' THEN 11
-          WHEN 'PT' THEN 12
-          WHEN 'PP' THEN 13
-          WHEN 'AUX' THEN 14
-          ELSE 99
-        END,
+        ${construirOrdenGradoSQL("p")},
         p.apellidos,
         p.nombres
     `;
