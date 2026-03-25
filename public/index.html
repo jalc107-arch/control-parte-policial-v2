@@ -40,10 +40,6 @@
       max-width: 540px;
     }
 
-    select[multiple] {
-      height: 120px;
-    }
-
     button {
       background: #00c853;
       color: white;
@@ -102,6 +98,53 @@
       color: #444;
       margin-top: 2px;
       margin-bottom: 8px;
+    }
+
+    .filtro-box {
+      background: #f7f7f7;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 14px auto;
+      max-width: 700px;
+      text-align: left;
+    }
+
+    .filtro-titulo {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #0b3d91;
+    }
+
+    .filtro-botones {
+      margin-bottom: 10px;
+    }
+
+    .filtro-botones button {
+      margin-right: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .checks-contenedor {
+      max-height: 180px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      background: white;
+      border-radius: 6px;
+      padding: 8px;
+    }
+
+    .check-item {
+      display: block;
+      margin-bottom: 6px;
+      color: black;
+      font-size: 14px;
+    }
+
+    .check-item input {
+      width: auto;
+      margin-right: 6px;
     }
   </style>
 </head>
@@ -169,19 +212,6 @@
     </div>
 
     <div class="seccion">
-      <h2>4.1 Apoyo automático a servicio extraordinario</h2>
-
-      <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad de disponibles a tomar" />
-      <br>
-
-      <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje de disponibles a tomar" />
-      <br>
-
-      <button onclick="aplicarServicioExtraordinario()">Aplicar servicio extraordinario</button>
-      <pre id="resultado_extra"></pre>
-    </div>
-
-    <div class="seccion">
       <h2>5. Generar parte</h2>
       <button onclick="generarParte()">Generar Parte</button>
       <button onclick="descargarPDF()">Descargar PDF</button>
@@ -198,40 +228,45 @@
       </select>
       <div class="ayuda">Unidad: una sola</div>
 
-      <select id="consulta_subunidad" multiple></select>
-      <div class="ayuda">Subunidad: puedes escoger una, varias o ninguna (ninguna = todas)</div>
+      <div class="filtro-box">
+        <div class="filtro-titulo">Subunidad</div>
+        <div class="filtro-botones">
+          <button type="button" onclick="seleccionarTodasChecks('checks_subunidad')">Seleccionar todas</button>
+          <button type="button" onclick="limpiarChecks('checks_subunidad')">Limpiar</button>
+        </div>
+        <div id="checks_subunidad" class="checks-contenedor"></div>
+        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
+      </div>
 
-      <select id="consulta_estacion" multiple></select>
-      <div class="ayuda">Estaciones: puedes escoger una, varias o ninguna (ninguna = todas)</div>
+      <div class="filtro-box">
+        <div class="filtro-titulo">Estaciones</div>
+        <div class="filtro-botones">
+          <button type="button" onclick="seleccionarTodasChecks('checks_estacion')">Seleccionar todas</button>
+          <button type="button" onclick="limpiarChecks('checks_estacion')">Limpiar</button>
+        </div>
+        <div id="checks_estacion" class="checks-contenedor"></div>
+        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
+      </div>
 
-      <select id="consulta_organico" multiple></select>
-      <div class="ayuda">Orgánicos: puedes escoger uno, varios o ninguno (ninguno = todos)</div>
+      <div class="filtro-box">
+        <div class="filtro-titulo">Orgánicos</div>
+        <div class="filtro-botones">
+          <button type="button" onclick="seleccionarTodasChecks('checks_organico')">Seleccionar todas</button>
+          <button type="button" onclick="limpiarChecks('checks_organico')">Limpiar</button>
+        </div>
+        <div id="checks_organico" class="checks-contenedor"></div>
+        <div class="ayuda">Si no marcas ninguno, consulta todos.</div>
+      </div>
 
-      <select id="consulta_tipo" multiple>
-        <option value="DISPONIBLE">DISPONIBLE</option>
-        <option value="SERVICIO">SERVICIO</option>
-        <option value="SERVICIO EXTRAORDINARIO">SERVICIO EXTRAORDINARIO</option>
-        <option value="COMISION DE SERVICIO">COMISION DE SERVICIO</option>
-        <option value="COMISION EXTERIOR">COMISION EXTERIOR</option>
-        <option value="PLAN ELECTORAL">PLAN ELECTORAL</option>
-        <option value="PERMISO">PERMISO</option>
-        <option value="PERMISO EXTRAORDINARIOS">PERMISO EXTRAORDINARIOS</option>
-        <option value="PERMISO NAVIDEÑO">PERMISO NAVIDEÑO</option>
-        <option value="PERMISO SEMANA SANTA">PERMISO SEMANA SANTA</option>
-        <option value="VACACIONES">VACACIONES</option>
-        <option value="FRANQUICIA">FRANQUICIA</option>
-        <option value="LICENCIA LUTO">LICENCIA LUTO</option>
-        <option value="LICENCIA MATERNIDAD">LICENCIA MATERNIDAD</option>
-        <option value="HOSPITALIZADO">HOSPITALIZADO</option>
-        <option value="CITA MEDICA">CITA MEDICA</option>
-        <option value="CURSO ASCENSO">CURSO ASCENSO</option>
-        <option value="RETARDADOS DE LA FORMACION">RETARDADOS DE LA FORMACION</option>
-        <option value="FUERA DE LA FORMACION">FUERA DE LA FORMACION</option>
-        <option value="HORARIO FLEXIBLE">HORARIO FLEXIBLE</option>
-        <option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
-        <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
-      </select>
-      <div class="ayuda">Novedad: puedes escoger una, varias o ninguna (ninguna = todas)</div>
+      <div class="filtro-box">
+        <div class="filtro-titulo">Novedad</div>
+        <div class="filtro-botones">
+          <button type="button" onclick="seleccionarTodasChecks('checks_tipo')">Seleccionar todas</button>
+          <button type="button" onclick="limpiarChecks('checks_tipo')">Limpiar</button>
+        </div>
+        <div id="checks_tipo" class="checks-contenedor"></div>
+        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
+      </div>
 
       <button onclick="consultarNovedades()">Consultar novedades</button>
 
@@ -239,16 +274,23 @@
       <pre id="resultado_detalle"></pre>
     </div>
 
+    <div class="seccion" id="bloqueExtraordinario" style="display:none;">
+      <h2>7. Apoyo automático a servicio extraordinario</h2>
+
+      <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad de disponibles a tomar" />
+      <br>
+
+      <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje de disponibles a tomar" />
+      <br>
+
+      <button onclick="aplicarServicioExtraordinario()">Aplicar servicio extraordinario</button>
+      <pre id="resultado_extra"></pre>
+    </div>
+
   </div>
 
   <script>
     let estructuraGlobal = [];
-
-    function obtenerValoresSeleccionados(id) {
-      const select = document.getElementById(id);
-      if (!select) return [];
-      return Array.from(select.selectedOptions).map(o => o.value).filter(Boolean);
-    }
 
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
@@ -282,6 +324,7 @@
       document.getElementById("lista").innerHTML = "";
       document.getElementById("resultado").innerText = "";
       document.getElementById("resultado_extra").innerText = "";
+
       const generalBox = document.getElementById("resultado_general");
       const detalleBox = document.getElementById("resultado_detalle");
       if (generalBox) generalBox.innerText = "";
@@ -308,6 +351,7 @@
           document.getElementById("bloqueExcel").style.display = "none";
           document.getElementById("bloqueOrganico").style.display = "none";
           document.getElementById("bloqueConsultaGeneral").style.display = "none";
+          document.getElementById("bloqueExtraordinario").style.display = "none";
 
           document.getElementById("unidad_select").value = "";
           document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
@@ -354,35 +398,27 @@
         if (data.esOficial || data.rol === "ADMIN_EXCEL") {
           document.getElementById("bloqueOrganico").style.display = "block";
           document.getElementById("bloqueConsultaGeneral").style.display = "block";
+          document.getElementById("bloqueExtraordinario").style.display = "block";
         } else {
           document.getElementById("bloqueOrganico").style.display = "none";
           document.getElementById("bloqueConsultaGeneral").style.display = "none";
+          document.getElementById("bloqueExtraordinario").style.display = "none";
         }
 
         cargarFiltrosConsulta();
 
         if (data.esOficial || data.rol === "ADMIN_EXCEL") {
           document.getElementById("consulta_unidad").value = data.unidad || "";
-          cargarConsultaSubunidades();
+          cargarConsultaDependencias();
 
           if (data.subunidad) {
-            const subOpt = Array.from(document.getElementById("consulta_subunidad").options)
-              .find(o => o.value === data.subunidad);
-            if (subOpt) subOpt.selected = true;
+            marcarCheckSiExiste("checks_subunidad", data.subunidad);
           }
-
-          cargarConsultaEstacionesYOrganicos();
-
           if (data.estacion) {
-            const estOpt = Array.from(document.getElementById("consulta_estacion").options)
-              .find(o => o.value === data.estacion);
-            if (estOpt) estOpt.selected = true;
+            marcarCheckSiExiste("checks_estacion", data.estacion);
           }
-
           if (data.organico) {
-            const orgOpt = Array.from(document.getElementById("consulta_organico").options)
-              .find(o => o.value === data.organico);
-            if (orgOpt) orgOpt.selected = true;
+            marcarCheckSiExiste("checks_organico", data.organico);
           }
         }
 
@@ -1076,19 +1112,63 @@ FECHA: ${fecha}`;
       }
     }
 
+    function pintarChecks(idContenedor, valores) {
+      const contenedor = document.getElementById(idContenedor);
+      if (!contenedor) return;
+
+      contenedor.innerHTML = "";
+
+      valores.forEach(valor => {
+        const label = document.createElement("label");
+        label.className = "check-item";
+
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = valor;
+
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(valor));
+        contenedor.appendChild(label);
+      });
+    }
+
+    function obtenerValoresChecks(idContenedor) {
+      const contenedor = document.getElementById(idContenedor);
+      if (!contenedor) return [];
+      return Array.from(contenedor.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(ch => ch.value)
+        .filter(Boolean);
+    }
+
+    function seleccionarTodasChecks(idContenedor) {
+      const contenedor = document.getElementById(idContenedor);
+      if (!contenedor) return;
+      contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => {
+        ch.checked = true;
+      });
+    }
+
+    function limpiarChecks(idContenedor) {
+      const contenedor = document.getElementById(idContenedor);
+      if (!contenedor) return;
+      contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => {
+        ch.checked = false;
+      });
+    }
+
+    function marcarCheckSiExiste(idContenedor, valor) {
+      const contenedor = document.getElementById(idContenedor);
+      if (!contenedor) return;
+      const check = Array.from(contenedor.querySelectorAll('input[type="checkbox"]'))
+        .find(ch => ch.value === valor);
+      if (check) check.checked = true;
+    }
+
     function cargarFiltrosConsulta() {
       const unidadSelect = document.getElementById("consulta_unidad");
-      const subunidadSelect = document.getElementById("consulta_subunidad");
-      const estacionSelect = document.getElementById("consulta_estacion");
-      const organicoSelect = document.getElementById("consulta_organico");
-      const tipoSelect = document.getElementById("consulta_tipo");
-
-      if (!unidadSelect || !subunidadSelect || !estacionSelect || !organicoSelect || !tipoSelect) return;
+      if (!unidadSelect) return;
 
       unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
-      subunidadSelect.innerHTML = "";
-      estacionSelect.innerHTML = "";
-      organicoSelect.innerHTML = "";
 
       const unidades = [...new Set(estructuraGlobal.map(x => x.unidad).filter(Boolean))];
 
@@ -1098,68 +1178,56 @@ FECHA: ${fecha}`;
         option.textContent = unidad;
         unidadSelect.appendChild(option);
       });
+
+      pintarChecks("checks_subunidad", []);
+      pintarChecks("checks_estacion", []);
+      pintarChecks("checks_organico", []);
+      pintarChecks("checks_tipo", [
+        "DISPONIBLE",
+        "SERVICIO",
+        "SERVICIO EXTRAORDINARIO",
+        "COMISION DE SERVICIO",
+        "COMISION EXTERIOR",
+        "PLAN ELECTORAL",
+        "PERMISO",
+        "PERMISO EXTRAORDINARIOS",
+        "PERMISO NAVIDEÑO",
+        "PERMISO SEMANA SANTA",
+        "VACACIONES",
+        "FRANQUICIA",
+        "LICENCIA LUTO",
+        "LICENCIA MATERNIDAD",
+        "HOSPITALIZADO",
+        "CITA MEDICA",
+        "CURSO ASCENSO",
+        "RETARDADOS DE LA FORMACION",
+        "FUERA DE LA FORMACION",
+        "HORARIO FLEXIBLE",
+        "CUMPLE FUNCIONES DIFERENTES DE POLCO",
+        "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
+      ]);
     }
 
-    function cargarConsultaSubunidades() {
+    function cargarConsultaDependencias() {
       const unidad = document.getElementById("consulta_unidad").value;
-      const subunidadSelect = document.getElementById("consulta_subunidad");
-      const estacionSelect = document.getElementById("consulta_estacion");
-      const organicoSelect = document.getElementById("consulta_organico");
-
-      subunidadSelect.innerHTML = "";
-      estacionSelect.innerHTML = "";
-      organicoSelect.innerHTML = "";
-
-      const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
-      const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
-
-      subunidades.forEach(sub => {
-        const option = document.createElement("option");
-        option.value = sub;
-        option.textContent = sub;
-        subunidadSelect.appendChild(option);
-      });
-    }
-
-    function cargarConsultaEstacionesYOrganicos() {
-      const unidad = document.getElementById("consulta_unidad").value;
-      const subunidades = obtenerValoresSeleccionados("consulta_subunidad");
-      const estacionSelect = document.getElementById("consulta_estacion");
-      const organicoSelect = document.getElementById("consulta_organico");
-
-      estacionSelect.innerHTML = "";
-      organicoSelect.innerHTML = "";
 
       let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
 
-      if (subunidades.length > 0) {
-        filtrados = filtrados.filter(x => subunidades.includes(x.subunidad));
-      }
-
+      const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
       const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))];
       const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
 
-      estaciones.forEach(est => {
-        const option = document.createElement("option");
-        option.value = est;
-        option.textContent = est;
-        estacionSelect.appendChild(option);
-      });
-
-      organicos.forEach(org => {
-        const option = document.createElement("option");
-        option.value = org;
-        option.textContent = org;
-        organicoSelect.appendChild(option);
-      });
+      pintarChecks("checks_subunidad", subunidades);
+      pintarChecks("checks_estacion", estaciones);
+      pintarChecks("checks_organico", organicos);
     }
 
     async function consultarNovedades() {
       const unidad = document.getElementById("consulta_unidad").value;
-      const subunidades = obtenerValoresSeleccionados("consulta_subunidad");
-      const estaciones = obtenerValoresSeleccionados("consulta_estacion");
-      const organicos = obtenerValoresSeleccionados("consulta_organico");
-      const tiposFiltro = obtenerValoresSeleccionados("consulta_tipo");
+      const subunidades = obtenerValoresChecks("checks_subunidad");
+      const estaciones = obtenerValoresChecks("checks_estacion");
+      const organicos = obtenerValoresChecks("checks_organico");
+      const tiposFiltro = obtenerValoresChecks("checks_tipo");
 
       const grado = document.getElementById("grado").value.trim();
       const rol = (document.getElementById("bloqueExcel").style.display === "block")
@@ -1239,14 +1307,8 @@ FECHA: ${fecha}`;
 
     document.addEventListener("DOMContentLoaded", () => {
       const consultaUnidad = document.getElementById("consulta_unidad");
-      const consultaSubunidad = document.getElementById("consulta_subunidad");
-
       if (consultaUnidad) {
-        consultaUnidad.addEventListener("change", cargarConsultaSubunidades);
-      }
-
-      if (consultaSubunidad) {
-        consultaSubunidad.addEventListener("change", cargarConsultaEstacionesYOrganicos);
+        consultaUnidad.addEventListener("change", cargarConsultaDependencias);
       }
     });
 
