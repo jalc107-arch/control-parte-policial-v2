@@ -143,6 +143,14 @@ function validarHorarioParte() {
   return { tipo, estado, mensaje, esMediodia, extemporaneo, esFinDeSemana };
 }
 
+function normalizarArrayValores(input) {
+  if (!input) return [];
+  const arr = Array.isArray(input) ? input : [input];
+  return arr
+    .map(v => String(v || "").trim())
+    .filter(Boolean);
+}
+
 // Middlewares
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -819,6 +827,7 @@ app.post("/parte-texto", async (req, res) => {
 
     const ordenTipos = [
       "SERVICIO",
+      "SERVICIO EXTRAORDINARIO",
       "COMISION DE SERVICIO",
       "COMISION EXTERIOR",
       "PLAN ELECTORAL",
@@ -961,18 +970,17 @@ app.post("/guardar-parte-pdf", async (req, res) => {
 app.post("/consulta-novedades", async (req, res) => {
   const {
     unidad,
-    subunidad,
-    estacion,
-    organico,
+    subunidades = [],
+    estaciones = [],
+    organicos = [],
     grado = "",
     rol = "",
-    tipoFiltro = ""
+    tiposFiltro = []
   } = req.body;
 
   try {
     const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
     const rolLimpio = String(rol).toUpperCase().trim();
-    const filtroTipo = String(tipoFiltro || "").toUpperCase().trim();
 
     const gradosOficiales = ["CR", "TC", "MY", "CT", "TE", "ST", "OFICIAL"];
     const esOficial =
@@ -987,12 +995,17 @@ app.post("/consulta-novedades", async (req, res) => {
       });
     }
 
-    if (!unidad || !subunidad) {
+    if (!unidad) {
       return res.status(400).json({
         ok: false,
-        error: "Unidad y subunidad son obligatorias"
+        error: "Unidad es obligatoria"
       });
     }
+
+    const subunidadesLimpias = normalizarArrayValores(subunidades);
+    const estacionesLimpias = normalizarArrayValores(estaciones);
+    const organicosLimpios = normalizarArrayValores(organicos);
+    const tiposLimpios = normalizarArrayValores(tiposFiltro).map(v => v.toUpperCase());
 
     let query = `
       SELECT
@@ -1009,21 +1022,26 @@ app.post("/consulta-novedades", async (req, res) => {
         AND n.fecha = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date
       WHERE p.activo = true
         AND p.unidad = $1
-        AND p.subunidad = $2
     `;
 
-    const params = [unidad, subunidad];
-    let index = 3;
+    const params = [unidad];
+    let index = 2;
 
-    if (estacion && estacion.trim() !== "") {
-      query += ` AND p.estacion = $${index}`;
-      params.push(estacion);
+    if (subunidadesLimpias.length > 0) {
+      query += ` AND p.subunidad = ANY($${index})`;
+      params.push(subunidadesLimpias);
       index++;
     }
 
-    if (organico && organico.trim() !== "") {
-      query += ` AND p.organico = $${index}`;
-      params.push(organico);
+    if (estacionesLimpias.length > 0) {
+      query += ` AND p.estacion = ANY($${index})`;
+      params.push(estacionesLimpias);
+      index++;
+    }
+
+    if (organicosLimpios.length > 0) {
+      query += ` AND p.organico = ANY($${index})`;
+      params.push(organicosLimpios);
       index++;
     }
 
@@ -1077,12 +1095,15 @@ app.post("/consulta-novedades", async (req, res) => {
 
     let personalFiltrado = personal;
 
-    if (filtroTipo) {
-      if (filtroTipo === "DISPONIBLE") {
-        personalFiltrado = personal.filter(p => !p.tipo_novedad || p.tipo_novedad === "");
-      } else {
-        personalFiltrado = personal.filter(p => p.tipo_novedad === filtroTipo);
-      }
+    if (tiposLimpios.length > 0) {
+      const incluirDisponibles = tiposLimpios.includes("DISPONIBLE");
+      const otrosTipos = tiposLimpios.filter(t => t !== "DISPONIBLE");
+
+      personalFiltrado = personal.filter(p => {
+        const tipo = p.tipo_novedad || "";
+        if (!tipo) return incluirDisponibles;
+        return otrosTipos.includes(tipo);
+      });
     }
 
     const fuerzaEfectivaConteo = contarGrupo(personalFiltrado);
@@ -1099,6 +1120,7 @@ app.post("/consulta-novedades", async (req, res) => {
     const ordenTipos = [
       "DISPONIBLE",
       "SERVICIO",
+      "SERVICIO EXTRAORDINARIO",
       "COMISION DE SERVICIO",
       "COMISION EXTERIOR",
       "PLAN ELECTORAL",
