@@ -185,6 +185,29 @@ function construirOrdenGradoSQL(alias = "") {
   `;
 }
 
+function obtenerGrupoPorGrado(grado = "") {
+  const g = String(grado || "").toUpperCase().trim();
+
+  if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIALES";
+  if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
+  if (["PT", "PP"].includes(g)) return "PATRULLEROS";
+  if (["AUX"].includes(g)) return "AUXILIARES";
+  return "OTROS";
+}
+
+function contarGrupoLista(lista) {
+  return {
+    oficiales: lista.filter(p => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((p.grado || "").toUpperCase())).length,
+    ejecutivo: lista.filter(p => ["CM", "SC", "IJ", "IT", "SI"].includes((p.grado || "").toUpperCase())).length,
+    patrulleros: lista.filter(p => ["PT", "PP"].includes((p.grado || "").toUpperCase())).length,
+    auxiliares: lista.filter(p => ["AUX"].includes((p.grado || "").toUpperCase())).length
+  };
+}
+
+function formatoConteoGrupo(c) {
+  return `${c.oficiales}-${c.ejecutivo}-${c.patrulleros}-${c.auxiliares}`;
+}
+
 // Middlewares
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
