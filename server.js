@@ -1177,12 +1177,13 @@ app.post("/consulta-novedades", async (req, res) => {
       });
     }
 
-  return res.json({
+return res.json({
   ok: true,
   general,
   detalleAgrupado,
-  personalCompleto: personalFiltrado   // 🔥 ESTE ES EL CAMBIO CLAVE
+  personalCompleto: personalFiltrado
 });
+    
   } catch (error) {
     return res.status(500).json({
       ok: false,
