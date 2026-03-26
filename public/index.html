@@ -544,29 +544,37 @@
 
         
 
-        if (!data.ok) {
-          document.getElementById("datos_responsable").innerText = "No autorizado";
-          document.getElementById("bloqueExcel").style.display = "none";
-          document.getElementById("bloqueOrganico").style.display = "none";
-          document.getElementById("bloqueConsultaGeneral").style.display = "none";
-          document.getElementById("bloqueExtraordinario").style.display = "none";
-          document.getElementById("bloqueHistorialExtra").style.display = "none";
+       if (!data.ok) {
+  document.getElementById("datos_responsable").innerText = "No autorizado";
 
-          document.getElementById("unidad_select").value = "";
-          document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-          document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-          document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+  // 🔒 OCULTAR TODO
+  document.getElementById("bloqueExcel").style.display = "none";
+  document.getElementById("bloqueUbicacion").style.display = "none";
+  document.getElementById("bloqueNovedades").style.display = "none";
+  document.getElementById("bloqueParte").style.display = "none";
+  document.getElementById("bloqueConsultaGeneral").style.display = "none";
+  document.getElementById("bloqueExtraordinario").style.display = "none";
+  document.getElementById("bloqueHistorialExtra").style.display = "none";
 
-          document.getElementById("unidad_select").disabled = true;
-          document.getElementById("subunidad_select").disabled = true;
-          document.getElementById("estacion_select").disabled = true;
+  // 🔄 RESET selects
+  document.getElementById("unidad_select").value = "";
+  document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+  document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+  document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
-          document.getElementById("grado").value = "";
-          document.getElementById("nombre_elabora").value = "";
-          document.getElementById("cedula_elabora").value = "";
-          document.getElementById("telefono_elabora").value = "";
-          return;
-        }
+  // 🔒 BLOQUEAR selects
+  document.getElementById("unidad_select").disabled = true;
+  document.getElementById("subunidad_select").disabled = true;
+  document.getElementById("estacion_select").disabled = true;
+
+  // 🔄 LIMPIAR datos
+  document.getElementById("grado").value = "";
+  document.getElementById("nombre_elabora").value = "";
+  document.getElementById("cedula_elabora").value = "";
+  document.getElementById("telefono_elabora").value = "";
+
+  return;
+}
 
         document.getElementById("cedula_elabora").value = cedula;
         document.getElementById("nombre_elabora").value = data.nombre || "";
