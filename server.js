@@ -731,16 +731,41 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
       responsable_nombre
     }));
 
-    const { error } = await supabase
-      .from("historial_servicios_extra")
-      .insert(registros);
+    for (const r of registros) {
+  await pool.query(
+    `
+    INSERT INTO servicios_extraordinarios (
+      cedula,
+      fecha,
+      unidad,
+      subunidad,
+      estacion,
+      organico,
+      grado,
+      apellidos,
+      nombres,
+      asignado_por_cedula,
+      asignado_por_nombre
+    )
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+    `,
+    [
+      r.cedula || null,
+      obtenerFechaBogotaSQL(),
+      r.unidad || null,
+      r.subunidad || null,
+      r.estacion || null,
+      r.organico || null,
+      r.grado || null,
+      r.apellidos || null,
+      r.nombres || null,
+      r.responsable_cedula || null,
+      r.responsable_nombre || null
+    ]
+  );
+}
 
-    if (error) {
-      console.error(error);
-      return res.json({ ok: false, error });
-    }
-
-    res.json({ ok: true });
+res.json({ ok: true });
 
   } catch (err) {
     console.error(err);
