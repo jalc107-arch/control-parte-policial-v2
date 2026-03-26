@@ -291,7 +291,39 @@
     border: none;
     background: transparent;
   }
+.persona {
+  border: 1px solid var(--gris-borde);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--blanco);
+}
 
+.persona b {
+  display: block;
+  font-size: 13px;
+  line-height: 1.35;
+  margin-bottom: 8px;
+  color: var(--texto-oscuro);
+}
+
+.persona .persona-cc {
+  display: block;
+  font-size: 12px;
+  color: var(--gris-texto);
+  margin-top: 2px;
+}
+
+#lista {
+  margin-top: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--gris-borde);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--gris-claro);
+}
+  
   @media (min-width: 768px) {
     .grid-extra {
       grid-template-columns: 1fr 1fr;
