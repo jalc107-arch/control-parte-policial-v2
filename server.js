@@ -726,7 +726,6 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
       subunidad: p.subunidad || "",
       estacion: p.estacion || "",
       organico: p.organico || "",
-      fecha: ahora,
       responsable_cedula,
       responsable_nombre
     }));
