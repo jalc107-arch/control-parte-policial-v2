@@ -496,14 +496,16 @@
         document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
 
         if (data.esOficial || data.rol === "ADMIN_EXCEL") {
-          document.getElementById("bloqueOrganico").style.display = "block";
-          document.getElementById("bloqueConsultaGeneral").style.display = "block";
-          document.getElementById("bloqueExtraordinario").style.display = "block";
-        } else {
-          document.getElementById("bloqueOrganico").style.display = "none";
-          document.getElementById("bloqueConsultaGeneral").style.display = "none";
-          document.getElementById("bloqueExtraordinario").style.display = "none";
-        }
+  document.getElementById("bloqueOrganico").style.display = "block";
+  document.getElementById("bloqueConsultaGeneral").style.display = "block";
+  document.getElementById("bloqueExtraordinario").style.display = "block";
+  document.getElementById("bloqueHistorialExtra").style.display = "block";
+} else {
+  document.getElementById("bloqueOrganico").style.display = "none";
+  document.getElementById("bloqueConsultaGeneral").style.display = "none";
+  document.getElementById("bloqueExtraordinario").style.display = "none";
+  document.getElementById("bloqueHistorialExtra").style.display = "none";
+}
 
         cargarFiltrosConsulta();
         cargarChecksGruposExtra();
