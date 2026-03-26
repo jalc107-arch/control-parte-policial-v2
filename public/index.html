@@ -438,13 +438,13 @@
       try {
         const res = await fetch("/validar-responsable", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: {"Content-Type": "application/json"},
           body: JSON.stringify({ cedula })
         });
 
         const data = await res.json();
+
+        
 
         if (!data.ok) {
           document.getElementById("datos_responsable").innerText = "No autorizado";
@@ -469,6 +469,10 @@
           document.getElementById("telefono_elabora").value = "";
           return;
         }
+
+        document.getElementById("cedula_elabora").value = cedula;
+        document.getElementById("nombre_elabora").value = data.nombre || "";
+        document.getElementById("grado").value = data.grado || "";
 
         document.getElementById("datos_responsable").innerText = `${data.grado} - ${data.nombre}`;
         document.getElementById("grado").value = data.grado || "";
