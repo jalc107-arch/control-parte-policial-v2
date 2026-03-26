@@ -896,8 +896,11 @@
           div.className = "persona";
 
           div.innerHTML = `
-            <b>${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}</b>
-            <select id="novedad-${p.cedula}">
+  <b>
+    ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
+    <span class="persona-cc">CC ${p.cedula || ""}</span>
+  </b>
+  <select id="novedad-${p.cedula}">
               <option value="">DISPONIBLE</option>
               <option value="SERVICIO">SERVICIO</option>
               <option value="SERVICIO EXTRAORDINARIO">SERVICIO EXTRAORDINARIO</option>
