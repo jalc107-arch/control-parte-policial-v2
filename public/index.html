@@ -1757,7 +1757,58 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
       cargarChecksGruposExtra();
     });
 
+async function consultarHistorialServicioExtraordinario() {
+  const resultado = document.getElementById("resultado_historial_extra");
+  resultado.innerText = "Consultando...";
 
+  const fechaInicio = document.getElementById("historial_fecha_inicio").value;
+  const fechaFin = document.getElementById("historial_fecha_fin").value;
+
+  try {
+    const res = await fetch(`/historial-servicio-extraordinario?inicio=${fechaInicio}&fin=${fechaFin}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      resultado.innerText = "Error consultando historial";
+      return;
+    }
+
+    if (!data.historial.length) {
+      resultado.innerText = "No hay registros";
+      return;
+    }
+
+    // Agrupar por persona
+    const conteo = {};
+
+    data.historial.forEach(p => {
+      const key = (p.cedula || "").trim();
+
+      if (!conteo[key]) {
+        conteo[key] = {
+          nombre: `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}`,
+          cantidad: 0
+        };
+      }
+
+      conteo[key].cantidad++;
+    });
+
+    let texto = "HISTORIAL SERVICIOS EXTRAORDINARIOS\n\n";
+
+    Object.values(conteo)
+      .sort((a, b) => b.cantidad - a.cantidad)
+      .forEach((p, i) => {
+        texto += `${i + 1}. ${p.nombre} - Veces: ${p.cantidad}\n`;
+      });
+
+    resultado.innerText = texto;
+
+  } catch (error) {
+    console.error(error);
+    resultado.innerText = "Error en servidor";
+  }
+}
     
     cargarEstructura();
   </script>
