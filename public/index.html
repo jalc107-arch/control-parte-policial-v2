@@ -321,7 +321,12 @@
     </div>
 
     <div class="seccion" id="bloqueConsultaGeneral" style="display:none;">
-      <h2>6. Consulta general de novedades</h2>
+
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelConsultaGeneral')">
+    6. Consulta general de novedades
+  </button>
+
+  <div id="panelConsultaGeneral" class="panel-contenido">
 
       <select id="consulta_unidad">
         <option value="">Seleccionar UNIDAD</option>
@@ -373,8 +378,9 @@
 </div>
 
       <pre id="resultado_general"></pre>
-      <pre id="resultado_detalle"></pre>
-    </div>
+    <pre id="resultado_detalle"></pre>
+  </div>
+</div>
 
     <div class="seccion" id="bloqueExtraordinario" style="display:none;">
       <h2>7. Apoyo automático a servicio extraordinario</h2>
