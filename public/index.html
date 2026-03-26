@@ -272,8 +272,8 @@
 </div>
     </div>
 
-    <div class="seccion">
-      <h2>3. Seleccionar ubicación</h2>
+   <div class="seccion" id="bloqueUbicacion" style="display:none;">
+  <h2>3. Seleccionar ubicación</h2>
 
       <select id="unidad_select" onchange="cargarSubunidades()">
         <option value="">Seleccionar UNIDAD</option>
@@ -302,7 +302,7 @@
 </div>
 </div>
 
-<div class="seccion">
+<div class="seccion" id="bloqueNovedades" style="display:none;">
   <h2>4. Novedades por persona</h2>
       <div id="lista"></div>
      <div class="acciones-inline">
@@ -310,7 +310,7 @@
 </div>
 </div>
 
-<div class="seccion">
+<div class="seccion" id="bloqueParte" style="display:none;">
   <h2>5. Generar parte</h2>
       <div class="acciones-inline">
   <button onclick="generarParte()">Generar Parte</button>
