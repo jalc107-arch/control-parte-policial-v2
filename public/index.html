@@ -1781,7 +1781,7 @@ async function consultarHistorialServicioExtraordinario() {
     // Agrupar por persona
     const conteo = {};
 
-    data.historial.forEach(p => {
+    data.data.forEach(p => {
       const key = (p.cedula || "").trim();
 
       if (!conteo[key]) {
