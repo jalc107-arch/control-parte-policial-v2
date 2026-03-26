@@ -365,13 +365,17 @@
       <h2>7. Apoyo automático a servicio extraordinario</h2>
 
       <div class="extra-simple-box">
-        <h3>7.1 Modo simple</h3>
-        <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad total de disponibles a tomar" />
-        <br>
-        <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje total de disponibles a tomar" />
-        <br>
-        <button onclick="aplicarServicioExtraordinarioSimple()">Aplicar modo simple</button>
-      </div>
+  <h3>7.1 Modo simple</h3>
+  <div class="campo-corto">
+    <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad total de disponibles a tomar" />
+  </div>
+  <div class="campo-corto">
+    <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje total de disponibles a tomar" />
+  </div>
+  <div class="acciones-inline">
+    <button onclick="aplicarServicioExtraordinarioSimple()">Aplicar modo simple</button>
+  </div>
+</div>
 
       <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
         <h2>8. Historial de servicios extraordinarios</h2>
