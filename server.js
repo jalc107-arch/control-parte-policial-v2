@@ -1264,65 +1264,67 @@ return res.json({
 // GUARDAR SERVICIOS EXTRAORDINARIOS
 // =========================
 app.post("/guardar-servicio-extraordinario", async (req, res) => {
-  const {
-    seleccionados = [],
-    responsable_cedula = "",
-    responsable_nombre = ""
-  } = req.body;
-
   try {
-    if (!Array.isArray(seleccionados) || seleccionados.length === 0) {
-      return res.status(400).json({
-        ok: false,
-        error: "No se recibieron seleccionados"
-      });
+    const { personal, responsable_cedula, responsable_nombre } = req.body;
+
+    if (!personal || !personal.length) {
+      return res.json({ ok: false, mensaje: "Sin personal" });
     }
 
-    const fecha = obtenerFechaBogotaSQL();
+    const ahora = new Date();
 
-    for (const p of seleccionados) {
-      await pool.query(
-        `
-        INSERT INTO servicios_extraordinarios (
-          cedula,
-          fecha,
-          unidad,
-          subunidad,
-          estacion,
-          organico,
-          grado,
-          apellidos,
-          nombres,
-          asignado_por_cedula,
-          asignado_por_nombre
-        )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-        `,
-        [
-          p.cedula || null,
-          fecha,
-          p.unidad || null,
-          p.subunidad || null,
-          p.estacion || null,
-          p.organico || null,
-          p.grado || null,
-          p.apellidos || null,
-          p.nombres || null,
-          responsable_cedula || null,
-          responsable_nombre || null
-        ]
-      );
-    }
+    const registros = personal.map(p => ({
+      cedula: (p.cedula || "").toString().trim(),
+      nombres: p.nombres || "",
+      apellidos: p.apellidos || "",
+      grado: p.grado || "",
+      unidad: p.unidad || "",
+      subunidad: p.subunidad || "",
+      estacion: p.estacion || "",
+      organico: p.organico || "",
+      responsable_cedula,
+      responsable_nombre
+    }));
 
-    return res.json({
-      ok: true,
-      mensaje: "Servicios extraordinarios guardados correctamente"
-    });
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
+    for (const r of registros) {
+  await pool.query(
+    `
+    INSERT INTO servicios_extraordinarios (
+      cedula,
+      fecha,
+      unidad,
+      subunidad,
+      estacion,
+      organico,
+      grado,
+      apellidos,
+      nombres,
+      asignado_por_cedula,
+      asignado_por_nombre
+    )
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+    `,
+    [
+      r.cedula || null,
+      obtenerFechaBogotaSQL(),
+      r.unidad || null,
+      r.subunidad || null,
+      r.estacion || null,
+      r.organico || null,
+      r.grado || null,
+      r.apellidos || null,
+      r.nombres || null,
+      r.responsable_cedula || null,
+      r.responsable_nombre || null
+    ]
+  );
+}
+
+res.json({ ok: true });
+
+  } catch (err) {
+    console.error(err);
+    res.json({ ok: false, error: err.message });
   }
 });
 
