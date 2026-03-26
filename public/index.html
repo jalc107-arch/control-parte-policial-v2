@@ -2162,6 +2162,27 @@ function descargarNovedadesTotales() {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+function descargarServicioExtraordinario() {
+  if (!ultimosSeleccionadosExtra || !ultimosSeleccionadosExtra.length) {
+    alert("No hay personal seleccionado en servicio extraordinario.");
+    return;
+  }
+
+  let texto = "SERVICIO EXTRAORDINARIO\n\n";
+
+  ultimosSeleccionadosExtra.forEach((p, i) => {
+    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${p.estacion || ""}\n`;
+  });
+
+  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "servicio_extraordinario.txt";
+  a.click();
+  URL.revokeObjectURL(url);
+}
     
     cargarEstructura();
      </script>
