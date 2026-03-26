@@ -404,27 +404,7 @@
   </div>
 </div>
 
-      <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
-
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
-    8. Historial de servicios extraordinarios
-  </button>
-
-  <div id="panelHistorialExtra" class="panel-contenido">
-    <div class="campo-corto">
-      <input id="historial_fecha_inicio" type="date" />
-    </div>
-    <div class="campo-corto">
-      <input id="historial_fecha_fin" type="date" />
-    </div>
-    <div class="acciones-inline">
-      <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
-    </div>
-    <pre id="resultado_historial_extra"></pre>
-  </div>
-</div>
-
-      <div class="grupo-extra">
+            <div class="grupo-extra">
         <div class="grupo-titulo">7.2 Distribución por grupos</div>
         <div class="ayuda">Este bloque toma el resultado de la consulta general filtrada y solo usa personal en DISPONIBLE.</div>
 
@@ -484,6 +464,26 @@
   </div>
 </div>
 
+<div class="seccion" id="bloqueHistorialExtra" style="display:none;">
+
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
+    8. Historial de servicios extraordinarios
+  </button>
+
+  <div id="panelHistorialExtra" class="panel-contenido">
+    <div class="campo-corto">
+      <input id="historial_fecha_inicio" type="date" />
+    </div>
+    <div class="campo-corto">
+      <input id="historial_fecha_fin" type="date" />
+    </div>
+    <div class="acciones-inline">
+      <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
+    </div>
+    <pre id="resultado_historial_extra"></pre>
+  </div>
+</div>
+      
   <script>
     let estructuraGlobal = [];
     let ultimoResultadoConsulta = [];
