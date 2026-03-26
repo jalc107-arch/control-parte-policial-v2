@@ -1773,10 +1773,10 @@ async function consultarHistorialServicioExtraordinario() {
       return;
     }
 
-    if (!data.historial.length) {
-      resultado.innerText = "No hay registros";
-      return;
-    }
+    if (!data.data || !data.data.length) {
+  resultado.innerText = "No hay registros";
+  return;
+}
 
     // Agrupar por persona
     const conteo = {};
