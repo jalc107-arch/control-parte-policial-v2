@@ -383,7 +383,12 @@
 </div>
 
     <div class="seccion" id="bloqueExtraordinario" style="display:none;">
-      <h2>7. Apoyo automático a servicio extraordinario</h2>
+
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
+    7. Apoyo automático a servicio extraordinario
+  </button>
+
+  <div id="panelExtraordinario" class="panel-contenido">
 
       <div class="extra-simple-box">
   <h3>7.1 Modo simple</h3>
@@ -469,9 +474,8 @@
 </div>
 
       <pre id="resultado_extra"></pre>
-    </div>
-
   </div>
+</div>
 
   <script>
     let estructuraGlobal = [];
