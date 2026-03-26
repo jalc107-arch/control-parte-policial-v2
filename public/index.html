@@ -1263,8 +1263,16 @@ FECHA: ${fecha}`;
         totalTomar = disponibles.length;
       }
 
-      const seleccionados = ordenarPorGrado(
-  mezclarArray(disponibles).slice(0, totalTomar)
+      const historial = await obtenerHistorialServicios();
+
+const disponiblesOrdenados = [...disponibles].sort((a, b) => {
+  const aCount = historial[String(a.cedula || "").trim()] || 0;
+  const bCount = historial[String(b.cedula || "").trim()] || 0;
+  return aCount - bCount;
+});
+
+const seleccionados = ordenarPorGrado(
+  mezclarArray(disponiblesOrdenados).slice(0, totalTomar)
 );
 
 ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
