@@ -707,6 +707,47 @@ app.get("/validar-parte", async (req, res) => {
   }
 });
 
+app.post("/guardar-servicio-extraordinario", async (req, res) => {
+  try {
+    const { personal, responsable_cedula, responsable_nombre } = req.body;
+
+    if (!personal || !personal.length) {
+      return res.json({ ok: false, mensaje: "Sin personal" });
+    }
+
+    const ahora = new Date();
+
+    const registros = personal.map(p => ({
+      cedula: (p.cedula || "").toString().trim(),
+      nombres: p.nombres || "",
+      apellidos: p.apellidos || "",
+      grado: p.grado || "",
+      unidad: p.unidad || "",
+      subunidad: p.subunidad || "",
+      estacion: p.estacion || "",
+      organico: p.organico || "",
+      fecha: ahora,
+      responsable_cedula,
+      responsable_nombre
+    }));
+
+    const { error } = await supabase
+      .from("historial_servicios_extra")
+      .insert(registros);
+
+    if (error) {
+      console.error(error);
+      return res.json({ ok: false, error });
+    }
+
+    res.json({ ok: true });
+
+  } catch (err) {
+    console.error(err);
+    res.json({ ok: false, error: err.message });
+  }
+});
+
 // =========================
 // GENERAR TEXTO DEL PARTE
 // =========================
