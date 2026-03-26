@@ -1676,6 +1676,57 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
   }
 }
 
+    async function obtenerHistorialServicios() {
+  try {
+    const grado = document.getElementById("grado").value.trim();
+    const rol = (document.getElementById("bloqueExcel").style.display === "block")
+      ? "ADMIN_EXCEL"
+      : "OPERADOR_PARTE";
+
+    const unidad = document.getElementById("consulta_unidad")?.value || "";
+    const subunidades = obtenerValoresChecks("checks_subunidad");
+    const estaciones = obtenerValoresChecks("checks_estacion");
+    const organicos = obtenerValoresChecks("checks_organico");
+
+    const res = await fetch("/historial-servicio-extraordinario", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        unidad,
+        subunidades,
+        estaciones,
+        organicos,
+        grado,
+        rol
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.data)) {
+      return {};
+    }
+
+    const historial = {};
+
+    data.data.forEach(item => {
+      const cedula = String(item.cedula || "").trim();
+      const veces = parseInt(item.veces || "0", 10);
+
+      if (cedula) {
+        historial[cedula] = veces;
+      }
+    });
+
+    return historial;
+  } catch (error) {
+    console.error("Error obteniendo historial:", error);
+    return {};
+  }
+}
+
     document.addEventListener("DOMContentLoaded", () => {
       const consultaUnidad = document.getElementById("consulta_unidad");
       if (consultaUnidad) {
@@ -1685,6 +1736,8 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
       cargarChecksGruposExtra();
     });
 
+
+    
     cargarEstructura();
   </script>
 
