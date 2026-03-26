@@ -1677,18 +1677,19 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
     const responsableCedula = document.getElementById("cedula_elabora").value.trim();
     const responsableNombre = document.getElementById("nombre_elabora").value.trim();
 
-    const res = await fetch("/guardar-servicio-extraordinario", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-  personal: ultimosSeleccionadosExtra,
-  responsable_cedula: responsableCedula,
-  responsable_nombre: responsableNombre
-})
+   const res = await fetch("/guardar-servicio-extraordinario", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    personal: ultimosSeleccionadosExtra,
+    responsable_cedula: responsableCedula,
+    responsable_nombre: responsableNombre
+  })
+});
 
-    const data = await res.json();
+const data = await res.json();
 
     if (!data.ok) {
       console.error("No se pudo guardar servicio extraordinario:", data.error || data.mensaje || data);
