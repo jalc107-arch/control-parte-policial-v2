@@ -1790,40 +1790,85 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
     }
 
     function renderizarConsultaDesdeRespuesta(data) {
-      const generalBox = document.getElementById("resultado_general");
-      const detalleBox = document.getElementById("resultado_detalle");
+  const generalBox = document.getElementById("resultado_general");
+  const detalleBox = document.getElementById("resultado_detalle");
 
-      let textoGeneral = "GENERAL\n\n";
-      textoGeneral += "TIPO".padEnd(35, " ") + "CONTEO".padEnd(15, " ") + "TOTAL\n";
-      textoGeneral += "-".repeat(58) + "\n";
+  let htmlGeneral = `
+    <div class="tabla-wrap">
+      <table class="tabla-app">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Conteo</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
 
-      data.general.forEach(item => {
-        textoGeneral += `${String(item.tipo || "").padEnd(35, " ")}${String(item.conteo || "").padEnd(15, " ")}${String(item.total || 0)}\n`;
-      });
+  data.general.forEach(item => {
+    htmlGeneral += `
+      <tr>
+        <td>${item.tipo || ""}</td>
+        <td>${item.conteo || ""}</td>
+        <td>${item.total || 0}</td>
+      </tr>
+    `;
+  });
 
-      let textoDetalle = "DETALLE INDIVIDUAL\n\n";
+  htmlGeneral += `
+        </tbody>
+      </table>
+    </div>
+  `;
 
-      data.detalleAgrupado.forEach(grupo => {
-        textoDetalle += `${grupo.tipo} ${grupo.conteo}   ${grupo.total}\n`;
-        textoDetalle += "-".repeat(110) + "\n";
+  let htmlDetalle = "";
 
-        grupo.personas.forEach((p, i) => {
-          textoDetalle += `${String(i + 1).padStart(3, " ")}. `
-            + `${String(p.grado || "").padEnd(4, " ")} | `
-            + `${String(p.apellidos || "").padEnd(20, " ")} | `
-            + `${String(p.nombres || "").padEnd(20, " ")} | `
-            + `${String(p.cedula || "").padEnd(12, " ")} | `
-            + `${String(p.telefono || "").padEnd(12, " ")} | `
-            + `${String(p.estacion || "")}\n`;
-        });
+  data.detalleAgrupado.forEach(grupo => {
+    htmlDetalle += `
+      <div class="tabla-wrap">
+        <div style="font-weight:700; margin:4px 0 10px 0; color: var(--azul-principal);">
+          ${grupo.tipo} | ${grupo.conteo} | ${grupo.total}
+        </div>
+        <table class="tabla-app">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Grado</th>
+              <th>Apellidos</th>
+              <th>Nombres</th>
+              <th>Cédula</th>
+              <th>Teléfono</th>
+              <th>Estación</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
 
-        textoDetalle += `\n`;
-      });
+    grupo.personas.forEach((p, i) => {
+      htmlDetalle += `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${p.grado || ""}</td>
+          <td>${p.apellidos || ""}</td>
+          <td>${p.nombres || ""}</td>
+          <td>${p.cedula || ""}</td>
+          <td>${p.telefono || ""}</td>
+          <td>${p.estacion || ""}</td>
+        </tr>
+      `;
+    });
 
-      generalBox.innerText = textoGeneral;
-      detalleBox.innerText = textoDetalle;
-    }
+    htmlDetalle += `
+          </tbody>
+        </table>
+      </div>
+    `;
+  });
 
+  generalBox.innerHTML = htmlGeneral;
+  detalleBox.innerHTML = htmlDetalle;
+}
     function renderizarConsultaDesdeMemoria() {
       const personal = [...ultimoResultadoConsulta];
 
