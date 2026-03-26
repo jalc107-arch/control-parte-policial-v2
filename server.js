@@ -1083,17 +1083,20 @@ app.post("/consulta-novedades", async (req, res) => {
     const organicosLimpios = normalizarArrayValores(organicos);
     const tiposLimpios = normalizarArrayValores(tiposFiltro).map(v => v.toUpperCase());
 
-    let query = `
-      SELECT
-        p.grado,
-        p.apellidos,
-        p.nombres,
-        p.cedula,
-        p.telefono,
-        p.estacion,
-        COALESCE(n.tipo_novedad, '') AS tipo_novedad
-      FROM personal p
-      LEFT JOIN novedades n
+   let query = `
+  SELECT
+    p.grado,
+    p.apellidos,
+    p.nombres,
+    p.cedula,
+    p.telefono,
+    p.unidad,
+    p.subunidad,
+    p.estacion,
+    p.organico,
+    COALESCE(n.tipo_novedad, '') AS tipo_novedad
+  FROM personal p
+        LEFT JOIN novedades n
         ON p.cedula = n.cedula
         AND n.fecha = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date
       WHERE p.activo = true
