@@ -1267,6 +1267,8 @@ FECHA: ${fecha}`;
   mezclarArray(disponibles).slice(0, totalTomar)
 );
 
+ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
+      
       seleccionados.forEach(p => {
         p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
       });
@@ -1358,7 +1360,9 @@ FECHA: ${fecha}`;
         alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
         return;
       }
-
+      
+      ultimosSeleccionadosExtra = seleccionadosFinales.map(p => ({ ...p }));
+      
       let texto = "";
       texto += `SERVICIO EXTRAORDINARIO APLICADO - POR GRUPOS\n\n`;
       texto += `DISPONIBLES ANTES: ${disponibles.length}\n`;
