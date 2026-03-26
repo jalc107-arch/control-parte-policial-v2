@@ -295,10 +295,13 @@
 
     <div class="seccion">
       <h2>5. Generar parte</h2>
-      <button onclick="generarParte()">Generar Parte</button>
-      <button onclick="descargarPDF()">Descargar PDF</button>
-      <br>
-      <input type="file" id="foto_parte" accept="image/*" capture="environment">
+      <div class="acciones-inline">
+  <button onclick="generarParte()">Generar Parte</button>
+  <button onclick="descargarPDF()">Descargar PDF</button>
+</div>
+<div class="campo-corto">
+  <input type="file" id="foto_parte" accept="image/*" capture="environment">
+</div>
       <pre id="resultado"></pre>
     </div>
 
