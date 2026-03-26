@@ -1761,37 +1761,37 @@ async function consultarHistorialServicioExtraordinario() {
   const resultado = document.getElementById("resultado_historial_extra");
   resultado.innerText = "Consultando...";
 
+  const fechaInicio = document.getElementById("historial_fecha_inicio")?.value || "";
+  const fechaFin = document.getElementById("historial_fecha_fin")?.value || "";
+
   const unidad = document.getElementById("consulta_unidad")?.value || "";
-const subunidades = obtenerValoresChecks("checks_subunidad");
-const estaciones = obtenerValoresChecks("checks_estacion");
-const organicos = obtenerValoresChecks("checks_organico");
+  const subunidades = obtenerValoresChecks("checks_subunidad");
+  const estaciones = obtenerValoresChecks("checks_estacion");
+  const organicos = obtenerValoresChecks("checks_organico");
 
-const grado = document.getElementById("grado").value.trim();
-const rol = (document.getElementById("bloqueExcel").style.display === "block")
-  ? "ADMIN_EXCEL"
-  : "OPERADOR_PARTE";
-
-const res = await fetch("/historial-servicio-extraordinario", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    unidad,
-    subunidades,
-    estaciones,
-    organicos,
-    fechaInicio,
-    fechaFin,
-    grado,
-    rol
-  })
-});
-
-const data = await res.json();
+  const grado = document.getElementById("grado").value.trim();
+  const rol = (document.getElementById("bloqueExcel").style.display === "block")
+    ? "ADMIN_EXCEL"
+    : "OPERADOR_PARTE";
 
   try {
-    const res = await fetch(`/historial-servicio-extraordinario?inicio=${fechaInicio}&fin=${fechaFin}`);
+    const res = await fetch("/historial-servicio-extraordinario", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        unidad,
+        subunidades,
+        estaciones,
+        organicos,
+        fechaInicio,
+        fechaFin,
+        grado,
+        rol
+      })
+    });
+
     const data = await res.json();
 
     if (!data.ok) {
@@ -1800,32 +1800,16 @@ const data = await res.json();
     }
 
     if (!data.data || !data.data.length) {
-  resultado.innerText = "No hay registros";
-  return;
-}
-
-    // Agrupar por persona
-    const conteo = {};
-
-    data.data.forEach(p => {
-      const key = (p.cedula || "").trim();
-
-      if (!conteo[key]) {
-        conteo[key] = {
-          nombre: `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}`,
-          cantidad: 0
-        };
-      }
-
-      conteo[key].cantidad++;
-    });
+      resultado.innerText = "No hay registros";
+      return;
+    }
 
     let texto = "HISTORIAL SERVICIOS EXTRAORDINARIOS\n\n";
 
-    Object.values(conteo)
-      .sort((a, b) => b.cantidad - a.cantidad)
+    data.data
+      .sort((a, b) => parseInt(b.veces || "0", 10) - parseInt(a.veces || "0", 10))
       .forEach((p, i) => {
-        texto += `${i + 1}. ${p.nombre} - Veces: ${p.cantidad}\n`;
+        texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - Veces: ${p.veces || 0} - Última vez: ${p.ultima_vez || ""}\n`;
       });
 
     resultado.innerText = texto;
