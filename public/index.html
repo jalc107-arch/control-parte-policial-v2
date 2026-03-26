@@ -2137,6 +2137,28 @@ async function consultarHistorialServicioExtraordinario() {
     panel.style.display = "block";
   }
 }
+
+function descargarNovedadesTotales() {
+  if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) {
+    alert("Primero consulta las novedades.");
+    return;
+  }
+
+  let texto = "NOVEDADES TOTALES\n\n";
+
+  ultimoResultadoConsulta.forEach((p, i) => {
+    const tipo = (p.tipo_novedad || "DISPONIBLE").trim() || "DISPONIBLE";
+    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${tipo} | ${p.estacion || ""}\n`;
+  });
+
+  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "novedades_totales.txt";
+  a.click();
+  URL.revokeObjectURL(url);
+}
     
     cargarEstructura();
      </script>
