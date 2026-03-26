@@ -1912,6 +1912,17 @@ async function consultarHistorialServicioExtraordinario() {
     resultado.innerText = "Error en servidor";
   }
 }
+
+    function togglePanel(id) {
+  const panel = document.getElementById(id);
+  if (!panel) return;
+
+  if (panel.style.display === "block") {
+    panel.style.display = "none";
+  } else {
+    panel.style.display = "block";
+  }
+}
     
     cargarEstructura();
   </script>
