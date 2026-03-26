@@ -1377,14 +1377,7 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
     });
   }
 });
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
-});
-
+  
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
