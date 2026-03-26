@@ -404,17 +404,23 @@
 </div>
 
       <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
-  <h2>8. Historial de servicios extraordinarios</h2>
-  <div class="campo-corto">
-    <input id="historial_fecha_inicio" type="date" />
+
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
+    8. Historial de servicios extraordinarios
+  </button>
+
+  <div id="panelHistorialExtra" class="panel-contenido">
+    <div class="campo-corto">
+      <input id="historial_fecha_inicio" type="date" />
+    </div>
+    <div class="campo-corto">
+      <input id="historial_fecha_fin" type="date" />
+    </div>
+    <div class="acciones-inline">
+      <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
+    </div>
+    <pre id="resultado_historial_extra"></pre>
   </div>
-  <div class="campo-corto">
-    <input id="historial_fecha_fin" type="date" />
-  </div>
-  <div class="acciones-inline">
-    <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
-  </div>
-  <pre id="resultado_historial_extra"></pre>
 </div>
 
       <div class="grupo-extra">
