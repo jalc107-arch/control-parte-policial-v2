@@ -229,9 +229,12 @@
 
     <div class="seccion">
       <h2>1. Validar responsable</h2>
-      <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
-      <br>
-      <button onclick="validarResponsable()">Validar responsable</button>
+      <div class="campo-corto">
+        <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
+      </div>
+      <div class="acciones-inline">
+        <button onclick="validarResponsable()">Validar responsable</button>
+      </div>
       <div id="datos_responsable" style="margin-top:10px; font-weight:bold;"></div>
 
       <div style="display:none;">
