@@ -1255,7 +1255,10 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
   );
 }
 
-res.json({ ok: true });
+res.json({
+  ok: true,
+  mensaje: "Servicio extraordinario guardado correctamente"
+});
 
   } catch (err) {
     console.error(err);
