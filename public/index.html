@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Control de Partes</title>
-<style>
+  <style>
   :root {
     --azul-principal: #0B1F3A;
     --verde-accion: #1F5A3C;
@@ -20,10 +20,7 @@
     --radio-sm: 10px;
   }
 
-  * {
-    box-sizing: border-box;
-  }
-
+  * { box-sizing: border-box; }
   body {
     margin: 0;
     padding: 16px;
@@ -32,7 +29,6 @@
     background: linear-gradient(180deg, #0B1F3A 0%, #102B4E 100%);
     color: var(--blanco);
   }
-
   h1 {
     margin: 0 0 18px 0;
     font-size: 28px;
@@ -40,21 +36,18 @@
     color: var(--blanco);
     letter-spacing: 0.2px;
   }
-
   h2 {
     margin: 0 0 10px 0;
     font-size: 18px;
     font-weight: 700;
     color: var(--azul-principal);
   }
-
   h3 {
     margin: 0 0 10px 0;
     font-size: 14px;
     font-weight: 700;
     color: var(--azul-principal);
   }
-
   .card {
     width: 100%;
     max-width: 460px;
@@ -65,7 +58,6 @@
     color: var(--texto-oscuro);
     box-shadow: var(--sombra-card);
   }
-
   .seccion {
     margin-top: 16px;
     padding: 16px 14px;
@@ -73,20 +65,13 @@
     background: var(--gris-claro);
     border: 1px solid #ECF1F6;
   }
-
-  input,
-  select,
-  button,
-  textarea {
+  input, select, button, textarea {
     margin: 4px 0;
     font-size: 14px;
     border-radius: var(--radio-sm);
     box-sizing: border-box;
   }
-
-  input,
-  select,
-  textarea {
+  input, select, textarea {
     width: 100%;
     max-width: 100%;
     padding: 12px 14px;
@@ -96,14 +81,10 @@
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
-
-  input:focus,
-  select:focus,
-  textarea:focus {
+  input:focus, select:focus, textarea:focus {
     border-color: var(--verde-accion);
     box-shadow: 0 0 0 3px rgba(31, 90, 60, 0.12);
   }
-
   button {
     min-width: 120px;
     padding: 11px 16px;
@@ -114,15 +95,8 @@
     cursor: pointer;
     transition: background 0.2s ease, transform 0.15s ease;
   }
-
-  button:hover {
-    background: var(--verde-accion-hover);
-  }
-
-  button:active {
-    transform: scale(0.98);
-  }
-
+  button:hover { background: var(--verde-accion-hover); }
+  button:active { transform: scale(0.98); }
   .acciones-inline {
     display: flex;
     justify-content: center;
@@ -130,44 +104,45 @@
     flex-wrap: wrap;
     margin-top: 8px;
   }
-
+  .acciones-descarga { margin-top: 12px; }
   .campo-corto {
     max-width: 320px;
     margin: 0 auto;
   }
-
   .persona {
-    padding: 10px 0;
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: var(--blanco);
+    box-shadow: var(--sombra-suave);
     text-align: left;
-    border-bottom: 1px solid #E8EDF3;
   }
-
-  .persona:last-child {
-    border-bottom: none;
-  }
-
+  .persona:last-child { margin-bottom: 0; }
   .persona b {
     display: block;
-    margin-bottom: 6px;
     font-size: 13px;
+    line-height: 1.35;
+    margin-bottom: 8px;
     color: var(--texto-oscuro);
   }
-
-  .persona select {
-    width: 100%;
+  .persona .persona-cc {
+    display: block;
+    font-size: 12px;
+    color: var(--gris-texto);
+    margin-top: 3px;
   }
-
+  .persona select { width: 100%; }
   #lista {
     margin-top: 10px;
-    padding: 8px;
-    max-height: 260px;
+    max-height: 430px;
     overflow-y: auto;
-    text-align: left;
     border: 1px solid var(--gris-borde);
-    border-radius: var(--radio-sm);
-    background: var(--blanco);
+    border-radius: 12px;
+    padding: 10px;
+    background: var(--gris-claro);
+    text-align: left;
   }
-
   pre {
     margin-top: 10px;
     padding: 12px;
@@ -182,18 +157,13 @@
     font-size: 12px;
     line-height: 1.4;
   }
-
   .ayuda {
     margin-top: 4px;
     margin-bottom: 8px;
     font-size: 11px;
     color: var(--gris-texto);
   }
-
-  .filtro-box,
-  .grupo-extra,
-  .extra-simple-box,
-  .sub-card {
+  .filtro-box, .grupo-extra, .extra-simple-box, .sub-card {
     width: 100%;
     max-width: 100%;
     margin: 10px 0;
@@ -204,15 +174,12 @@
     border: 1px solid var(--gris-borde);
     box-shadow: var(--sombra-suave);
   }
-
-  .filtro-titulo,
-  .grupo-titulo {
+  .filtro-titulo, .grupo-titulo {
     margin-bottom: 8px;
     font-size: 13px;
     font-weight: 700;
     color: var(--azul-principal);
   }
-
   .subtitulo-extra {
     margin-top: 8px;
     margin-bottom: 6px;
@@ -220,20 +187,17 @@
     font-weight: 700;
     color: var(--texto-oscuro);
   }
-
   .filtro-botones {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
     margin-bottom: 8px;
   }
-
   .filtro-botones button {
     min-width: auto;
     padding: 7px 10px;
     font-size: 11px;
   }
-
   .checks-contenedor {
     max-height: 120px;
     overflow-y: auto;
@@ -242,30 +206,15 @@
     border-radius: 8px;
     background: var(--gris-claro);
   }
-
   .check-item {
     display: block;
     margin-bottom: 5px;
     font-size: 12px;
     color: var(--texto-oscuro);
   }
-
-  .check-item input {
-    width: auto;
-    margin-right: 6px;
-  }
-
-  .grupo-extra input[type="number"] {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .grid-extra {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
+  .check-item input { width: auto; margin-right: 6px; }
+  .grupo-extra input[type="number"] { width: 100%; max-width: 100%; }
+  .grid-extra { display: grid; grid-template-columns: 1fr; gap: 10px; }
   .panel-toggle {
     width: 100%;
     padding: 12px 14px;
@@ -277,12 +226,7 @@
     color: var(--blanco);
     margin-bottom: 8px;
   }
-
-  .panel-contenido {
-    display: none;
-    margin-top: 8px;
-  }
-
+  .panel-contenido { display: none; margin-top: 8px; }
   .input-archivo-minimal {
     max-width: 260px;
     margin: 8px auto 0;
@@ -291,98 +235,57 @@
     border: none;
     background: transparent;
   }
-.persona {
-  border: 1px solid var(--gris-borde);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 10px;
-  background: var(--blanco);
-}
-
-.persona b {
-  display: block;
-  font-size: 13px;
-  line-height: 1.35;
-  margin-bottom: 8px;
-  color: var(--texto-oscuro);
-}
-
-.persona .persona-cc {
-  display: block;
-  font-size: 12px;
-  color: var(--gris-texto);
-  margin-top: 2px;
-}
-
-#lista {
-  margin-top: 10px;
-  max-height: 420px;
-  overflow-y: auto;
-  border: 1px solid var(--gris-borde);
-  border-radius: 12px;
-  padding: 10px;
-  background: var(--gris-claro);
-}
-
-.tabla-wrap {
-  margin-top: 10px;
-  overflow-x: auto;
-  background: var(--blanco);
-  border: 1px solid var(--gris-borde);
-  border-radius: 12px;
-  padding: 8px;
-}
-
-.tabla-app {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  color: var(--texto-oscuro);
-}
-
-.tabla-app th,
-.tabla-app td {
-  border-bottom: 1px solid #E9EEF5;
-  padding: 8px 6px;
-  text-align: left;
-  vertical-align: top;
-}
-
-.tabla-app th {
-  background: var(--gris-claro);
-  font-weight: 700;
-  color: var(--azul-principal);
-  position: sticky;
-  top: 0;
-}
-
-.tabla-app tr:last-child td {
-  border-bottom: none;
-}
-  
+  .tabla-wrap {
+    margin-top: 10px;
+    overflow-x: auto;
+    background: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: var(--sombra-suave);
+  }
+  .tabla-app {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    color: var(--texto-oscuro);
+  }
+  .tabla-app th, .tabla-app td {
+    border-bottom: 1px solid #E9EEF5;
+    padding: 8px 6px;
+    text-align: left;
+    vertical-align: top;
+    white-space: nowrap;
+  }
+  .tabla-app th {
+    background: var(--gris-claro);
+    font-weight: 700;
+    color: var(--azul-principal);
+  }
+  .tabla-app tr:last-child td { border-bottom: none; }
+  .bloque-titulo-tabla {
+    font-weight: 700;
+    margin: 4px 0 10px 0;
+    color: var(--azul-principal);
+    font-size: 13px;
+  }
   @media (min-width: 768px) {
-    .grid-extra {
-      grid-template-columns: 1fr 1fr;
-    }
+    .grid-extra { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
-
   <h1>📍 Control de Partes</h1>
-
   <div class="card">
-
+    <!-- =========================
+         1. VALIDAR RESPONSABLE
+    ========================= -->
     <div class="seccion">
       <h2>Paso 1 — Validación</h2>
-      <div class="campo-corto">
-        <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
-      </div>
-      <div class="acciones-inline">
-        <button onclick="validarResponsable()">Validar responsable</button>
-      </div>
+      <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
+      <br>
+      <button onclick="validarResponsable()">Validar responsable</button>
       <div id="datos_responsable" style="margin-top:10px; font-weight:bold;"></div>
-
       <div style="display:none;">
         <input id="grado" />
         <input id="nombre_elabora" />
@@ -392,261 +295,130 @@
         <input id="longitud" />
       </div>
     </div>
-
+    <!-- =========================
+         2. SUBIR EXCEL
+    ========================= -->
     <div class="seccion" id="bloqueExcel" style="display:none;">
       <h2>Paso 2 — Cargar archivo</h2>
-      <div class="campo-corto">
-        <input type="file" id="fileExcel" accept=".xlsx" />
-</div>
-<div class="acciones-inline">
-  <button onclick="subirExcel()">Subir Excel</button>
-</div>
+      <input type="file" id="fileExcel" accept=".xlsx" />
+      <button onclick="subirExcel()">Subir Excel</button>
     </div>
-
-   <div class="seccion" id="bloqueUbicacion" style="display:none;">
-  <h2>Paso 3 — Registro del servicio</h2>
-
+    <!-- =========================
+         3. SELECCIONAR UBICACIÓN
+    ========================= -->
+    <div class="seccion">
+      <h2>Paso 3 — Registro del servicio</h2>
       <select id="unidad_select" onchange="cargarSubunidades()">
         <option value="">Seleccionar UNIDAD</option>
       </select>
       <br>
-
       <select id="subunidad_select" onchange="cargarEstaciones(); cargarOrganicos()">
         <option value="">Seleccionar SUBUNIDAD</option>
       </select>
       <br>
-
       <select id="estacion_select" onchange="cargarOrganicos()">
         <option value="">Seleccionar ESTACIÓN</option>
       </select>
       <br>
-
       <div id="bloqueOrganico" style="display:none;">
         <select id="organico_select">
           <option value="">Seleccionar ORGÁNICO</option>
         </select>
         <br>
       </div>
-
-      <div class="acciones-inline">
-  <button onclick="cargarPersonal()">Continuar</button>
-</div>
-</div>
-
-<div class="seccion" id="bloqueNovedades" style="display:none;">
-  <div class="sub-card">
-    <h3>Novedades</h3>
+      <button onclick="cargarPersonal()">Continuar</button>
+    </div>
+    <!-- =========================
+         4. NOVEDADES
+    ========================= -->
+    <div class="seccion">
+      <h3>Asignar novedad</h3>
       <div id="lista"></div>
-     <div class="acciones-inline">
-  <button onclick="guardarNovedades()">Guardar</button>
-</div>
-</div>
-</div>
-  
-<div class="seccion" id="bloqueParte" style="display:none;">
-  <div class="sub-card">
-    <h3>Generar</h3>
-      <div class="acciones-inline">
-  <button onclick="generarParte()">Generar</button>
-  <button onclick="descargarPDF()">Descargar</button>
-</div>
-<div class="campo-corto">
-  <input type="file" id="foto_parte" accept="image/*" capture="environment" class="input-archivo-minimal">
-</div>
-<pre id="resultado"></pre>
-</div>
-</div>
-
-<div class="seccion" id="bloqueConsultaGeneral" style="display:none;">
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelConsultaGeneral')">
-    6. Consulta general de novedades
-  </button>
-
-  <div id="panelConsultaGeneral" class="panel-contenido">
-
+      <button onclick="guardarNovedades()">Guardar</button>
+    </div>
+    <!-- =========================
+         5. GENERAR PARTE
+    ========================= -->
+    <div class="seccion">
+      <h3>Salida del parte</h3>
+      <button onclick="generarParte()">Generar</button>
+      <button onclick="descargarPDF()">Descargar</button>
+      <br>
+      <input type="file" id="foto_parte" accept="image/*" capture="environment" class="input-archivo-minimal">
+      <pre id="resultado"></pre>
+    </div>
+    <!-- =========================
+         6. CONSULTA GENERAL DE NOVEDADES
+    ========================= -->
+    <div class="seccion" id="bloqueConsultaGeneral" style="display:none;">
+      <h2>6. Consulta general de novedades</h2>
       <select id="consulta_unidad">
         <option value="">Seleccionar UNIDAD</option>
       </select>
-      <div class="ayuda">Unidad: una sola</div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Subunidad</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_subunidad')">Seleccionar todas</button>
-          <button type="button" onclick="limpiarChecks('checks_subunidad')">Limpiar</button>
-        </div>
-        <div id="checks_subunidad" class="checks-contenedor"></div>
-        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Estaciones</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_estacion')">Seleccionar todas</button>
-          <button type="button" onclick="limpiarChecks('checks_estacion')">Limpiar</button>
-        </div>
-        <div id="checks_estacion" class="checks-contenedor"></div>
-        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Orgánicos</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_organico')">Seleccionar todas</button>
-          <button type="button" onclick="limpiarChecks('checks_organico')">Limpiar</button>
-        </div>
-        <div id="checks_organico" class="checks-contenedor"></div>
-        <div class="ayuda">Si no marcas ninguno, consulta todos.</div>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Novedad</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_tipo')">Seleccionar todas</button>
-          <button type="button" onclick="limpiarChecks('checks_tipo')">Limpiar</button>
-        </div>
-        <div id="checks_tipo" class="checks-contenedor"></div>
-        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
-      </div>
-
-      <div class="acciones-inline">
-  <button onclick="consultarNovedades()">Consultar novedades</button>
-</div>
-
-     <div id="resultado_general"></div>
-<div id="resultado_detalle"></div>
-<div class="acciones-inline">
-  <button onclick="descargarNovedadesTotales()">Descargar novedades</button>
-</div>
-  </div>
-</div>
-
-    <div class="seccion" id="bloqueExtraordinario" style="display:none;">
-
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
-    7. Apoyo automático a servicio extraordinario
-  </button>
-
-  <div id="panelExtraordinario" class="panel-contenido">
-
-      <div class="extra-simple-box">
-  <h3>7.1 Modo simple</h3>
-  <div class="campo-corto">
-    <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad total de disponibles a tomar" />
-  </div>
-  <div class="campo-corto">
-    <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje total de disponibles a tomar" />
-  </div>
-  <div class="acciones-inline">
-    <button onclick="aplicarServicioExtraordinarioSimple()">Aplicar modo simple</button>
-  </div>
-</div>
-
-            <div class="grupo-extra">
-        <div class="grupo-titulo">7.2 Distribución por grupos</div>
-        <div class="ayuda">Este bloque toma el resultado de la consulta general filtrada y solo usa personal en DISPONIBLE.</div>
-
-        <div class="grid-extra">
-
-          <div class="grupo-extra">
-            <div class="grupo-titulo">Oficiales</div>
-            <input id="cant_oficiales_extra" type="number" min="0" placeholder="Cantidad de oficiales" />
-            <div class="subtitulo-extra">Grados oficiales</div>
-            <div class="filtro-botones">
-              <button type="button" onclick="seleccionarTodasChecks('checks_extra_oficiales')">Seleccionar todas</button>
-              <button type="button" onclick="limpiarChecks('checks_extra_oficiales')">Limpiar</button>
-            </div>
-            <div id="checks_extra_oficiales" class="checks-contenedor"></div>
-          </div>
-
-          <div class="grupo-extra">
-            <div class="grupo-titulo">Nivel ejecutivo</div>
-            <input id="cant_ejecutivo_extra" type="number" min="0" placeholder="Cantidad de nivel ejecutivo" />
-            <div class="subtitulo-extra">Grados nivel ejecutivo</div>
-            <div class="filtro-botones">
-              <button type="button" onclick="seleccionarTodasChecks('checks_extra_ejecutivo')">Seleccionar todas</button>
-              <button type="button" onclick="limpiarChecks('checks_extra_ejecutivo')">Limpiar</button>
-            </div>
-            <div id="checks_extra_ejecutivo" class="checks-contenedor"></div>
-          </div>
-
-          <div class="grupo-extra">
-            <div class="grupo-titulo">Patrulleros</div>
-            <input id="cant_patrulleros_extra" type="number" min="0" placeholder="Cantidad de patrulleros" />
-            <div class="subtitulo-extra">Grados patrulleros</div>
-            <div class="filtro-botones">
-              <button type="button" onclick="seleccionarTodasChecks('checks_extra_patrulleros')">Seleccionar todas</button>
-              <button type="button" onclick="limpiarChecks('checks_extra_patrulleros')">Limpiar</button>
-            </div>
-            <div id="checks_extra_patrulleros" class="checks-contenedor"></div>
-          </div>
-
-          <div class="grupo-extra">
-            <div class="grupo-titulo">Auxiliares</div>
-            <input id="cant_auxiliares_extra" type="number" min="0" placeholder="Cantidad de auxiliares" />
-            <div class="subtitulo-extra">Grados auxiliares</div>
-            <div class="filtro-botones">
-              <button type="button" onclick="seleccionarTodasChecks('checks_extra_auxiliares')">Seleccionar todas</button>
-              <button type="button" onclick="limpiarChecks('checks_extra_auxiliares')">Limpiar</button>
-            </div>
-            <div id="checks_extra_auxiliares" class="checks-contenedor"></div>
-          </div>
-
-        </div>
-
-       <div class="acciones-inline">
-  <button onclick="aplicarServicioExtraordinarioPorGrupos()">Aplicar distribución por grupos</button>
-</div>
-
-      <pre id="resultado_extra"></pre>
-<div class="acciones-inline">
-  <button onclick="descargarServicioExtraordinario()">Descargar extraordinario</button>
-</div>
-  </div>
-</div>
-
-<div class="seccion" id="bloqueHistorialExtra" style="display:none;">
-
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
-    8. Historial de servicios extraordinarios
-  </button>
-
-  <div id="panelHistorialExtra" class="panel-contenido">
-    <div class="campo-corto">
-      <input id="historial_fecha_inicio" type="date" />
+      <br>
+      <select id="consulta_subunidad">
+        <option value="">Seleccionar SUBUNIDAD</option>
+      </select>
+      <br>
+      <select id="consulta_estacion">
+        <option value="">Todas las ESTACIONES</option>
+      </select>
+      <br>
+      <select id="consulta_organico">
+        <option value="">Todos los ORGÁNICOS</option>
+      </select>
+      <br>
+      <select id="consulta_tipo">
+        <option value="">TODOS</option>
+        <option value="DISPONIBLE">SOLO DISPONIBLES</option>
+        <option value="SERVICIO">SOLO SERVICIO</option>
+        <option value="PERMISO">SOLO PERMISO</option>
+        <option value="VACACIONES">SOLO VACACIONES</option>
+        <option value="FRANQUICIA">SOLO FRANQUICIA</option>
+        <option value="COMISION DE SERVICIO">SOLO COMISION DE SERVICIO</option>
+        <option value="COMISION EXTERIOR">SOLO COMISION EXTERIOR</option>
+        <option value="PLAN ELECTORAL">SOLO PLAN ELECTORAL</option>
+        <option value="PERMISO EXTRAORDINARIOS">SOLO PERMISO EXTRAORDINARIOS</option>
+        <option value="PERMISO NAVIDEÑO">SOLO PERMISO NAVIDEÑO</option>
+        <option value="PERMISO SEMANA SANTA">SOLO PERMISO SEMANA SANTA</option>
+        <option value="LICENCIA LUTO">SOLO LICENCIA LUTO</option>
+        <option value="LICENCIA MATERNIDAD">SOLO LICENCIA MATERNIDAD</option>
+        <option value="HOSPITALIZADO">SOLO HOSPITALIZADO</option>
+        <option value="CITA MEDICA">SOLO CITA MEDICA</option>
+        <option value="CURSO ASCENSO">SOLO CURSO ASCENSO</option>
+        <option value="RETARDADOS DE LA FORMACION">SOLO RETARDADOS DE LA FORMACION</option>
+        <option value="FUERA DE LA FORMACION">SOLO FUERA DE LA FORMACION</option>
+        <option value="HORARIO FLEXIBLE">SOLO HORARIO FLEXIBLE</option>
+        <option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">SOLO CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
+        <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">SOLO NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
+      </select>
+      <br>
+      <button onclick="consultarNovedades()">Consultar novedades</button>
+      <pre id="resultado_general"></pre>
+      <pre id="resultado_detalle"></pre>
     </div>
-    <div class="campo-corto">
-      <input id="historial_fecha_fin" type="date" />
-    </div>
-    <div class="acciones-inline">
-      <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
-    </div>
-    <pre id="resultado_historial_extra"></pre>
   </div>
-</div>
-      
   <script>
+    /* =========================
+       VARIABLES GLOBALES
+    ========================= */
     let estructuraGlobal = [];
-    let ultimoResultadoConsulta = [];
-    let ultimosSeleccionadosExtra = [];
-    
+    /* =========================
+       SUBIR EXCEL
+    ========================= */
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
-
       if (!input.files.length) {
         alert("Selecciona un archivo Excel");
         return;
       }
-
       const formData = new FormData();
       formData.append("archivo", input.files[0]);
-
       try {
         const res = await fetch("/subir-excel", {
           method: "POST",
           body: formData
         });
-
         const data = await res.text();
         alert(data);
         await cargarEstructura();
@@ -655,87 +427,59 @@
         alert("Error subiendo Excel: " + error.message);
       }
     }
-
+    /* =========================
+       VALIDAR RESPONSABLE
+    ========================= */
     async function validarResponsable() {
       const cedula = document.getElementById("cedula_responsable").value.trim();
-
       document.getElementById("lista").innerHTML = "";
       document.getElementById("resultado").innerText = "";
-      document.getElementById("resultado_extra").innerText = "";
-      ultimoResultadoConsulta = [];
-
       const generalBox = document.getElementById("resultado_general");
       const detalleBox = document.getElementById("resultado_detalle");
       if (generalBox) generalBox.innerText = "";
       if (detalleBox) detalleBox.innerText = "";
-
       if (!cedula) {
         alert("Ingresa la cédula");
         return;
       }
-
       try {
         const res = await fetch("/validar-responsable", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify({ cedula })
         });
-
         const data = await res.json();
-
-        
-
-       if (!data.ok) {
-  document.getElementById("datos_responsable").innerText = "No autorizado";
-
-  // 🔒 OCULTAR TODO
-  document.getElementById("bloqueExcel").style.display = "none";
-  document.getElementById("bloqueUbicacion").style.display = "none";
-  document.getElementById("bloqueNovedades").style.display = "none";
-  document.getElementById("bloqueParte").style.display = "none";
-  document.getElementById("bloqueConsultaGeneral").style.display = "none";
-  document.getElementById("bloqueExtraordinario").style.display = "none";
-  document.getElementById("bloqueHistorialExtra").style.display = "none";
-
-  // 🔄 RESET selects
-  document.getElementById("unidad_select").value = "";
-  document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-  document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-  document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
-
-  // 🔒 BLOQUEAR selects
-  document.getElementById("unidad_select").disabled = true;
-  document.getElementById("subunidad_select").disabled = true;
-  document.getElementById("estacion_select").disabled = true;
-
-  // 🔄 LIMPIAR datos
-  document.getElementById("grado").value = "";
-  document.getElementById("nombre_elabora").value = "";
-  document.getElementById("cedula_elabora").value = "";
-  document.getElementById("telefono_elabora").value = "";
-
-  return;
-}
-
-        document.getElementById("cedula_elabora").value = cedula;
-        document.getElementById("nombre_elabora").value = data.nombre || "";
-        document.getElementById("grado").value = data.grado || "";
-
+        if (!data.ok) {
+          document.getElementById("datos_responsable").innerText = "No autorizado";
+          document.getElementById("bloqueExcel").style.display = "none";
+          document.getElementById("bloqueOrganico").style.display = "none";
+          document.getElementById("bloqueConsultaGeneral").style.display = "none";
+          document.getElementById("unidad_select").value = "";
+          document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+          document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+          document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+          document.getElementById("unidad_select").disabled = true;
+          document.getElementById("subunidad_select").disabled = true;
+          document.getElementById("estacion_select").disabled = true;
+          document.getElementById("grado").value = "";
+          document.getElementById("nombre_elabora").value = "";
+          document.getElementById("cedula_elabora").value = "";
+          document.getElementById("telefono_elabora").value = "";
+          return;
+        }
         document.getElementById("datos_responsable").innerText = `${data.grado} - ${data.nombre}`;
         document.getElementById("grado").value = data.grado || "";
         document.getElementById("nombre_elabora").value = data.nombre || "";
         document.getElementById("cedula_elabora").value = data.cedula || "";
         document.getElementById("telefono_elabora").value = data.telefono || "";
-
         if (!data.esOficial) {
           document.getElementById("unidad_select").value = data.unidad || "";
           cargarSubunidades();
-
           document.getElementById("subunidad_select").value = data.subunidad || "";
           cargarEstaciones();
-
           document.getElementById("estacion_select").value = data.estacion || "";
-
           document.getElementById("unidad_select").disabled = true;
           document.getElementById("subunidad_select").disabled = true;
           document.getElementById("estacion_select").disabled = true;
@@ -744,105 +488,83 @@
           document.getElementById("subunidad_select").disabled = false;
           document.getElementById("estacion_select").disabled = false;
         }
-
         document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
-        document.getElementById("bloqueUbicacion").style.display = "block";
-        document.getElementById("bloqueNovedades").style.display = "block";
-        document.getElementById("bloqueParte").style.display = "block";
-
         if (data.esOficial || data.rol === "ADMIN_EXCEL") {
           document.getElementById("bloqueOrganico").style.display = "block";
           document.getElementById("bloqueConsultaGeneral").style.display = "block";
-          document.getElementById("bloqueExtraordinario").style.display = "block";
-          document.getElementById("bloqueHistorialExtra").style.display = "block";
         } else {
           document.getElementById("bloqueOrganico").style.display = "none";
           document.getElementById("bloqueConsultaGeneral").style.display = "none";
-          document.getElementById("bloqueExtraordinario").style.display = "none";
-          document.getElementById("bloqueHistorialExtra").style.display = "none";
         }
-
         cargarFiltrosConsulta();
-        cargarChecksGruposExtra();
-
         if (data.esOficial || data.rol === "ADMIN_EXCEL") {
           document.getElementById("consulta_unidad").value = data.unidad || "";
-          cargarConsultaDependencias();
-
-          if (data.subunidad) {
-            marcarCheckSiExiste("checks_subunidad", data.subunidad);
-          }
+          cargarConsultaSubunidades();
+          document.getElementById("consulta_subunidad").value = data.subunidad || "";
+          cargarConsultaEstacionesYOrganicos();
           if (data.estacion) {
-            marcarCheckSiExiste("checks_estacion", data.estacion);
+            document.getElementById("consulta_estacion").value = data.estacion;
           }
           if (data.organico) {
-            marcarCheckSiExiste("checks_organico", data.organico);
+            document.getElementById("consulta_organico").value = data.organico;
           }
         }
-
       } catch (error) {
         console.error(error);
         alert("Error validando responsable");
       }
     }
-
+    /* =========================
+       CARGAR ESTRUCTURA
+    ========================= */
     async function cargarEstructura() {
       try {
         const res = await fetch("/estructura");
         const data = await res.json();
-
         estructuraGlobal = data;
-
         const unidadSelect = document.getElementById("unidad_select");
         unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
-
         const unidades = [...new Set(data.map(x => x.unidad).filter(Boolean))];
-
         unidades.forEach(unidad => {
           const option = document.createElement("option");
           option.value = unidad;
           option.textContent = unidad;
           unidadSelect.appendChild(option);
         });
-
         document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
         document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
         document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
-
         cargarFiltrosConsulta();
-        cargarChecksGruposExtra();
       } catch (error) {
         console.error(error);
       }
     }
-
+    /* =========================
+       CARGAR SUBUNIDADES
+    ========================= */
     function cargarSubunidades() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidadSelect = document.getElementById("subunidad_select");
-
       const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
       const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
-
       subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-
       subunidades.forEach(sub => {
         const option = document.createElement("option");
         option.value = sub;
         option.textContent = sub;
         subunidadSelect.appendChild(option);
       });
-
       document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
       document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
     }
-
+    /* =========================
+       CARGAR ESTACIONES
+    ========================= */
     function cargarEstaciones() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
       const estacionSelect = document.getElementById("estacion_select");
-
       estacionSelect.innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-
       const estaciones = [
         ...new Set(
           estructuraGlobal
@@ -851,7 +573,6 @@
             .filter(Boolean)
         )
       ];
-
       estaciones.forEach(estacion => {
         const option = document.createElement("option");
         option.value = estacion;
@@ -859,26 +580,23 @@
         estacionSelect.appendChild(option);
       });
     }
-
+    /* =========================
+       CARGAR ORGÁNICOS
+    ========================= */
     function cargarOrganicos() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
       const estacion = document.getElementById("estacion_select").value;
       const organicoSelect = document.getElementById("organico_select");
-
       organicoSelect.innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
-
       let filtrados = estructuraGlobal.filter(x =>
         x.unidad === unidad &&
         x.subunidad === subunidad
       );
-
       if (estacion && estacion.trim() !== "") {
         filtrados = filtrados.filter(x => x.estacion === estacion);
       }
-
       const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
-
       organicos.forEach(o => {
         const option = document.createElement("option");
         option.value = o;
@@ -886,25 +604,23 @@
         organicoSelect.appendChild(option);
       });
     }
-
+    /* =========================
+       CARGAR PERSONAL
+    ========================= */
     async function cargarPersonal() {
       const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
-
       if (!cedulaValidada) {
         alert("Primero debes validar al responsable");
         return;
       }
-
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
       const estacion = document.getElementById("estacion_select").value;
       const organico = document.getElementById("organico_select")?.value || "";
-
       if (!unidad || !subunidad) {
         alert("Unidad y subunidad son obligatorias");
         return;
       }
-
       try {
         const res = await fetch("/personal-filtrado", {
           method: "POST",
@@ -913,18 +629,14 @@
           },
           body: JSON.stringify({ unidad, subunidad, estacion, organico })
         });
-
         const data = await res.json();
         const contenedor = document.getElementById("lista");
         contenedor.innerHTML = "";
-
         if (!data.ok || !data.data || data.data.length === 0) {
           contenedor.innerHTML = "<p>No hay personal para ese filtro.</p>";
           return;
         }
-
         const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
-
         data.data.sort((a, b) => {
           const ga = (a.grado || "").toUpperCase();
           const gb = (b.grado || "").toUpperCase();
@@ -932,20 +644,17 @@
           const ib = ordenGrados.indexOf(gb);
           return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
         });
-
         data.data.forEach(p => {
           const div = document.createElement("div");
           div.className = "persona";
-
           div.innerHTML = `
-  <b>
-    ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
-    <span class="persona-cc">CC ${p.cedula || ""}</span>
-  </b>
-  <select id="novedad-${p.cedula}">
+            <b>
+              ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
+              <span class="persona-cc">CC ${p.cedula || ""}</span>
+            </b>
+            <select id="novedad-${p.cedula}">
               <option value="">DISPONIBLE</option>
               <option value="SERVICIO">SERVICIO</option>
-              <option value="SERVICIO EXTRAORDINARIO">SERVICIO EXTRAORDINARIO</option>
               <option value="PERMISO">PERMISO</option>
               <option value="VACACIONES">VACACIONES</option>
               <option value="CURSO ASCENSO">CURSO ASCENSO</option>
@@ -967,10 +676,8 @@
               <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
             </select>
           `;
-
           contenedor.appendChild(div);
         });
-
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition((pos) => {
             document.getElementById("latitud").value = pos.coords.latitude;
@@ -982,36 +689,32 @@
         alert("Error cargando personal");
       }
     }
-
+    /* =========================
+       GUARDAR NOVEDADES
+    ========================= */
     async function guardarNovedades() {
       const personas = document.querySelectorAll(".persona");
       const estacion = document.getElementById("estacion_select").value;
       const novedades = [];
-
       const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
       const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
-
       const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
       const dataVal = await validar.json();
-
       if (!dataVal.guardarOficial) {
         alert("⚠️ Fuera de horario. Solo puedes generar parte en modo consulta.");
         return;
       }
-
       personas.forEach(p => {
         const select = p.querySelector("select");
         const cedula = select.id.replace("novedad-", "");
         const tipo = select.value;
         novedades.push({ cedula, tipo });
       });
-
       try {
         const grado = document.getElementById("grado").value.trim();
         const rol = (document.getElementById("bloqueExcel").style.display === "block")
           ? "ADMIN_EXCEL"
           : "OPERADOR_PARTE";
-
         const res = await fetch("/guardar-novedades", {
           method: "POST",
           headers: {
@@ -1019,9 +722,7 @@
           },
           body: JSON.stringify({ novedades, estacion, grado, rol })
         });
-
         const data = await res.json();
-
         if (data.ok) {
           alert(data.mensaje || "Novedades guardadas correctamente ✅");
         } else {
@@ -1031,17 +732,74 @@
         alert("Error de conexión ❌");
       }
     }
-
+    /* =========================
+       GENERAR PARTE
+    ========================= */
+    async function generarParte() {
+      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+      const unidad = document.getElementById("unidad_select").value;
+      const grado = document.getElementById("grado").value.trim();
+      const nombre = document.getElementById("nombre_elabora").value.trim();
+      const cedula = document.getElementById("cedula_elabora").value.trim();
+      const telefono = document.getElementById("telefono_elabora").value.trim();
+      const organico = document.getElementById("organico_select").value;
+      const resultado = document.getElementById("resultado");
+      if (!estacion && !organico) {
+        resultado.innerText = "Debes seleccionar estación u orgánico.";
+        return;
+      }
+      const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
+      const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+      const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
+      const dataVal = await validar.json();
+      if (!dataVal.ok) {
+        alert(dataVal.mensaje);
+        return;
+      }
+      const personas = document.querySelectorAll(".persona");
+      const novedadesSeleccionadas = [];
+      personas.forEach(p => {
+        const select = p.querySelector("select");
+        const cedulaPersona = select.id.replace("novedad-", "");
+        const tipo = select.value || "";
+        novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
+      });
+      try {
+        const url = `/parte-texto?estacion=${encodeURIComponent(estacion)}&organico=${encodeURIComponent(organico)}&unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            novedades: novedadesSeleccionadas
+          })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          resultado.innerText = "Error: " + (data.error || "No se pudo generar el parte");
+          return;
+        }
+        resultado.style.color = dataVal.extemporaneo ? "red" : "black";
+        resultado.innerText = dataVal.extemporaneo
+          ? "⚠️ REPORTE EXTEMPORÁNEO\n\n" + data.texto
+          : data.texto;
+      } catch (error) {
+        console.error(error);
+        resultado.innerText = "Error conectando con el servidor";
+      }
+    }
+    /* =========================
+       CONSTRUIR TEXTO QR
+    ========================= */
     function construirTextoQRUbicacion() {
       let lat = document.getElementById("latitud").value || "";
       let lng = document.getElementById("longitud").value || "";
       const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-
       const fecha = new Date().toLocaleString("es-CO", {
         timeZone: "America/Bogota",
         hour12: false
       });
-
       const mapaEstaciones = {
         "CIUDAD BOLIVAR": { lat: "4.532", lng: "-74.155" },
         "CANDELARIA": { lat: "4.597", lng: "-74.073" },
@@ -1049,7 +807,6 @@
         "BOSA": { lat: "4.613", lng: "-74.185" },
         "KENNEDY": { lat: "4.627", lng: "-74.153" }
       };
-
       if (!lat || !lng) {
         if (mapaEstaciones[estacion]) {
           lat = mapaEstaciones[estacion].lat;
@@ -1058,79 +815,66 @@
           return "";
         }
       }
-
       return `UBICACION PARTE
 ESTACION: ${estacion}
 LAT: ${lat}
 LNG: ${lng}
 FECHA: ${fecha}`;
     }
-
+    /* =========================
+       PROCESAR FOTO CON SELLO
+    ========================= */
     async function procesarFotoConSello() {
       const input = document.getElementById("foto_parte");
-
       if (!input.files.length) return "";
-
       const file = input.files[0];
       const img = new Image();
       const reader = new FileReader();
-
       return new Promise((resolve) => {
         reader.onload = function (e) {
           img.src = e.target.result;
         };
-
         img.onload = function () {
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d");
-
           canvas.width = img.width;
           canvas.height = img.height;
-
           ctx.drawImage(img, 0, 0);
-
           const estacion = document.getElementById("estacion_select").value;
           const lat = document.getElementById("latitud").value || "N/A";
           const lng = document.getElementById("longitud").value || "N/A";
-
           const fecha = new Date().toLocaleString("es-CO", {
             timeZone: "America/Bogota",
             hour12: false
           });
-
           ctx.fillStyle = "rgba(0,0,0,0.6)";
           ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
-
           ctx.fillStyle = "#00FF00";
           ctx.font = "20px Arial";
           ctx.fillText(`ESTACION: ${estacion}`, 20, canvas.height - 80);
           ctx.fillText(`FECHA: ${fecha}`, 20, canvas.height - 50);
           ctx.fillText(`LAT: ${lat}  LNG: ${lng}`, 20, canvas.height - 20);
-
           resolve(canvas.toDataURL("image/jpeg", 0.9));
         };
-
         reader.readAsDataURL(file);
       });
     }
-
+    /* =========================
+       DESCARGAR PDF
+    ========================= */
     async function descargarPDF() {
       let contenido = document.getElementById("resultado").innerText.trim();
       contenido = contenido.replace(/^⚠️ REPORTE EXTEMPORÁNEO\s*\n\s*/i, "");
       contenido = contenido.replace(/^PARTE DE PERSONAL\s*\n/i, "");
-
       if (!contenido) {
         alert("Primero genera el parte");
         return;
       }
-
       const ventana = window.open("", "_blank");
-
       if (!ventana) {
         alert("El navegador bloqueó la ventana del PDF. Permite ventanas emergentes.");
         return;
       }
-
       ventana.document.write(`
         <html>
           <head>
@@ -1142,7 +886,6 @@ FECHA: ${fecha}`;
         </html>
       `);
       ventana.document.close();
-
       const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
       const unidad = document.getElementById("unidad_select").value;
       const subunidad = document.getElementById("subunidad_select").value;
@@ -1150,14 +893,11 @@ FECHA: ${fecha}`;
       const nombre = document.getElementById("nombre_elabora").value.trim();
       const cedula = document.getElementById("cedula_elabora").value.trim();
       const telefono = document.getElementById("telefono_elabora").value.trim();
-
       const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
       const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
-
       try {
         const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
         const dataVal = await validar.json();
-
         if (dataVal.guardarOficial) {
           const resGuardar = await fetch("/guardar-parte-pdf", {
             method: "POST",
@@ -1176,17 +916,14 @@ FECHA: ${fecha}`;
               texto_parte: contenido
             })
           });
-
           let dataGuardar = {};
           try {
             dataGuardar = await resGuardar.json();
           } catch (e) {
             console.warn("Respuesta no es JSON, se ignora");
           }
-
           if (dataGuardar && dataGuardar.ok === false) {
             const mensajeGuardar = dataGuardar.mensaje || dataGuardar.error || "";
-
             if (mensajeGuardar.includes("Ya se registró")) {
               console.warn("Parte ya registrado, se genera PDF sin guardar.");
             } else if (mensajeGuardar.includes("Fuera de horario")) {
@@ -1197,13 +934,11 @@ FECHA: ${fecha}`;
             }
           }
         }
-
         const fotoBase64 = await procesarFotoConSello();
         const qrTexto = construirTextoQRUbicacion();
         const qrUrl = qrTexto
           ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
           : "";
-
         ventana.document.open();
         ventana.document.write(`
           <html>
@@ -1214,7 +949,6 @@ FECHA: ${fecha}`;
                   font-family: Arial, sans-serif;
                   padding: 20px;
                 }
-
                 .marca-agua {
                   position: fixed;
                   top: 50%;
@@ -1227,7 +961,6 @@ FECHA: ${fecha}`;
                   z-index: 0;
                   pointer-events: none;
                 }
-
                 .encabezado {
                   display: flex;
                   justify-content: space-between;
@@ -1238,14 +971,12 @@ FECHA: ${fecha}`;
                   position: relative;
                   z-index: 1;
                 }
-
                 .titulo {
                   font-size: 20px;
                   font-weight: bold;
                   margin-top: 10px;
                   flex: 1;
                 }
-
                 .lado-derecho {
                   display: flex;
                   flex-direction: row;
@@ -1255,17 +986,14 @@ FECHA: ${fecha}`;
                   gap: 14px;
                   min-width: 230px;
                 }
-
                 .qr-box,
                 .foto-box {
                   text-align: center;
                 }
-
                 .qr-box img {
                   width: 95px;
                   height: 95px;
                 }
-
                 .foto-box img {
                   width: 120px;
                   height: 120px;
@@ -1273,13 +1001,11 @@ FECHA: ${fecha}`;
                   border-radius: 6px;
                   border: 1px solid #bbb;
                 }
-
                 .label {
                   font-size: 10px;
                   text-align: center;
                   margin-top: 4px;
                 }
-
                 pre {
                   white-space: pre-wrap;
                   font-family: "Courier New", monospace;
@@ -1291,10 +1017,8 @@ FECHA: ${fecha}`;
             </head>
             <body>
               <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
-
               <div class="encabezado">
                 <div class="titulo">REGISTRO DEL PARTE</div>
-
                 <div class="lado-derecho">
                   ${qrUrl ? `
                     <div class="qr-box">
@@ -1302,7 +1026,6 @@ FECHA: ${fecha}`;
                       <div class="label">Ubicación</div>
                     </div>
                   ` : ""}
-
                   ${fotoBase64 ? `
                     <div class="foto-box">
                       <img src="${fotoBase64}" />
@@ -1311,9 +1034,7 @@ FECHA: ${fecha}`;
                   ` : ""}
                 </div>
               </div>
-
               <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
-
               <script>
                 window.print();
               <\/script>
@@ -1321,444 +1042,109 @@ FECHA: ${fecha}`;
           </html>
         `);
         ventana.document.close();
-
       } catch (error) {
         console.error("ERROR PDF:", error);
-
         try {
           if (ventana && !ventana.closed) {
             ventana.close();
           }
         } catch (_) {}
-
         alert("Error PDF: " + (error.message || error));
       }
     }
-
-    function pintarChecks(idContenedor, valores) {
-      const contenedor = document.getElementById(idContenedor);
-      if (!contenedor) return;
-
-      contenedor.innerHTML = "";
-
-      valores.forEach(valor => {
-        const label = document.createElement("label");
-        label.className = "check-item";
-
-        const input = document.createElement("input");
-        input.type = "checkbox";
-        input.value = valor;
-
-        label.appendChild(input);
-        label.appendChild(document.createTextNode(valor));
-        contenedor.appendChild(label);
-      });
-    }
-
-    function obtenerValoresChecks(idContenedor) {
-      const contenedor = document.getElementById(idContenedor);
-      if (!contenedor) return [];
-      return Array.from(contenedor.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(ch => ch.value)
-        .filter(Boolean);
-    }
-
-    function seleccionarTodasChecks(idContenedor) {
-      const contenedor = document.getElementById(idContenedor);
-      if (!contenedor) return;
-      contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => {
-        ch.checked = true;
-      });
-    }
-
-    function limpiarChecks(idContenedor) {
-      const contenedor = document.getElementById(idContenedor);
-      if (!contenedor) return;
-      contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => {
-        ch.checked = false;
-      });
-    }
-
-    function marcarCheckSiExiste(idContenedor, valor) {
-      const contenedor = document.getElementById(idContenedor);
-      if (!contenedor) return;
-      const check = Array.from(contenedor.querySelectorAll('input[type="checkbox"]'))
-        .find(ch => ch.value === valor);
-      if (check) check.checked = true;
-    }
-
+    /* =========================
+       CARGAR FILTROS CONSULTA GENERAL
+    ========================= */
     function cargarFiltrosConsulta() {
       const unidadSelect = document.getElementById("consulta_unidad");
-      if (!unidadSelect) return;
-
+      const subunidadSelect = document.getElementById("consulta_subunidad");
+      const estacionSelect = document.getElementById("consulta_estacion");
+      const organicoSelect = document.getElementById("consulta_organico");
+      const tipoSelect = document.getElementById("consulta_tipo");
+      if (!unidadSelect || !subunidadSelect || !estacionSelect || !organicoSelect || !tipoSelect) return;
       unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
-
+      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
+      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+      tipoSelect.value = "";
       const unidades = [...new Set(estructuraGlobal.map(x => x.unidad).filter(Boolean))];
-
       unidades.forEach(unidad => {
         const option = document.createElement("option");
         option.value = unidad;
         option.textContent = unidad;
         unidadSelect.appendChild(option);
       });
-
-      pintarChecks("checks_subunidad", []);
-      pintarChecks("checks_estacion", []);
-      pintarChecks("checks_organico", []);
-      pintarChecks("checks_tipo", [
-        "DISPONIBLE",
-        "SERVICIO",
-        "SERVICIO EXTRAORDINARIO",
-        "COMISION DE SERVICIO",
-        "COMISION EXTERIOR",
-        "PLAN ELECTORAL",
-        "PERMISO",
-        "PERMISO EXTRAORDINARIOS",
-        "PERMISO NAVIDEÑO",
-        "PERMISO SEMANA SANTA",
-        "VACACIONES",
-        "FRANQUICIA",
-        "LICENCIA LUTO",
-        "LICENCIA MATERNIDAD",
-        "HOSPITALIZADO",
-        "CITA MEDICA",
-        "CURSO ASCENSO",
-        "RETARDADOS DE LA FORMACION",
-        "FUERA DE LA FORMACION",
-        "HORARIO FLEXIBLE",
-        "CUMPLE FUNCIONES DIFERENTES DE POLCO",
-        "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
-      ]);
     }
-
-    function cargarConsultaDependencias() {
+    /* =========================
+       CONSULTA: SUBUNIDADES
+    ========================= */
+    function cargarConsultaSubunidades() {
       const unidad = document.getElementById("consulta_unidad").value;
-
-      let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
-
+      const subunidadSelect = document.getElementById("consulta_subunidad");
+      const estacionSelect = document.getElementById("consulta_estacion");
+      const organicoSelect = document.getElementById("consulta_organico");
+      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
+      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+      const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
       const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
+      subunidades.forEach(sub => {
+        const option = document.createElement("option");
+        option.value = sub;
+        option.textContent = sub;
+        subunidadSelect.appendChild(option);
+      });
+    }
+    /* =========================
+       CONSULTA: ESTACIONES Y ORGÁNICOS
+    ========================= */
+    function cargarConsultaEstacionesYOrganicos() {
+      const unidad = document.getElementById("consulta_unidad").value;
+      const subunidad = document.getElementById("consulta_subunidad").value;
+      const estacionSelect = document.getElementById("consulta_estacion");
+      const organicoSelect = document.getElementById("consulta_organico");
+      estacionSelect.innerHTML = '<option value="">Todas las ESTACIONES</option>';
+      organicoSelect.innerHTML = '<option value="">Todos los ORGÁNICOS</option>';
+      const filtrados = estructuraGlobal.filter(x =>
+        x.unidad === unidad &&
+        x.subunidad === subunidad
+      );
       const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))];
       const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
-
-      pintarChecks("checks_subunidad", subunidades);
-      pintarChecks("checks_estacion", estaciones);
-      pintarChecks("checks_organico", organicos);
-    }
-
-    function cargarChecksGruposExtra() {
-      pintarChecks("checks_extra_oficiales", ["CR", "TC", "MY", "CT", "TE", "ST"]);
-      pintarChecks("checks_extra_ejecutivo", ["CM", "SC", "IJ", "IT", "SI"]);
-      pintarChecks("checks_extra_patrulleros", ["PT", "PP"]);
-      pintarChecks("checks_extra_auxiliares", ["AUX"]);
-    }
-
-    function mezclarArray(array) {
-      const copia = [...array];
-      for (let i = copia.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copia[i], copia[j]] = [copia[j], copia[i]];
-      }
-      return copia;
-    }
-
-    function ordenarPorGrado(lista) {
-  const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
-
-  return [...lista].sort((a, b) => {
-    const ga = (a.grado || "").toUpperCase();
-    const gb = (b.grado || "").toUpperCase();
-
-    const ia = orden.indexOf(ga);
-    const ib = orden.indexOf(gb);
-
-    if (ia === -1 && ib === -1) return 0;
-    if (ia === -1) return 1;
-    if (ib === -1) return -1;
-
-    return ia - ib;
-  });
-}
-   
-    function obtenerTipoActualPersona(persona) {
-      return (persona.tipo_novedad || "").trim().toUpperCase();
-    }
-
-    function esDisponiblePersona(persona) {
-      return !obtenerTipoActualPersona(persona);
-    }
-
-    function extraerDisponiblesConsulta() {
-      if (!ultimoResultadoConsulta.length) return [];
-      return ultimoResultadoConsulta.filter(p => esDisponiblePersona(p));
-    }
-
-    function obtenerGrupoPorGrado(grado = "") {
-      const g = String(grado || "").toUpperCase().trim();
-
-      if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIALES";
-      if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
-      if (["PT", "PP"].includes(g)) return "PATRULLEROS";
-      if (["AUX"].includes(g)) return "AUXILIARES";
-      return "OTROS";
-    }
-
-    async function aplicarServicioExtraordinarioSimple() {
-      const resultadoExtra = document.getElementById("resultado_extra");
-      resultadoExtra.innerText = "";
-
-      const disponibles = extraerDisponiblesConsulta();
-
-      if (!disponibles.length) {
-        alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
-        return;
-      }
-
-      const cantidad = parseInt(document.getElementById("cantidad_extra").value || "0", 10);
-      const porcentaje = parseInt(document.getElementById("porcentaje_extra").value || "0", 10);
-
-      if ((!cantidad || cantidad <= 0) && (!porcentaje || porcentaje <= 0)) {
-        alert("Debes ingresar una cantidad o un porcentaje");
-        return;
-      }
-
-      let totalTomar = 0;
-
-      if (cantidad && cantidad > 0) {
-        totalTomar = cantidad;
-      } else if (porcentaje && porcentaje > 0) {
-        totalTomar = Math.ceil((disponibles.length * porcentaje) / 100);
-      }
-
-      if (totalTomar > disponibles.length) {
-        totalTomar = disponibles.length;
-      }
-
-      const historial = await obtenerHistorialServicios();
-
-const disponiblesOrdenados = [...disponibles].sort((a, b) => {
-  const aCount = historial[String(a.cedula || "").trim()] || 0;
-  const bCount = historial[String(b.cedula || "").trim()] || 0;
-  return aCount - bCount;
-});
-
-const seleccionados = ordenarPorGrado(
-  mezclarArray(disponiblesOrdenados).slice(0, totalTomar)
-);
-
-ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
-      
-      seleccionados.forEach(p => {
-        p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
+      estaciones.forEach(est => {
+        const option = document.createElement("option");
+        option.value = est;
+        option.textContent = est;
+        estacionSelect.appendChild(option);
       });
-
-      let texto = "";
-      texto += `SERVICIO EXTRAORDINARIO APLICADO - MODO SIMPLE\n\n`;
-      texto += `DISPONIBLES ANTES: ${disponibles.length}\n`;
-      texto += `ASIGNADOS: ${seleccionados.length}\n\n`;
-
-      seleccionados.forEach((p, i) => {
-        texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+      organicos.forEach(org => {
+        const option = document.createElement("option");
+        option.value = org;
+        option.textContent = org;
+        organicoSelect.appendChild(option);
       });
-
-      resultadoExtra.innerText = texto;
-      renderizarConsultaDesdeMemoria();
-      guardarServicioExtraordinario();
     }
-
-    function aplicarServicioExtraordinarioPorGrupos() {
-      const resultadoExtra = document.getElementById("resultado_extra");
-      resultadoExtra.innerText = "";
-
-      const disponibles = extraerDisponiblesConsulta();
-
-      if (!disponibles.length) {
-        alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
-        return;
-      }
-
-      const config = [
-        {
-          nombre: "OFICIALES",
-          cantidad: parseInt(document.getElementById("cant_oficiales_extra").value || "0", 10),
-          grados: obtenerValoresChecks("checks_extra_oficiales")
-        },
-        {
-          nombre: "EJECUTIVO",
-          cantidad: parseInt(document.getElementById("cant_ejecutivo_extra").value || "0", 10),
-          grados: obtenerValoresChecks("checks_extra_ejecutivo")
-        },
-        {
-          nombre: "PATRULLEROS",
-          cantidad: parseInt(document.getElementById("cant_patrulleros_extra").value || "0", 10),
-          grados: obtenerValoresChecks("checks_extra_patrulleros")
-        },
-        {
-          nombre: "AUXILIARES",
-          cantidad: parseInt(document.getElementById("cant_auxiliares_extra").value || "0", 10),
-          grados: obtenerValoresChecks("checks_extra_auxiliares")
-        }
-      ];
-
-      const totalSolicitado = config.reduce((acc, item) => acc + (item.cantidad > 0 ? item.cantidad : 0), 0);
-
-      if (totalSolicitado <= 0) {
-        alert("Debes ingresar al menos una cantidad en algún grupo.");
-        return;
-      }
-
-      const seleccionadosFinales = [];
-      const usados = new Set();
-
-      config.forEach(cfg => {
-        if (!cfg.cantidad || cfg.cantidad <= 0) return;
-
-        const candidatos = disponibles.filter(p => {
-          const grado = String(p.grado || "").toUpperCase().trim();
-          const grupo = obtenerGrupoPorGrado(grado);
-
-          if (grupo !== cfg.nombre) return false;
-          if (usados.has(String(p.cedula))) return false;
-
-          if (cfg.grados.length === 0) return true;
-          return cfg.grados.includes(grado);
-        });
-
-        const elegidos = mezclarArray(candidatos).slice(0, cfg.cantidad);
-
-        elegidos.forEach(p => {
-          usados.add(String(p.cedula));
-          p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
-          seleccionadosFinales.push({
-            ...p,
-            grupo_extra: cfg.nombre
-          });
-        });
-      });
-
-      if (!seleccionadosFinales.length) {
-        alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
-        return;
-      }
-      
-      ultimosSeleccionadosExtra = seleccionadosFinales.map(p => ({ ...p }));
-      
-      let texto = "";
-      texto += `SERVICIO EXTRAORDINARIO APLICADO - POR GRUPOS\n\n`;
-      texto += `DISPONIBLES ANTES: ${disponibles.length}\n`;
-      texto += `SOLICITADOS: ${totalSolicitado}\n`;
-      texto += `ASIGNADOS: ${seleccionadosFinales.length}\n\n`;
-
-      const agrupados = {};
-      seleccionadosFinales.forEach(p => {
-        if (!agrupados[p.grupo_extra]) agrupados[p.grupo_extra] = [];
-        agrupados[p.grupo_extra].push(p);
-      });
-
-      Object.keys(agrupados).forEach(grupo => {
-        texto += `${grupo}\n`;
-        texto += `${"-".repeat(40)}\n`;
-        ordenarPorGrado(agrupados[grupo]).forEach((p, i) => {
-          texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
-        });
-        texto += `\n`;
-      });
-
-      resultadoExtra.innerText = texto;
-      renderizarConsultaDesdeMemoria();
-      guardarServicioExtraordinario();
-    }
-
-    async function generarParte() {
-      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-      const unidad = document.getElementById("unidad_select").value;
-      const grado = document.getElementById("grado").value.trim();
-      const nombre = document.getElementById("nombre_elabora").value.trim();
-      const cedula = document.getElementById("cedula_elabora").value.trim();
-      const telefono = document.getElementById("telefono_elabora").value.trim();
-      const organico = document.getElementById("organico_select").value;
-      const resultado = document.getElementById("resultado");
-
-      if (!estacion && !organico) {
-        resultado.innerText = "Debes seleccionar estación u orgánico.";
-        return;
-      }
-
-      const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
-      const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
-
-      const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
-      const dataVal = await validar.json();
-
-      if (!dataVal.ok) {
-        alert(dataVal.mensaje);
-        return;
-      }
-
-      const personas = document.querySelectorAll(".persona");
-      const novedadesSeleccionadas = [];
-
-      personas.forEach(p => {
-        const select = p.querySelector("select");
-        const cedulaPersona = select.id.replace("novedad-", "");
-        const tipo = select.value || "";
-        novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
-      });
-
-      try {
-        const url = `/parte-texto?estacion=${encodeURIComponent(estacion)}&organico=${encodeURIComponent(organico)}&unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
-
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            novedades: novedadesSeleccionadas
-          })
-        });
-
-        const data = await res.json();
-
-        if (!data.ok) {
-          resultado.innerText = "Error: " + (data.error || "No se pudo generar el parte");
-          return;
-        }
-
-        resultado.style.color = dataVal.extemporaneo ? "red" : "black";
-        resultado.innerText = dataVal.extemporaneo
-          ? "⚠️ REPORTE EXTEMPORÁNEO\n\n" + data.texto
-          : data.texto;
-
-      } catch (error) {
-        console.error(error);
-        resultado.innerText = "Error conectando con el servidor";
-      }
-    }
-
+    /* =========================
+       CONSULTAR NOVEDADES
+    ========================= */
     async function consultarNovedades() {
       const unidad = document.getElementById("consulta_unidad").value;
-      const subunidades = obtenerValoresChecks("checks_subunidad");
-      const estaciones = obtenerValoresChecks("checks_estacion");
-      const organicos = obtenerValoresChecks("checks_organico");
-      const tiposFiltro = obtenerValoresChecks("checks_tipo");
-
+      const subunidad = document.getElementById("consulta_subunidad").value;
+      const estacion = document.getElementById("consulta_estacion").value;
+      const organico = document.getElementById("consulta_organico").value;
+      const tipoFiltro = document.getElementById("consulta_tipo").value;
       const grado = document.getElementById("grado").value.trim();
       const rol = (document.getElementById("bloqueExcel").style.display === "block")
         ? "ADMIN_EXCEL"
         : "OPERADOR_PARTE";
-
       const generalBox = document.getElementById("resultado_general");
       const detalleBox = document.getElementById("resultado_detalle");
-
       generalBox.innerText = "";
       detalleBox.innerText = "";
-      document.getElementById("resultado_extra").innerText = "";
-
-      if (!unidad) {
-        alert("Unidad es obligatoria");
+      if (!unidad || !subunidad) {
+        alert("Unidad y subunidad son obligatorias");
         return;
       }
-
       try {
         const res = await fetch("/consulta-novedades", {
           method: "POST",
@@ -1767,424 +1153,64 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
           },
           body: JSON.stringify({
             unidad,
-            subunidades,
-            estaciones,
-            organicos,
+            subunidad,
+            estacion,
+            organico,
             grado,
             rol,
-            tiposFiltro
+            tipoFiltro
           })
         });
-
         const data = await res.json();
-
         if (!data.ok) {
           alert(data.error || "No se pudo consultar novedades");
           return;
         }
-
-        ultimoResultadoConsulta = Array.isArray(data.personalCompleto) ? data.personalCompleto : [];
-        renderizarConsultaDesdeRespuesta(data);
-
+        let textoGeneral = "GENERAL\n\n";
+        textoGeneral += "TIPO".padEnd(35, " ") + "CONTEO".padEnd(15, " ") + "TOTAL\n";
+        textoGeneral += "-".repeat(58) + "\n";
+        data.general.forEach(item => {
+          textoGeneral += `${String(item.tipo || "").padEnd(35, " ")}${String(item.conteo || "").padEnd(15, " ")}${String(item.total || 0)}\n`;
+        });
+        let textoDetalle = "DETALLE INDIVIDUAL\n\n";
+        data.detalleAgrupado.forEach(grupo => {
+          textoDetalle += `${grupo.tipo} ${grupo.conteo}   ${grupo.total}\n`;
+          textoDetalle += "-".repeat(110) + "\n";
+          grupo.personas.forEach((p, i) => {
+            textoDetalle += `${String(i + 1).padStart(3, " ")}. `
+              + `${String(p.grado || "").padEnd(4, " ")} | `
+              + `${String(p.apellidos || "").padEnd(20, " ")} | `
+              + `${String(p.nombres || "").padEnd(20, " ")} | `
+              + `${String(p.cedula || "").padEnd(12, " ")} | `
+              + `${String(p.telefono || "").padEnd(12, " ")} | `
+              + `${String(p.estacion || "")}\n`;
+          });
+          textoDetalle += `\n`;
+        });
+        generalBox.innerText = textoGeneral;
+        detalleBox.innerText = textoDetalle;
       } catch (error) {
         console.error(error);
         alert("Error consultando novedades");
       }
     }
-
-    function renderizarConsultaDesdeRespuesta(data) {
-  const generalBox = document.getElementById("resultado_general");
-  const detalleBox = document.getElementById("resultado_detalle");
-
-  let htmlGeneral = `
-    <div class="tabla-wrap">
-      <table class="tabla-app">
-        <thead>
-          <tr>
-            <th>Tipo</th>
-            <th>Conteo</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  data.general.forEach(item => {
-    htmlGeneral += `
-      <tr>
-        <td>${item.tipo || ""}</td>
-        <td>${item.conteo || ""}</td>
-        <td>${item.total || 0}</td>
-      </tr>
-    `;
-  });
-
-  htmlGeneral += `
-        </tbody>
-      </table>
-    </div>
-  `;
-
-  let htmlDetalle = "";
-
-  data.detalleAgrupado.forEach(grupo => {
-    htmlDetalle += `
-      <div class="tabla-wrap">
-        <div style="font-weight:700; margin:4px 0 10px 0; color: var(--azul-principal);">
-          ${grupo.tipo} | ${grupo.conteo} | ${grupo.total}
-        </div>
-        <table class="tabla-app">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Grado</th>
-              <th>Apellidos</th>
-              <th>Nombres</th>
-              <th>Cédula</th>
-              <th>Teléfono</th>
-              <th>Estación</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    grupo.personas.forEach((p, i) => {
-      htmlDetalle += `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${p.grado || ""}</td>
-          <td>${p.apellidos || ""}</td>
-          <td>${p.nombres || ""}</td>
-          <td>${p.cedula || ""}</td>
-          <td>${p.telefono || ""}</td>
-          <td>${p.estacion || ""}</td>
-        </tr>
-      `;
-    });
-
-    htmlDetalle += `
-          </tbody>
-        </table>
-      </div>
-    `;
-  });
-
-  generalBox.innerHTML = htmlGeneral;
-  detalleBox.innerHTML = htmlDetalle;
-}
-    function renderizarConsultaDesdeMemoria() {
-      const personal = [...ultimoResultadoConsulta];
-
-      const esOficialG = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
-      const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
-      const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
-      const esAuxiliar = (g) => ["AUX"].includes((g || "").toUpperCase());
-
-      function contarGrupo(lista) {
-        return {
-          oficiales: lista.filter(p => esOficialG(p.grado)).length,
-          ejecutivo: lista.filter(p => esEjecutivo(p.grado)).length,
-          patrulleros: lista.filter(p => esPatrullero(p.grado)).length,
-          auxiliares: lista.filter(p => esAuxiliar(p.grado)).length
-        };
-      }
-
-      function formatoConteo(c) {
-        return `${c.oficiales}-${c.ejecutivo}-${c.patrulleros}-${c.auxiliares}`;
-      }
-
-      const agrupados = {};
-
-      personal.forEach(p => {
-        const tipo = obtenerTipoActualPersona(p) || "DISPONIBLE";
-        if (!agrupados[tipo]) agrupados[tipo] = [];
-        agrupados[tipo].push(p);
-      });
-
-      const ordenTipos = [
-        "DISPONIBLE",
-        "SERVICIO",
-        "SERVICIO EXTRAORDINARIO",
-        "COMISION DE SERVICIO",
-        "COMISION EXTERIOR",
-        "PLAN ELECTORAL",
-        "PERMISO",
-        "PERMISO EXTRAORDINARIOS",
-        "PERMISO NAVIDEÑO",
-        "PERMISO SEMANA SANTA",
-        "VACACIONES",
-        "FRANQUICIA",
-        "LICENCIA LUTO",
-        "LICENCIA MATERNIDAD",
-        "HOSPITALIZADO",
-        "CITA MEDICA",
-        "CURSO ASCENSO",
-        "RETARDADOS DE LA FORMACION",
-        "FUERA DE LA FORMACION",
-        "HORARIO FLEXIBLE",
-        "CUMPLE FUNCIONES DIFERENTES DE POLCO",
-        "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
-      ];
-
-      const general = [];
-      const detalleAgrupado = [];
-
-      const conteoEfectiva = contarGrupo(personal);
-      general.push({
-        tipo: "FUERZA EFECTIVA",
-        conteo: formatoConteo(conteoEfectiva),
-        total: personal.length
-      });
-
-      const tiposExistentes = [
-        ...ordenTipos.filter(t => agrupados[t]),
-        ...Object.keys(agrupados).filter(t => !ordenTipos.includes(t))
-      ];
-
-      tiposExistentes.forEach(tipo => {
-        const lista = agrupados[tipo];
-        const conteo = contarGrupo(lista);
-
-        general.push({
-          tipo,
-          conteo: formatoConteo(conteo),
-          total: lista.length
-        });
-
-        detalleAgrupado.push({
-          tipo,
-          conteo: formatoConteo(conteo),
-          total: lista.length,
-          personas: lista.map(p => ({
-            grado: p.grado || "",
-            apellidos: p.apellidos || "",
-            nombres: p.nombres || "",
-            cedula: p.cedula || "",
-            telefono: p.telefono || "",
-            estacion: p.estacion || ""
-          }))
-        });
-      });
-
-      renderizarConsultaDesdeRespuesta({ general, detalleAgrupado });
-    }
-
-    async function guardarServicioExtraordinario() {
-      console.log("🔥 INTENTANDO GUARDAR SERVICIO EXTRAORDINARIO");
-  try {
-    if (!ultimosSeleccionadosExtra.length) return;
-
-    const responsableCedula = document.getElementById("cedula_elabora").value.trim();
-    const responsableNombre = document.getElementById("nombre_elabora").value.trim();
-
-   const res = await fetch("/guardar-servicio-extraordinario", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    personal: ultimosSeleccionadosExtra,
-    responsable_cedula: responsableCedula,
-    responsable_nombre: responsableNombre
-  })
-});
-
-const data = await res.json();
-
-    if (!data.ok) {
-      console.error("No se pudo guardar servicio extraordinario:", data.error || data.mensaje || data);
-      return;
-    }
-
-    console.log("Servicio extraordinario guardado correctamente ✅");
-  } catch (error) {
-    console.error("Error guardando servicio extraordinario:", error);
-  }
-}
-
-    async function obtenerHistorialServicios() {
-  try {
-    const grado = document.getElementById("grado").value.trim();
-    const rol = (document.getElementById("bloqueExcel").style.display === "block")
-      ? "ADMIN_EXCEL"
-      : "OPERADOR_PARTE";
-
-    const unidad = document.getElementById("consulta_unidad")?.value || "";
-    const subunidades = obtenerValoresChecks("checks_subunidad");
-    const estaciones = obtenerValoresChecks("checks_estacion");
-    const organicos = obtenerValoresChecks("checks_organico");
-
-    const res = await fetch("/historial-servicio-extraordinario", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        unidad,
-        subunidades,
-        estaciones,
-        organicos,
-        grado,
-        rol
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok || !Array.isArray(data.data)) {
-      return {};
-    }
-
-    const historial = {};
-
-    data.data.forEach(item => {
-      const cedula = String(item.cedula || "").trim();
-      const veces = parseInt(item.veces || "0", 10);
-
-      if (cedula) {
-        historial[cedula] = veces;
-      }
-    });
-
-    return historial;
-  } catch (error) {
-    console.error("Error obteniendo historial:", error);
-    return {};
-  }
-}
-
+    /* =========================
+       EVENTOS FILTROS CONSULTA
+    ========================= */
     document.addEventListener("DOMContentLoaded", () => {
       const consultaUnidad = document.getElementById("consulta_unidad");
+      const consultaSubunidad = document.getElementById("consulta_subunidad");
       if (consultaUnidad) {
-        consultaUnidad.addEventListener("change", cargarConsultaDependencias);
+        consultaUnidad.addEventListener("change", cargarConsultaSubunidades);
       }
-
-      cargarChecksGruposExtra();
+      if (consultaSubunidad) {
+        consultaSubunidad.addEventListener("change", cargarConsultaEstacionesYOrganicos);
+      }
     });
-
-function formatearFecha(fecha) {
-  if (!fecha) return "";
-  return new Date(fecha).toLocaleDateString("es-CO");
-}
-    
-async function consultarHistorialServicioExtraordinario() {
-  const resultado = document.getElementById("resultado_historial_extra");
-  resultado.innerText = "Consultando...";
-
-  const fechaInicio = document.getElementById("historial_fecha_inicio")?.value || "";
-  const fechaFin = document.getElementById("historial_fecha_fin")?.value || "";
-
-  const unidad = document.getElementById("consulta_unidad")?.value || "";
-  const subunidades = obtenerValoresChecks("checks_subunidad");
-  const estaciones = obtenerValoresChecks("checks_estacion");
-  const organicos = obtenerValoresChecks("checks_organico");
-
-  const grado = document.getElementById("grado").value.trim();
-  const rol = (document.getElementById("bloqueExcel").style.display === "block")
-    ? "ADMIN_EXCEL"
-    : "OPERADOR_PARTE";
-
-  try {
-    const res = await fetch("/historial-servicio-extraordinario", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        unidad,
-        subunidades,
-        estaciones,
-        organicos,
-        fechaInicio,
-        fechaFin,
-        grado,
-        rol
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      resultado.innerText = "Error consultando historial";
-      return;
-    }
-
-    if (!data.data || !data.data.length) {
-      resultado.innerText = "No hay registros";
-      return;
-    }
-
-    let texto = "HISTORIAL SERVICIOS EXTRAORDINARIOS\n\n";
-
-    data.data
-      .sort((a, b) => parseInt(b.veces || "0", 10) - parseInt(a.veces || "0", 10))
-      .forEach((p, i) => {
-       texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - Veces: ${p.veces || 0} - Última vez: ${formatearFecha(p.ultima_vez)}\n`;
-      });
-
-    resultado.innerText = texto;
-
-  } catch (error) {
-    console.error(error);
-    resultado.innerText = "Error en servidor";
-  }
-}
-
-    function togglePanel(id) {
-  const panel = document.getElementById(id);
-  if (!panel) return;
-
-  if (panel.style.display === "block") {
-    panel.style.display = "none";
-  } else {
-    panel.style.display = "block";
-  }
-}
-
-function descargarNovedadesTotales() {
-  if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) {
-    alert("Primero consulta las novedades.");
-    return;
-  }
-
-  let texto = "NOVEDADES TOTALES\n\n";
-
-  ultimoResultadoConsulta.forEach((p, i) => {
-    const tipo = (p.tipo_novedad || "DISPONIBLE").trim() || "DISPONIBLE";
-    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${tipo} | ${p.estacion || ""}\n`;
-  });
-
-  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "novedades_totales.txt";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function descargarServicioExtraordinario() {
-  if (!ultimosSeleccionadosExtra || !ultimosSeleccionadosExtra.length) {
-    alert("No hay personal seleccionado en servicio extraordinario.");
-    return;
-  }
-
-  let texto = "SERVICIO EXTRAORDINARIO\n\n";
-
-  ultimosSeleccionadosExtra.forEach((p, i) => {
-    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${p.estacion || ""}\n`;
-  });
-
-  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "servicio_extraordinario.txt";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-    
+    /* =========================
+       INICIO
+    ========================= */
     cargarEstructura();
-     </script>
+  </script>
 </body>
 </html>
