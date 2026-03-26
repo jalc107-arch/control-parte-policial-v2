@@ -307,7 +307,7 @@ button:hover {
   <div class="card">
 
     <div class="seccion">
-      <h2>1. Validar responsable</h2>
+      <h2>Paso 1 — Validación</h2>
       <div class="campo-corto">
         <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
       </div>
@@ -327,7 +327,7 @@ button:hover {
     </div>
 
     <div class="seccion" id="bloqueExcel" style="display:none;">
-      <h2>2. Subir Excel</h2>
+      <h2>Paso 2 — Cargar archivo</h2>
       <div class="campo-corto">
         <input type="file" id="fileExcel" accept=".xlsx" />
 </div>
@@ -337,7 +337,7 @@ button:hover {
     </div>
 
    <div class="seccion" id="bloqueUbicacion" style="display:none;">
-  <h2>3. Seleccionar ubicación</h2>
+  <h2>Paso 3 — Ubicación</h2>
 
       <select id="unidad_select" onchange="cargarSubunidades()">
         <option value="">Seleccionar UNIDAD</option>
@@ -367,7 +367,7 @@ button:hover {
 </div>
 
 <div class="seccion" id="bloqueNovedades" style="display:none;">
-  <h2>4. Novedades por persona</h2>
+  <h2>Paso 4 — Novedades</h2>
       <div id="lista"></div>
      <div class="acciones-inline">
   <button onclick="guardarNovedades()">Guardar Novedades</button>
@@ -375,7 +375,7 @@ button:hover {
 </div>
 
 <div class="seccion" id="bloqueParte" style="display:none;">
-  <h2>5. Generar parte</h2>
+  <h2>Paso 5 — Generar parte</h2>
       <div class="acciones-inline">
   <button onclick="generarParte()">Generar Parte</button>
   <button onclick="descargarPDF()">Descargar PDF</button>
