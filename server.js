@@ -1327,24 +1327,19 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
 // HISTORIAL DE SERVICIOS EXTRAORDINARIOS
 // =========================
 app.post("/historial-servicio-extraordinario", async (req, res) => {
-  const {
-    unidad = "",
-    subunidades = [],
-    estaciones = [],
-    organicos = [],
-    fechaInicio = "",
-    fechaFin = "",
-    grado = "",
-    rol = ""
-  } = req.body;
-
   try {
+    const {
+      grado = "",
+      rol = ""
+    } = req.body;
+
     const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
     const rolLimpio = String(rol).toUpperCase().trim();
 
     const esOficial = esGradoOficial(gradoLimpio);
     const esAdmin = rolLimpio === "ADMIN_EXCEL";
 
+    // 🔒 Validación de acceso
     if (!esOficial && !esAdmin) {
       return res.status(403).json({
         ok: false,
@@ -1352,7 +1347,8 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
       });
     }
 
-    let query = `
+    // 🚀 CONSULTA SIMPLE (SIN FILTROS)
+    const result = await pool.query(`
       SELECT
         grado,
         apellidos,
@@ -1362,70 +1358,25 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
         subunidad,
         estacion,
         organico,
-        COUNT(*) AS veces,
-        MIN(fecha) AS primera_vez,
-        MAX(fecha) AS ultima_vez
+        fecha
       FROM servicios_extraordinarios
-      WHERE 1=1
-    `;
-
-    const params = [];
-    let index = 1;
-
-    if (unidad) {
-      query += ` AND unidad = $${index}`;
-      params.push(unidad);
-      index++;
-    }
-
-    const subunidadesLimpias = normalizarArrayValores(subunidades);
-    const estacionesLimpias = normalizarArrayValores(estaciones);
-    const organicosLimpios = normalizarArrayValores(organicos);
-
-    if (subunidadesLimpias.length > 0) {
-      query += ` AND subunidad = ANY($${index})`;
-      params.push(subunidadesLimpias);
-      index++;
-    }
-
-    if (estacionesLimpias.length > 0) {
-      query += ` AND estacion = ANY($${index})`;
-      params.push(estacionesLimpias);
-      index++;
-    }
-
-    if (organicosLimpios.length > 0) {
-      query += ` AND organico = ANY($${index})`;
-      params.push(organicosLimpios);
-      index++;
-    }
-
-    if (fechaInicio) {
-      query += ` AND fecha >= $${index}`;
-      params.push(fechaInicio);
-      index++;
-    }
-
-    if (fechaFin) {
-      query += ` AND fecha <= $${index}`;
-      params.push(fechaFin);
-      index++;
-    }
-
-    query += `
-      GROUP BY grado, apellidos, nombres, cedula, unidad, subunidad, estacion, organico
-      ORDER BY
-        ${construirOrdenGradoSQL()},
-        apellidos,
-        nombres
-    `;
-
-    const result = await pool.query(query, params);
+      ORDER BY fecha DESC
+    `);
 
     return res.json({
       ok: true,
       data: result.rows
     });
+
+  } catch (error) {
+    console.error("ERROR HISTORIAL:", error);
+
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
   } catch (error) {
     return res.status(500).json({
       ok: false,
