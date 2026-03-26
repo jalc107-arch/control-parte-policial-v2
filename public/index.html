@@ -316,6 +316,16 @@
         <button onclick="aplicarServicioExtraordinarioSimple()">Aplicar modo simple</button>
       </div>
 
+      <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
+        <h2>8. Historial de servicios extraordinarios</h2>
+        <input id="historial_fecha_inicio" type="date" />
+        <br>
+        <input id="historial_fecha_fin" type="date" />
+        <br>
+        <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
+        <pre id="resultado_historial_extra"></pre>
+      </div>
+
       <div class="grupo-extra">
         <div class="grupo-titulo">7.2 Distribución por grupos</div>
         <div class="ayuda">Este bloque toma el resultado de la consulta general filtrada y solo usa personal en DISPONIBLE.</div>
