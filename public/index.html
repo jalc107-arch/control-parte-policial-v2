@@ -378,14 +378,18 @@
 </div>
 
       <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
-        <h2>8. Historial de servicios extraordinarios</h2>
-        <input id="historial_fecha_inicio" type="date" />
-        <br>
-        <input id="historial_fecha_fin" type="date" />
-        <br>
-        <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
-        <pre id="resultado_historial_extra"></pre>
-      </div>
+  <h2>8. Historial de servicios extraordinarios</h2>
+  <div class="campo-corto">
+    <input id="historial_fecha_inicio" type="date" />
+  </div>
+  <div class="campo-corto">
+    <input id="historial_fecha_fin" type="date" />
+  </div>
+  <div class="acciones-inline">
+    <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
+  </div>
+  <pre id="resultado_historial_extra"></pre>
+</div>
 
       <div class="grupo-extra">
         <div class="grupo-titulo">7.2 Distribución por grupos</div>
