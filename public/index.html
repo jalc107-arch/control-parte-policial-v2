@@ -1764,6 +1764,11 @@ const data = await res.json();
       cargarChecksGruposExtra();
     });
 
+function formatearFecha(fecha) {
+  if (!fecha) return "";
+  return new Date(fecha).toLocaleDateString("es-CO");
+}
+    
 async function consultarHistorialServicioExtraordinario() {
   const resultado = document.getElementById("resultado_historial_extra");
   resultado.innerText = "Consultando...";
@@ -1816,7 +1821,7 @@ async function consultarHistorialServicioExtraordinario() {
     data.data
       .sort((a, b) => parseInt(b.veces || "0", 10) - parseInt(a.veces || "0", 10))
       .forEach((p, i) => {
-        texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - Veces: ${p.veces || 0} - Última vez: ${p.ultima_vez || ""}\n`;
+       texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - Veces: ${p.veces || 0} - Última vez: ${formatearFecha(p.ultima_vez)}\n`;
       });
 
     resultado.innerText = texto;
