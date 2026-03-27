@@ -674,6 +674,7 @@
     });
 
     const data = await res.json();
+alert("RESPUESTA: " + JSON.stringify(data));
 
     if (!data.ok) {
       document.getElementById("datos_responsable").innerText = "No autorizado";
