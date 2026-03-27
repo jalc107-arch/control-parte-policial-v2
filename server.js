@@ -579,7 +579,7 @@ app.post("/personal-filtrado", async (req, res) => {
 // GUARDAR NOVEDADES
 // =========================
 app.post("/guardar-novedades", async (req, res) => {
-  const { novedades, estacion, grado = "", rol = "" } = req.body;
+  const { novedades, estacion, grado = "", rol = "", responsable_cedula = "", responsable_nombre = "" } = req.body;
 
   try {
     if (!novedades || !Array.isArray(novedades)) {
