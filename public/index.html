@@ -674,7 +674,7 @@
     });
 
     const data = await res.json();
-    alert("RESPUESTA: " + JSON.stringify(data));
+    console.log("RESPUESTA:", data);
 
     // ❌ No existe la cédula
 if (!data.ok) {
