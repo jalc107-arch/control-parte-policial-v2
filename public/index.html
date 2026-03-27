@@ -2114,6 +2114,108 @@ function reemplazarExtra(index) {
       panel.style.display = panel.style.display === "block" ? "none" : "block";
     }
 
+  async function consultarControlCumplimientoDiario() {
+  const box = document.getElementById("resultado_control_cumplimiento");
+  box.innerHTML = "Consultando...";
+
+  try {
+    const res = await fetch("/control-cumplimiento-diario");
+    const data = await res.json();
+
+    if (!data.ok) {
+      box.innerHTML = "Error consultando control diario";
+      return;
+    }
+
+    function pintarLista(titulo, lista) {
+      if (!lista || !lista.length) {
+        return `
+          <div class="tabla-wrap">
+            <div class="bloque-titulo-tabla">${titulo}</div>
+            <div>No hay pendientes.</div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="tabla-wrap">
+          <div class="bloque-titulo-tabla">${titulo}</div>
+          <table class="tabla-app">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Estación</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${lista.map((item, i) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${item}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function pintarDetalleMediodia(detalle) {
+      if (!detalle || !detalle.length) {
+        return `
+          <div class="tabla-wrap">
+            <div class="bloque-titulo-tabla">Actualizaciones de mediodía</div>
+            <div>No hay registros.</div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="tabla-wrap">
+          <div class="bloque-titulo-tabla">Actualizaciones de mediodía</div>
+          <table class="tabla-app">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Estación</th>
+                <th>Responsable</th>
+                <th>Cédula</th>
+                <th>Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${detalle.map((r, i) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${r.estacion || ""}</td>
+                  <td>${r.actualizado_por_nombre || ""}</td>
+                  <td>${r.actualizado_por_cedula || ""}</td>
+                  <td>${r.hora_registro ? new Date(r.hora_registro).toLocaleTimeString("es-CO") : ""}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    box.innerHTML = `
+      <div class="tabla-wrap">
+        <div class="bloque-titulo-tabla">Fecha de control: ${data.fecha}</div>
+      </div>
+
+      ${pintarLista("Estaciones pendientes parte mañana", data.faltanManana)}
+      ${pintarLista("Estaciones pendientes parte noche", data.faltanNoche)}
+      ${pintarLista("Estaciones pendientes novedades del día", data.faltanNovedadesDia)}
+      ${pintarDetalleMediodia(data.novedadesMediodiaDetalle)}
+      ${pintarLista("Estaciones pendientes novedades de mediodía", data.faltanNovedadesMediodia)}
+    `;
+  } catch (error) {
+    console.error(error);
+    box.innerHTML = "Error en servidor";
+  }
+}
+  
     document.addEventListener("DOMContentLoaded", () => {
       const consultaUnidad = document.getElementById("consulta_unidad");
       if (consultaUnidad) consultaUnidad.addEventListener("change", cargarConsultaDependencias);
@@ -2127,6 +2229,8 @@ function reemplazarExtra(index) {
       document.getElementById("bloqueExtraordinario").style.display = "none";
       document.getElementById("bloqueHistorialExtra").style.display = "none";
 
+
+      
       cargarEstructura();
     });
   </script>
