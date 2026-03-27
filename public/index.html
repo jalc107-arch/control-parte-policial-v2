@@ -1364,8 +1364,7 @@
      window.listaExtra = seleccionados.map(p => ({ ...p, estadoExtra: "SI" }));
 renderizarExtraordinario(window.listaExtra);
       renderizarConsultaDesdeMemoria();
-      guardarServicioExtraordinario();
-    }
+      }
 
     function aplicarServicioExtraordinarioPorGrupos() {
       const resultadoExtra = document.getElementById("resultado_extra");
@@ -1463,7 +1462,6 @@ renderizarExtraordinario(window.listaExtra);
      window.listaExtra = seleccionadosFinales.map(p => ({ ...p, estadoExtra: "SI" }));
 renderizarExtraordinario(window.listaExtra);
       renderizarConsultaDesdeMemoria();
-      guardarServicioExtraordinario();
     }
 
     async function generarParte() {
