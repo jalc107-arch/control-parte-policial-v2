@@ -710,9 +710,9 @@
         }
 
         document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
-        document.getElementById("bloqueUbicacion").style.display = "block";
-        document.getElementById("bloqueNovedades").style.display = "block";
-        document.getElementById("bloqueParte").style.display = "block";
+document.getElementById("bloqueUbicacion").style.display = "block";
+document.getElementById("bloqueNovedades").style.display = "none";
+document.getElementById("bloqueParte").style.display = "none";
 
         if (data.esOficial || data.rol === "ADMIN_EXCEL") {
           document.getElementById("bloqueOrganico").style.display = "block";
