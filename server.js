@@ -750,7 +750,7 @@ app.get("/validar-parte", async (req, res) => {
 
 app.get("/control-cumplimiento-diario", async (req, res) => {
   try {
-    const fecha = obtenerFechaBogotaSQL();
+    const fecha = (req.query.fecha || obtenerFechaBogotaSQL()).trim();
 
     const estacionesResult = await pool.query(`
       select estacion
