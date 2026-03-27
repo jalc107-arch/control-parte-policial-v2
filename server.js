@@ -707,6 +707,87 @@ app.get("/validar-parte", async (req, res) => {
   }
 });
 
+app.get("/control-cumplimiento-diario", async (req, res) => {
+  try {
+    const fecha = obtenerFechaBogotaSQL();
+
+    const estacionesResult = await pool.query(`
+      select estacion
+      from estaciones_control
+      where activo = true
+      order by estacion
+    `);
+
+    const estacionesEsperadas = estacionesResult.rows.map(r => r.estacion);
+
+    const partesMananaResult = await pool.query(`
+      select distinct estacion
+      from partes
+      where date(fecha) = $1
+        and tipo = 'mañana'
+        and estacion is not null
+    `, [fecha]);
+
+    const partesNocheResult = await pool.query(`
+      select distinct estacion
+      from partes
+      where date(fecha) = $1
+        and tipo = 'noche'
+        and estacion is not null
+    `, [fecha]);
+
+    const novedadesDiaResult = await pool.query(`
+      select distinct estacion
+      from novedades
+      where fecha = $1
+        and estacion is not null
+    `, [fecha]);
+
+    const novedadesMediodiaResult = await pool.query(`
+      select
+        estacion,
+        actualizado_por_cedula,
+        actualizado_por_nombre,
+        hora_registro,
+        franja
+      from novedades
+      where fecha = $1
+        and franja = 'mediodia'
+        and estacion is not null
+      order by estacion
+    `, [fecha]);
+
+    const partesManana = new Set(partesMananaResult.rows.map(r => r.estacion));
+    const partesNoche = new Set(partesNocheResult.rows.map(r => r.estacion));
+    const novedadesDia = new Set(novedadesDiaResult.rows.map(r => r.estacion));
+    const novedadesMediodia = new Set(novedadesMediodiaResult.rows.map(r => r.estacion));
+
+    const faltanManana = estacionesEsperadas.filter(e => !partesManana.has(e));
+    const faltanNoche = estacionesEsperadas.filter(e => !partesNoche.has(e));
+    const faltanNovedadesDia = estacionesEsperadas.filter(e => !novedadesDia.has(e));
+    const faltanNovedadesMediodia = estacionesEsperadas.filter(e => !novedadesMediodia.has(e));
+
+    res.json({
+      ok: true,
+      fecha,
+      partesMananaReportadas: [...partesManana],
+      partesNocheReportadas: [...partesNoche],
+      novedadesDiaReportadas: [...novedadesDia],
+      novedadesMediodiaDetalle: novedadesMediodiaResult.rows,
+      faltanManana,
+      faltanNoche,
+      faltanNovedadesDia,
+      faltanNovedadesMediodia
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
 // =========================
 // GENERAR TEXTO DEL PARTE
 // =========================
