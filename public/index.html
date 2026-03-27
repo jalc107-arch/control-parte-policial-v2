@@ -1948,6 +1948,24 @@ async function guardarServicioExtraordinarioFinal() {
       URL.revokeObjectURL(url);
     }
 
+function ordenarListaExtraPorGrado(lista) {
+  const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+
+  return [...lista].sort((a, b) => {
+    const ga = String(a.grado || "").toUpperCase().trim();
+    const gb = String(b.grado || "").toUpperCase().trim();
+
+    const ia = orden.indexOf(ga);
+    const ib = orden.indexOf(gb);
+
+    if (ia === -1 && ib === -1) return 0;
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+
+    return ia - ib;
+  });
+}
+    
 function renderizarExtraordinario(lista) {
   const contenedor = document.getElementById("lista_extraordinario");
   if (!contenedor) return;
@@ -1983,8 +2001,8 @@ function renderizarExtraordinario(lista) {
     contenedor.appendChild(div);
   });
 
-  window.listaExtra = lista;
-actualizarResumenExtra();
+ window.listaExtra = ordenarListaExtraPorGrado(lista);
+  actualizarResumenExtra();
 }
 
     
@@ -2000,7 +2018,7 @@ function actualizarResumenExtra() {
   texto += `SERVICIO EXTRAORDINARIO AJUSTADO\n\n`;
   texto += `ASIGNADOS: ${window.listaExtra.length}\n\n`;
 
-  window.listaExtra.forEach((p, i) => {
+  ordenarListaExtraPorGrado(window.listaExtra).forEach((p, i) => {
     texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
   });
 
