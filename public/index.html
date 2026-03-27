@@ -647,129 +647,132 @@
       }
     }
 
-    async function validarResponsable() {
-      const cedula = document.getElementById("cedula_responsable").value.trim();
+   async function validarResponsable() {
+  const cedula = document.getElementById("cedula_responsable").value.trim();
 
-      document.getElementById("lista").innerHTML = "";
-      document.getElementById("resultado").innerText = "";
-      document.getElementById("resultado_extra").innerText = "";
-      ultimoResultadoConsulta = [];
-      ultimosSeleccionadosExtra = [];
+  document.getElementById("lista").innerHTML = "";
+  document.getElementById("resultado").innerText = "";
+  document.getElementById("resultado_extra").innerText = "";
+  ultimoResultadoConsulta = [];
+  ultimosSeleccionadosExtra = [];
 
-      const generalBox = document.getElementById("resultado_general");
-      const detalleBox = document.getElementById("resultado_detalle");
-      if (generalBox) generalBox.innerHTML = "";
-      if (detalleBox) detalleBox.innerHTML = "";
+  const generalBox = document.getElementById("resultado_general");
+  const detalleBox = document.getElementById("resultado_detalle");
+  if (generalBox) generalBox.innerHTML = "";
+  if (detalleBox) detalleBox.innerHTML = "";
 
-      if (!cedula) {
-        alert("Ingresa la cédula");
-        return;
-      }
+  if (!cedula) {
+    alert("Ingresa la cédula");
+    return;
+  }
 
-      try {
-        const res = await fetch("/validar-responsable", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ cedula })
-        });
+  try {
+    const res = await fetch("/validar-responsable", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula })
+    });
 
-        const data = await res.json();
+    const data = await res.json();
 
-        if (!data.ok) {
-          document.getElementById("datos_responsable").innerText = "No autorizado";
-          document.getElementById("bloqueExcel").style.display = "none";
-          document.getElementById("bloqueUbicacion").style.display = "none";
-          document.getElementById("bloqueNovedades").style.display = "none";
-          document.getElementById("bloqueParte").style.display = "none";
-          document.getElementById("bloqueConsultaGeneral").style.display = "none";
-          document.getElementById("bloqueExtraordinario").style.display = "none";
-          document.getElementById("bloqueHistorialExtra").style.display = "none";
+    if (!data.ok) {
+      document.getElementById("datos_responsable").innerText = "No autorizado";
 
-          document.getElementById("unidad_select").value = "";
-          document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-          document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-          document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+      document.getElementById("bloqueExcel").style.display = "none";
+      document.getElementById("bloqueUbicacion").style.display = "none";
+      document.getElementById("bloqueNovedades").style.display = "none";
+      document.getElementById("bloqueParte").style.display = "none";
+      document.getElementById("bloqueConsultaGeneral").style.display = "none";
+      document.getElementById("bloqueExtraordinario").style.display = "none";
+      document.getElementById("bloqueHistorialExtra").style.display = "none";
+      document.getElementById("bloqueControlCumplimiento").style.display = "none";
 
-          document.getElementById("unidad_select").disabled = true;
-          document.getElementById("subunidad_select").disabled = true;
-          document.getElementById("estacion_select").disabled = true;
+      document.getElementById("unidad_select").value = "";
+      document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+      document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+      document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
-          document.getElementById("grado").value = "";
-          document.getElementById("nombre_elabora").value = "";
-          document.getElementById("cedula_elabora").value = "";
-          document.getElementById("telefono_elabora").value = "";
-          window.responsable = null;
-          return;
-        }
+      document.getElementById("unidad_select").disabled = true;
+      document.getElementById("subunidad_select").disabled = true;
+      document.getElementById("estacion_select").disabled = true;
 
-        document.getElementById("cedula_elabora").value = cedula;
-        document.getElementById("nombre_elabora").value = data.nombre || "";
-        document.getElementById("grado").value = data.grado || "";
+      document.getElementById("grado").value = "";
+      document.getElementById("nombre_elabora").value = "";
+      document.getElementById("cedula_elabora").value = "";
+      document.getElementById("telefono_elabora").value = "";
 
-        document.getElementById("datos_responsable").innerText = `${data.grado} - ${data.nombre}`;
-        document.getElementById("grado").value = data.grado || "";
-        document.getElementById("nombre_elabora").value = data.nombre || "";
-        document.getElementById("cedula_elabora").value = data.cedula || "";
-        document.getElementById("telefono_elabora").value = data.telefono || "";
-
-        window.responsable = {
-  cedula: data.cedula || "",
-  nombre: data.nombre || "",
-  grado: data.grado || "",
-  telefono: data.telefono || ""
-};
-
-        if (!data.esOficial) {
-          document.getElementById("unidad_select").value = data.unidad || "";
-          cargarSubunidades();
-          document.getElementById("subunidad_select").value = data.subunidad || "";
-          cargarEstaciones();
-          document.getElementById("estacion_select").value = data.estacion || "";
-          document.getElementById("unidad_select").disabled = true;
-          document.getElementById("subunidad_select").disabled = true;
-          document.getElementById("estacion_select").disabled = true;
-        } else {
-          document.getElementById("unidad_select").disabled = false;
-          document.getElementById("subunidad_select").disabled = false;
-          document.getElementById("estacion_select").disabled = false;
-        }
-
-        document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
-document.getElementById("bloqueUbicacion").style.display = "block";
-document.getElementById("bloqueNovedades").style.display = "none";
-document.getElementById("bloqueParte").style.display = "none";
-
-       if (data.esOficial || data.rol === "ADMIN_EXCEL") {
-  document.getElementById("bloqueOrganico").style.display = "block";
-  document.getElementById("bloqueConsultaGeneral").style.display = "block";
-  document.getElementById("bloqueExtraordinario").style.display = "block";
-  document.getElementById("bloqueHistorialExtra").style.display = "block";
-  document.getElementById("bloqueControlCumplimiento").style.display = "block";
-} else {
-  document.getElementById("bloqueOrganico").style.display = "none";
-  document.getElementById("bloqueConsultaGeneral").style.display = "none";
-  document.getElementById("bloqueExtraordinario").style.display = "none";
-  document.getElementById("bloqueHistorialExtra").style.display = "none";
-  document.getElementById("bloqueControlCumplimiento").style.display = "none";
-}
-
-        cargarFiltrosConsulta();
-        cargarChecksGruposExtra();
-
-        if (data.esOficial || data.rol === "ADMIN_EXCEL") {
-          document.getElementById("consulta_unidad").value = data.unidad || "";
-          cargarConsultaDependencias();
-
-          if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
-          if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
-          if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Error validando responsable");
-      }
+      window.responsable = null;
+      return;
     }
 
+    document.getElementById("cedula_elabora").value = data.cedula || cedula;
+    document.getElementById("nombre_elabora").value = data.nombre || "";
+    document.getElementById("grado").value = data.grado || "";
+    document.getElementById("telefono_elabora").value = data.telefono || "";
+
+    document.getElementById("datos_responsable").innerText = `${data.grado || ""} - ${data.nombre || ""}`;
+
+    window.responsable = {
+      cedula: data.cedula || "",
+      nombre: data.nombre || "",
+      grado: data.grado || "",
+      telefono: data.telefono || ""
+    };
+
+    if (!data.esOficial) {
+      document.getElementById("unidad_select").value = data.unidad || "";
+      cargarSubunidades();
+
+      document.getElementById("subunidad_select").value = data.subunidad || "";
+      cargarEstaciones();
+
+      document.getElementById("estacion_select").value = data.estacion || "";
+
+      document.getElementById("unidad_select").disabled = true;
+      document.getElementById("subunidad_select").disabled = true;
+      document.getElementById("estacion_select").disabled = true;
+    } else {
+      document.getElementById("unidad_select").disabled = false;
+      document.getElementById("subunidad_select").disabled = false;
+      document.getElementById("estacion_select").disabled = false;
+    }
+
+    document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
+    document.getElementById("bloqueUbicacion").style.display = "block";
+    document.getElementById("bloqueNovedades").style.display = "none";
+    document.getElementById("bloqueParte").style.display = "none";
+
+    if (data.esOficial || data.rol === "ADMIN_EXCEL") {
+      document.getElementById("bloqueOrganico").style.display = "block";
+      document.getElementById("bloqueConsultaGeneral").style.display = "block";
+      document.getElementById("bloqueExtraordinario").style.display = "block";
+      document.getElementById("bloqueHistorialExtra").style.display = "block";
+      document.getElementById("bloqueControlCumplimiento").style.display = "block";
+    } else {
+      document.getElementById("bloqueOrganico").style.display = "none";
+      document.getElementById("bloqueConsultaGeneral").style.display = "none";
+      document.getElementById("bloqueExtraordinario").style.display = "none";
+      document.getElementById("bloqueHistorialExtra").style.display = "none";
+      document.getElementById("bloqueControlCumplimiento").style.display = "none";
+    }
+
+    cargarFiltrosConsulta();
+    cargarChecksGruposExtra();
+
+    if (data.esOficial || data.rol === "ADMIN_EXCEL") {
+      document.getElementById("consulta_unidad").value = data.unidad || "";
+      cargarConsultaDependencias();
+
+      if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
+      if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
+      if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Error validando responsable");
+  }
+}
     async function cargarEstructura() {
       try {
         const res = await fetch("/estructura");
