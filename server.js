@@ -348,8 +348,9 @@ app.post("/validar-responsable", async (req, res) => {
       esOficial ||
       rol === "ADMIN_EXCEL";
 
-    res.json({
-      ok: puedeGenerarParte,
+   res.json({
+  ok: true, // ✅ SI EXISTE
+  autorizado: puedeGenerarParte, // 🔥 PERMISOS APARTE
       puedeSubirExcel,
       nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
       grado: persona.grado || "",
