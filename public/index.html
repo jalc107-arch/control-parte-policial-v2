@@ -2,377 +2,341 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Control de Partes</title>
-<style>
-  :root {
-    --azul-principal: #0B1F3A;
-    --verde-accion: #1F5A3C;
-    --verde-accion-hover: #17452E;
-    --blanco: #FFFFFF;
-    --gris-claro: #F5F7FA;
-    --gris-borde: #D9E1EA;
-    --gris-texto: #52606D;
-    --texto-oscuro: #122033;
-    --sombra-card: 0 12px 30px rgba(0, 0, 0, 0.18);
-    --sombra-suave: 0 4px 12px rgba(11, 31, 58, 0.08);
-    --radio-lg: 18px;
-    --radio-md: 12px;
-    --radio-sm: 10px;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    padding: 16px;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: linear-gradient(180deg, #0B1F3A 0%, #102B4E 100%);
-    color: var(--blanco);
-  }
-
-  h1 {
-    margin: 0 0 18px 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--blanco);
-    letter-spacing: 0.2px;
-  }
-
-  h2 {
-    margin: 0 0 10px 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--azul-principal);
-  }
-
-  h3 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--azul-principal);
-  }
-
-  .card {
-    width: 100%;
-    max-width: 460px;
-    margin: 0 auto;
-    padding: 22px 18px;
-    border-radius: var(--radio-lg);
-    background: var(--blanco);
-    color: var(--texto-oscuro);
-    box-shadow: var(--sombra-card);
-  }
-
-  .seccion {
-    margin-top: 16px;
-    padding: 16px 14px;
-    border-radius: 14px;
-    background: var(--gris-claro);
-    border: 1px solid #ECF1F6;
-  }
-
-  input,
-  select,
-  button,
-  textarea {
-    margin: 4px 0;
-    font-size: 14px;
-    border-radius: var(--radio-sm);
-    box-sizing: border-box;
-  }
-
-  input,
-  select,
-  textarea {
-    width: 100%;
-    max-width: 100%;
-    padding: 12px 14px;
-    border: 1px solid var(--gris-borde);
-    background: var(--blanco);
-    color: var(--texto-oscuro);
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  input:focus,
-  select:focus,
-  textarea:focus {
-    border-color: var(--verde-accion);
-    box-shadow: 0 0 0 3px rgba(31, 90, 60, 0.12);
-  }
-
-  button {
-    min-width: 120px;
-    padding: 11px 16px;
-    border: none;
-    background: var(--verde-accion);
-    color: var(--blanco);
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
-  }
-
-  button:hover {
-    background: var(--verde-accion-hover);
-  }
-
-  button:active {
-    transform: scale(0.98);
-  }
-
-  .acciones-inline {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-  }
-
-  .campo-corto {
-    max-width: 320px;
-    margin: 0 auto;
-  }
-
-  .persona {
-    padding: 10px 0;
-    text-align: left;
-    border-bottom: 1px solid #E8EDF3;
-  }
-
-  .persona:last-child {
-    border-bottom: none;
-  }
-
-  .persona b {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 13px;
-    color: var(--texto-oscuro);
-  }
-
-  .persona select {
-    width: 100%;
-  }
-
-  #lista {
-    margin-top: 10px;
-    padding: 8px;
-    max-height: 260px;
-    overflow-y: auto;
-    text-align: left;
-    border: 1px solid var(--gris-borde);
-    border-radius: var(--radio-sm);
-    background: var(--blanco);
-  }
-
-  pre {
-    margin-top: 10px;
-    padding: 12px;
-    text-align: left;
-    white-space: pre-wrap;
-    overflow-x: auto;
-    border-radius: var(--radio-sm);
-    background: var(--blanco);
-    color: var(--texto-oscuro);
-    border: 1px solid var(--gris-borde);
-    font-family: "Courier New", monospace;
-    font-size: 12px;
-    line-height: 1.4;
-  }
-
-  .ayuda {
-    margin-top: 4px;
-    margin-bottom: 8px;
-    font-size: 11px;
-    color: var(--gris-texto);
-  }
-
-  .filtro-box,
-  .grupo-extra,
-  .extra-simple-box,
-  .sub-card {
-    width: 100%;
-    max-width: 100%;
-    margin: 10px 0;
-    padding: 12px;
-    text-align: left;
-    border-radius: var(--radio-md);
-    background: var(--blanco);
-    border: 1px solid var(--gris-borde);
-    box-shadow: var(--sombra-suave);
-  }
-
-  .filtro-titulo,
-  .grupo-titulo {
-    margin-bottom: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--azul-principal);
-  }
-
-  .subtitulo-extra {
-    margin-top: 8px;
-    margin-bottom: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--texto-oscuro);
-  }
-
-  .filtro-botones {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-  }
-
-  .filtro-botones button {
-    min-width: auto;
-    padding: 7px 10px;
-    font-size: 11px;
-  }
-
-  .checks-contenedor {
-    max-height: 120px;
-    overflow-y: auto;
-    padding: 8px;
-    border: 1px solid var(--gris-borde);
-    border-radius: 8px;
-    background: var(--gris-claro);
-  }
-
-  .check-item {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 12px;
-    color: var(--texto-oscuro);
-  }
-
-  .check-item input {
-    width: auto;
-    margin-right: 6px;
-  }
-
-  .grupo-extra input[type="number"] {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .grid-extra {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .panel-toggle {
-    width: 100%;
-    padding: 12px 14px;
-    text-align: left;
-    font-size: 14px;
-    font-weight: 700;
-    border-radius: var(--radio-md);
-    background: var(--azul-principal);
-    color: var(--blanco);
-    margin-bottom: 8px;
-  }
-
-  .panel-contenido {
-    display: none;
-    margin-top: 8px;
-  }
-
-  .input-archivo-minimal {
-    max-width: 260px;
-    margin: 8px auto 0;
-    padding: 0;
-    font-size: 12px;
-    border: none;
-    background: transparent;
-  }
-.persona {
-  border: 1px solid var(--gris-borde);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 10px;
-  background: var(--blanco);
-}
-
-.persona b {
-  display: block;
-  font-size: 13px;
-  line-height: 1.35;
-  margin-bottom: 8px;
-  color: var(--texto-oscuro);
-}
-
-.persona .persona-cc {
-  display: block;
-  font-size: 12px;
-  color: var(--gris-texto);
-  margin-top: 2px;
-}
-
-#lista {
-  margin-top: 10px;
-  max-height: 420px;
-  overflow-y: auto;
-  border: 1px solid var(--gris-borde);
-  border-radius: 12px;
-  padding: 10px;
-  background: var(--gris-claro);
-}
-
-.tabla-wrap {
-  margin-top: 10px;
-  overflow-x: auto;
-  background: var(--blanco);
-  border: 1px solid var(--gris-borde);
-  border-radius: 12px;
-  padding: 8px;
-}
-
-.tabla-app {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  color: var(--texto-oscuro);
-}
-
-.tabla-app th,
-.tabla-app td {
-  border-bottom: 1px solid #E9EEF5;
-  padding: 8px 6px;
-  text-align: left;
-  vertical-align: top;
-}
-
-.tabla-app th {
-  background: var(--gris-claro);
-  font-weight: 700;
-  color: var(--azul-principal);
-  position: sticky;
-  top: 0;
-}
-
-.tabla-app tr:last-child td {
-  border-bottom: none;
-}
-  
-  @media (min-width: 768px) {
-    .grid-extra {
-      grid-template-columns: 1fr 1fr;
+  <style>
+    :root {
+      --azul-principal: #0B1F3A;
+      --verde-accion: #1F5A3C;
+      --verde-accion-hover: #17452E;
+      --blanco: #FFFFFF;
+      --gris-claro: #F5F7FA;
+      --gris-borde: #D9E1EA;
+      --gris-texto: #52606D;
+      --texto-oscuro: #122033;
+      --sombra-card: 0 12px 30px rgba(0, 0, 0, 0.18);
+      --sombra-suave: 0 4px 12px rgba(11, 31, 58, 0.08);
+      --radio-lg: 18px;
+      --radio-md: 12px;
+      --radio-sm: 10px;
     }
-  }
-</style>
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(180deg, #0B1F3A 0%, #102B4E 100%);
+      color: var(--blanco);
+    }
+
+    h1 {
+      margin: 0 0 18px 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--blanco);
+      letter-spacing: 0.2px;
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--azul-principal);
+    }
+
+    h3 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--azul-principal);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 22px 18px;
+      border-radius: var(--radio-lg);
+      background: var(--blanco);
+      color: var(--texto-oscuro);
+      box-shadow: var(--sombra-card);
+    }
+
+    .seccion {
+      margin-top: 16px;
+      padding: 16px 14px;
+      border-radius: 14px;
+      background: var(--gris-claro);
+      border: 1px solid #ECF1F6;
+    }
+
+    input, select, button, textarea {
+      margin: 4px 0;
+      font-size: 14px;
+      border-radius: var(--radio-sm);
+      box-sizing: border-box;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      max-width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--gris-borde);
+      background: var(--blanco);
+      color: var(--texto-oscuro);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--verde-accion);
+      box-shadow: 0 0 0 3px rgba(31, 90, 60, 0.12);
+    }
+
+    button {
+      min-width: 120px;
+      padding: 11px 16px;
+      border: none;
+      background: var(--verde-accion);
+      color: var(--blanco);
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    button:hover { background: var(--verde-accion-hover); }
+    button:active { transform: scale(0.98); }
+
+    .acciones-inline {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .campo-corto {
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .persona {
+      border: 1px solid var(--gris-borde);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: var(--blanco);
+      box-shadow: var(--sombra-suave);
+      text-align: left;
+    }
+
+    .persona:last-child { margin-bottom: 0; }
+
+    .persona b {
+      display: block;
+      font-size: 13px;
+      line-height: 1.35;
+      margin-bottom: 8px;
+      color: var(--texto-oscuro);
+    }
+
+    .persona .persona-cc {
+      display: block;
+      font-size: 12px;
+      color: var(--gris-texto);
+      margin-top: 3px;
+    }
+
+    #lista {
+      margin-top: 10px;
+      max-height: 430px;
+      overflow-y: auto;
+      border: 1px solid var(--gris-borde);
+      border-radius: 12px;
+      padding: 10px;
+      background: var(--gris-claro);
+      text-align: left;
+    }
+
+    pre {
+      margin-top: 10px;
+      padding: 12px;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      border-radius: var(--radio-sm);
+      background: var(--blanco);
+      color: var(--texto-oscuro);
+      border: 1px solid var(--gris-borde);
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .ayuda {
+      margin-top: 4px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: var(--gris-texto);
+    }
+
+    .filtro-box,
+    .grupo-extra,
+    .extra-simple-box,
+    .sub-card {
+      width: 100%;
+      max-width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      text-align: left;
+      border-radius: var(--radio-md);
+      background: var(--blanco);
+      border: 1px solid var(--gris-borde);
+      box-shadow: var(--sombra-suave);
+    }
+
+    .filtro-titulo,
+    .grupo-titulo {
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--azul-principal);
+    }
+
+    .subtitulo-extra {
+      margin-top: 8px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--texto-oscuro);
+    }
+
+    .filtro-botones {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .filtro-botones button {
+      min-width: auto;
+      padding: 7px 10px;
+      font-size: 11px;
+    }
+
+    .checks-contenedor {
+      max-height: 120px;
+      overflow-y: auto;
+      padding: 8px;
+      border: 1px solid var(--gris-borde);
+      border-radius: 8px;
+      background: var(--gris-claro);
+    }
+
+    .check-item {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      color: var(--texto-oscuro);
+    }
+
+    .check-item input {
+      width: auto;
+      margin-right: 6px;
+    }
+
+    .grupo-extra input[type="number"] {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .grid-extra {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .panel-toggle {
+      width: 100%;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: var(--radio-md);
+      background: var(--azul-principal);
+      color: var(--blanco);
+      margin-bottom: 8px;
+    }
+
+    .panel-contenido {
+      display: none;
+      margin-top: 8px;
+    }
+
+    .input-archivo-minimal {
+      max-width: 260px;
+      margin: 8px auto 0;
+      padding: 0;
+      font-size: 12px;
+      border: none;
+      background: transparent;
+    }
+
+    .tabla-wrap {
+      margin-top: 10px;
+      overflow-x: auto;
+      background: var(--blanco);
+      border: 1px solid var(--gris-borde);
+      border-radius: 12px;
+      padding: 8px;
+      box-shadow: var(--sombra-suave);
+    }
+
+    .tabla-app {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      color: var(--texto-oscuro);
+    }
+
+    .tabla-app th,
+    .tabla-app td {
+      border-bottom: 1px solid #E9EEF5;
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    .tabla-app th {
+      background: var(--gris-claro);
+      font-weight: 700;
+      color: var(--azul-principal);
+    }
+
+    .tabla-app tr:last-child td { border-bottom: none; }
+
+    .bloque-titulo-tabla {
+      font-weight: 700;
+      margin: 4px 0 10px 0;
+      color: var(--azul-principal);
+      font-size: 13px;
+    }
+
+    .acciones-descarga { margin-top: 12px; }
+
+    @media (min-width: 768px) {
+      .grid-extra { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
 </head>
 <body>
-
   <h1>📍 Control de Partes</h1>
 
   <div class="card">
-
     <div class="seccion">
       <h2>Paso 1 — Validación</h2>
       <div class="campo-corto">
@@ -397,14 +361,14 @@
       <h2>Paso 2 — Cargar archivo</h2>
       <div class="campo-corto">
         <input type="file" id="fileExcel" accept=".xlsx" />
-</div>
-<div class="acciones-inline">
-  <button onclick="subirExcel()">Subir Excel</button>
-</div>
+      </div>
+      <div class="acciones-inline">
+        <button onclick="subirExcel()">Subir Excel</button>
+      </div>
     </div>
 
-   <div class="seccion" id="bloqueUbicacion" style="display:none;">
-  <h2>Paso 3 — Registro del servicio</h2>
+    <div class="seccion" id="bloqueUbicacion" style="display:none;">
+      <h2>Paso 3 — Registro del servicio</h2>
 
       <select id="unidad_select" onchange="cargarSubunidades()">
         <option value="">Seleccionar UNIDAD</option>
@@ -429,210 +393,205 @@
       </div>
 
       <div class="acciones-inline">
-  <button onclick="cargarPersonal()">Continuar</button>
-</div>
-</div>
-
-<div class="seccion" id="bloqueNovedades" style="display:none;">
-  <div class="sub-card">
-    <h3>Novedades</h3>
-      <div id="lista"></div>
-     <div class="acciones-inline">
-  <button onclick="guardarNovedades()">Guardar</button>
-</div>
-</div>
-</div>
-  
-<div class="seccion" id="bloqueParte" style="display:none;">
-  <div class="sub-card">
-    <h3>Generar</h3>
-      <div class="acciones-inline">
-  <button onclick="generarParte()">Generar</button>
-  <button onclick="descargarPDF()">Descargar</button>
-</div>
-<div class="campo-corto">
-  <input type="file" id="foto_parte" accept="image/*" capture="environment" class="input-archivo-minimal">
-</div>
-<pre id="resultado"></pre>
-</div>
-</div>
-
-<div class="seccion" id="bloqueConsultaGeneral" style="display:none;">
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelConsultaGeneral')">
-    6. Consulta general de novedades
-  </button>
-
-  <div id="panelConsultaGeneral" class="panel-contenido">
-
-      <select id="consulta_unidad">
-        <option value="">Seleccionar UNIDAD</option>
-      </select>
-      <div class="ayuda">Unidad: una sola</div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Subunidad</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_subunidad')">Seleccionar todas</button>
-          <button type="button" onclick="limpiarChecks('checks_subunidad')">Limpiar</button>
-        </div>
-        <div id="checks_subunidad" class="checks-contenedor"></div>
-        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
+        <button onclick="cargarPersonal()">Continuar</button>
       </div>
+    </div>
 
-      <div class="filtro-box">
-        <div class="filtro-titulo">Estaciones</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_estacion')">Seleccionar todas</button>
-          <button type="button" onclick="limpiarChecks('checks_estacion')">Limpiar</button>
+    <div class="seccion" id="bloqueNovedades" style="display:none;">
+      <div class="sub-card">
+        <h3>Asignar novedad</h3>
+        <div id="lista"></div>
+        <div class="acciones-inline">
+          <button onclick="guardarNovedades()">Guardar</button>
         </div>
-        <div id="checks_estacion" class="checks-contenedor"></div>
-        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
       </div>
+    </div>
 
-      <div class="filtro-box">
-        <div class="filtro-titulo">Orgánicos</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_organico')">Seleccionar todas</button>
-          <button type="button" onclick="limpiarChecks('checks_organico')">Limpiar</button>
+    <div class="seccion" id="bloqueParte" style="display:none;">
+      <div class="sub-card">
+        <h3>Salida del parte</h3>
+        <div class="acciones-inline">
+          <button onclick="generarParte()">Generar</button>
+          <button onclick="descargarPDF()">Descargar</button>
         </div>
-        <div id="checks_organico" class="checks-contenedor"></div>
-        <div class="ayuda">Si no marcas ninguno, consulta todos.</div>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Novedad</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_tipo')">Seleccionar todas</button>
-          <button type="button" onclick="limpiarChecks('checks_tipo')">Limpiar</button>
+        <div class="campo-corto">
+          <input type="file" id="foto_parte" accept="image/*" capture="environment" class="input-archivo-minimal">
         </div>
-        <div id="checks_tipo" class="checks-contenedor"></div>
-        <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
+        <pre id="resultado"></pre>
       </div>
+    </div>
 
-      <div class="acciones-inline">
-  <button onclick="consultarNovedades()">Consultar novedades</button>
-</div>
+    <div class="seccion" id="bloqueConsultaGeneral" style="display:none;">
+      <button type="button" class="panel-toggle" onclick="togglePanel('panelConsultaGeneral')">
+        6. Consulta general de novedades
+      </button>
 
-     <div id="resultado_general"></div>
-<div id="resultado_detalle"></div>
-<div class="acciones-inline">
-  <button onclick="descargarNovedadesTotales()">Descargar novedades</button>
-</div>
-  </div>
-</div>
+      <div id="panelConsultaGeneral" class="panel-contenido">
+        <select id="consulta_unidad">
+          <option value="">Seleccionar UNIDAD</option>
+        </select>
+        <div class="ayuda">Unidad: una sola</div>
+
+        <div class="filtro-box">
+          <div class="filtro-titulo">Subunidad</div>
+          <div class="filtro-botones">
+            <button type="button" onclick="seleccionarTodasChecks('checks_subunidad')">Seleccionar todas</button>
+            <button type="button" onclick="limpiarChecks('checks_subunidad')">Limpiar</button>
+          </div>
+          <div id="checks_subunidad" class="checks-contenedor"></div>
+          <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
+        </div>
+
+        <div class="filtro-box">
+          <div class="filtro-titulo">Estaciones</div>
+          <div class="filtro-botones">
+            <button type="button" onclick="seleccionarTodasChecks('checks_estacion')">Seleccionar todas</button>
+            <button type="button" onclick="limpiarChecks('checks_estacion')">Limpiar</button>
+          </div>
+          <div id="checks_estacion" class="checks-contenedor"></div>
+          <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
+        </div>
+
+        <div class="filtro-box">
+          <div class="filtro-titulo">Orgánicos</div>
+          <div class="filtro-botones">
+            <button type="button" onclick="seleccionarTodasChecks('checks_organico')">Seleccionar todas</button>
+            <button type="button" onclick="limpiarChecks('checks_organico')">Limpiar</button>
+          </div>
+          <div id="checks_organico" class="checks-contenedor"></div>
+          <div class="ayuda">Si no marcas ninguno, consulta todos.</div>
+        </div>
+
+        <div class="filtro-box">
+          <div class="filtro-titulo">Novedad</div>
+          <div class="filtro-botones">
+            <button type="button" onclick="seleccionarTodasChecks('checks_tipo')">Seleccionar todas</button>
+            <button type="button" onclick="limpiarChecks('checks_tipo')">Limpiar</button>
+          </div>
+          <div id="checks_tipo" class="checks-contenedor"></div>
+          <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
+        </div>
+
+        <div class="acciones-inline">
+          <button onclick="consultarNovedades()">Consultar novedades</button>
+        </div>
+
+        <div id="resultado_general"></div>
+        <div id="resultado_detalle"></div>
+        <div class="acciones-inline acciones-descarga">
+          <button onclick="descargarNovedadesTotales()">Descargar novedades</button>
+        </div>
+      </div>
+    </div>
 
     <div class="seccion" id="bloqueExtraordinario" style="display:none;">
+      <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
+        7. Apoyo automático a servicio extraordinario
+      </button>
 
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
-    7. Apoyo automático a servicio extraordinario
-  </button>
-
-  <div id="panelExtraordinario" class="panel-contenido">
-
-      <div class="extra-simple-box">
-  <h3>7.1 Modo simple</h3>
-  <div class="campo-corto">
-    <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad total de disponibles a tomar" />
-  </div>
-  <div class="campo-corto">
-    <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje total de disponibles a tomar" />
-  </div>
-  <div class="acciones-inline">
-    <button onclick="aplicarServicioExtraordinarioSimple()">Aplicar modo simple</button>
-  </div>
-</div>
-
-            <div class="grupo-extra">
-        <div class="grupo-titulo">7.2 Distribución por grupos</div>
-        <div class="ayuda">Este bloque toma el resultado de la consulta general filtrada y solo usa personal en DISPONIBLE.</div>
-
-        <div class="grid-extra">
-
-          <div class="grupo-extra">
-            <div class="grupo-titulo">Oficiales</div>
-            <input id="cant_oficiales_extra" type="number" min="0" placeholder="Cantidad de oficiales" />
-            <div class="subtitulo-extra">Grados oficiales</div>
-            <div class="filtro-botones">
-              <button type="button" onclick="seleccionarTodasChecks('checks_extra_oficiales')">Seleccionar todas</button>
-              <button type="button" onclick="limpiarChecks('checks_extra_oficiales')">Limpiar</button>
-            </div>
-            <div id="checks_extra_oficiales" class="checks-contenedor"></div>
+      <div id="panelExtraordinario" class="panel-contenido">
+        <div class="extra-simple-box">
+          <h3>7.1 Modo simple</h3>
+          <div class="campo-corto">
+            <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad total de disponibles a tomar" />
           </div>
-
-          <div class="grupo-extra">
-            <div class="grupo-titulo">Nivel ejecutivo</div>
-            <input id="cant_ejecutivo_extra" type="number" min="0" placeholder="Cantidad de nivel ejecutivo" />
-            <div class="subtitulo-extra">Grados nivel ejecutivo</div>
-            <div class="filtro-botones">
-              <button type="button" onclick="seleccionarTodasChecks('checks_extra_ejecutivo')">Seleccionar todas</button>
-              <button type="button" onclick="limpiarChecks('checks_extra_ejecutivo')">Limpiar</button>
-            </div>
-            <div id="checks_extra_ejecutivo" class="checks-contenedor"></div>
+          <div class="campo-corto">
+            <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje total de disponibles a tomar" />
           </div>
-
-          <div class="grupo-extra">
-            <div class="grupo-titulo">Patrulleros</div>
-            <input id="cant_patrulleros_extra" type="number" min="0" placeholder="Cantidad de patrulleros" />
-            <div class="subtitulo-extra">Grados patrulleros</div>
-            <div class="filtro-botones">
-              <button type="button" onclick="seleccionarTodasChecks('checks_extra_patrulleros')">Seleccionar todas</button>
-              <button type="button" onclick="limpiarChecks('checks_extra_patrulleros')">Limpiar</button>
-            </div>
-            <div id="checks_extra_patrulleros" class="checks-contenedor"></div>
+          <div class="acciones-inline">
+            <button onclick="aplicarServicioExtraordinarioSimple()">Aplicar modo simple</button>
           </div>
-
-          <div class="grupo-extra">
-            <div class="grupo-titulo">Auxiliares</div>
-            <input id="cant_auxiliares_extra" type="number" min="0" placeholder="Cantidad de auxiliares" />
-            <div class="subtitulo-extra">Grados auxiliares</div>
-            <div class="filtro-botones">
-              <button type="button" onclick="seleccionarTodasChecks('checks_extra_auxiliares')">Seleccionar todas</button>
-              <button type="button" onclick="limpiarChecks('checks_extra_auxiliares')">Limpiar</button>
-            </div>
-            <div id="checks_extra_auxiliares" class="checks-contenedor"></div>
-          </div>
-
         </div>
 
-       <div class="acciones-inline">
-  <button onclick="aplicarServicioExtraordinarioPorGrupos()">Aplicar distribución por grupos</button>
-</div>
+        <div class="grupo-extra">
+          <div class="grupo-titulo">7.2 Distribución por grupos</div>
+          <div class="ayuda">Este bloque toma el resultado de la consulta general filtrada y solo usa personal en DISPONIBLE.</div>
 
-      <pre id="resultado_extra"></pre>
-<div class="acciones-inline">
-  <button onclick="descargarServicioExtraordinario()">Descargar extraordinario</button>
-</div>
+          <div class="grid-extra">
+            <div class="grupo-extra">
+              <div class="grupo-titulo">Oficiales</div>
+              <input id="cant_oficiales_extra" type="number" min="0" placeholder="Cantidad de oficiales" />
+              <div class="subtitulo-extra">Grados oficiales</div>
+              <div class="filtro-botones">
+                <button type="button" onclick="seleccionarTodasChecks('checks_extra_oficiales')">Seleccionar todas</button>
+                <button type="button" onclick="limpiarChecks('checks_extra_oficiales')">Limpiar</button>
+              </div>
+              <div id="checks_extra_oficiales" class="checks-contenedor"></div>
+            </div>
+
+            <div class="grupo-extra">
+              <div class="grupo-titulo">Nivel ejecutivo</div>
+              <input id="cant_ejecutivo_extra" type="number" min="0" placeholder="Cantidad de nivel ejecutivo" />
+              <div class="subtitulo-extra">Grados nivel ejecutivo</div>
+              <div class="filtro-botones">
+                <button type="button" onclick="seleccionarTodasChecks('checks_extra_ejecutivo')">Seleccionar todas</button>
+                <button type="button" onclick="limpiarChecks('checks_extra_ejecutivo')">Limpiar</button>
+              </div>
+              <div id="checks_extra_ejecutivo" class="checks-contenedor"></div>
+            </div>
+
+            <div class="grupo-extra">
+              <div class="grupo-titulo">Patrulleros</div>
+              <input id="cant_patrulleros_extra" type="number" min="0" placeholder="Cantidad de patrulleros" />
+              <div class="subtitulo-extra">Grados patrulleros</div>
+              <div class="filtro-botones">
+                <button type="button" onclick="seleccionarTodasChecks('checks_extra_patrulleros')">Seleccionar todas</button>
+                <button type="button" onclick="limpiarChecks('checks_extra_patrulleros')">Limpiar</button>
+              </div>
+              <div id="checks_extra_patrulleros" class="checks-contenedor"></div>
+            </div>
+
+            <div class="grupo-extra">
+              <div class="grupo-titulo">Auxiliares</div>
+              <input id="cant_auxiliares_extra" type="number" min="0" placeholder="Cantidad de auxiliares" />
+              <div class="subtitulo-extra">Grados auxiliares</div>
+              <div class="filtro-botones">
+                <button type="button" onclick="seleccionarTodasChecks('checks_extra_auxiliares')">Seleccionar todas</button>
+                <button type="button" onclick="limpiarChecks('checks_extra_auxiliares')">Limpiar</button>
+              </div>
+              <div id="checks_extra_auxiliares" class="checks-contenedor"></div>
+            </div>
+          </div>
+
+          <div class="acciones-inline">
+            <button onclick="aplicarServicioExtraordinarioPorGrupos()">Aplicar distribución por grupos</button>
+          </div>
+
+          <pre id="resultado_extra"></pre>
+          <div class="acciones-inline acciones-descarga">
+            <button onclick="descargarServicioExtraordinario()">Descargar extraordinario</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
+      <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
+        8. Historial de servicios extraordinarios
+      </button>
+
+      <div id="panelHistorialExtra" class="panel-contenido">
+        <div class="campo-corto">
+          <input id="historial_fecha_inicio" type="date" />
+        </div>
+        <div class="campo-corto">
+          <input id="historial_fecha_fin" type="date" />
+        </div>
+        <div class="acciones-inline">
+          <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
+        </div>
+        <pre id="resultado_historial_extra"></pre>
+      </div>
+    </div>
   </div>
-</div>
 
-<div class="seccion" id="bloqueHistorialExtra" style="display:none;">
-
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
-    8. Historial de servicios extraordinarios
-  </button>
-
-  <div id="panelHistorialExtra" class="panel-contenido">
-    <div class="campo-corto">
-      <input id="historial_fecha_inicio" type="date" />
-    </div>
-    <div class="campo-corto">
-      <input id="historial_fecha_fin" type="date" />
-    </div>
-    <div class="acciones-inline">
-      <button onclick="consultarHistorialServicioExtraordinario()">Consultar historial</button>
-    </div>
-    <pre id="resultado_historial_extra"></pre>
-  </div>
-</div>
-      
   <script>
     let estructuraGlobal = [];
     let ultimoResultadoConsulta = [];
     let ultimosSeleccionadosExtra = [];
-    
+
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
-
       if (!input.files.length) {
         alert("Selecciona un archivo Excel");
         return;
@@ -663,11 +622,12 @@
       document.getElementById("resultado").innerText = "";
       document.getElementById("resultado_extra").innerText = "";
       ultimoResultadoConsulta = [];
+      ultimosSeleccionadosExtra = [];
 
       const generalBox = document.getElementById("resultado_general");
       const detalleBox = document.getElementById("resultado_detalle");
-      if (generalBox) generalBox.innerText = "";
-      if (detalleBox) detalleBox.innerText = "";
+      if (generalBox) generalBox.innerHTML = "";
+      if (detalleBox) detalleBox.innerHTML = "";
 
       if (!cedula) {
         alert("Ingresa la cédula");
@@ -683,39 +643,31 @@
 
         const data = await res.json();
 
-        
+        if (!data.ok) {
+          document.getElementById("datos_responsable").innerText = "No autorizado";
+          document.getElementById("bloqueExcel").style.display = "none";
+          document.getElementById("bloqueUbicacion").style.display = "none";
+          document.getElementById("bloqueNovedades").style.display = "none";
+          document.getElementById("bloqueParte").style.display = "none";
+          document.getElementById("bloqueConsultaGeneral").style.display = "none";
+          document.getElementById("bloqueExtraordinario").style.display = "none";
+          document.getElementById("bloqueHistorialExtra").style.display = "none";
 
-       if (!data.ok) {
-  document.getElementById("datos_responsable").innerText = "No autorizado";
+          document.getElementById("unidad_select").value = "";
+          document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+          document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+          document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
-  // 🔒 OCULTAR TODO
-  document.getElementById("bloqueExcel").style.display = "none";
-  document.getElementById("bloqueUbicacion").style.display = "none";
-  document.getElementById("bloqueNovedades").style.display = "none";
-  document.getElementById("bloqueParte").style.display = "none";
-  document.getElementById("bloqueConsultaGeneral").style.display = "none";
-  document.getElementById("bloqueExtraordinario").style.display = "none";
-  document.getElementById("bloqueHistorialExtra").style.display = "none";
+          document.getElementById("unidad_select").disabled = true;
+          document.getElementById("subunidad_select").disabled = true;
+          document.getElementById("estacion_select").disabled = true;
 
-  // 🔄 RESET selects
-  document.getElementById("unidad_select").value = "";
-  document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-  document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-  document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
-
-  // 🔒 BLOQUEAR selects
-  document.getElementById("unidad_select").disabled = true;
-  document.getElementById("subunidad_select").disabled = true;
-  document.getElementById("estacion_select").disabled = true;
-
-  // 🔄 LIMPIAR datos
-  document.getElementById("grado").value = "";
-  document.getElementById("nombre_elabora").value = "";
-  document.getElementById("cedula_elabora").value = "";
-  document.getElementById("telefono_elabora").value = "";
-
-  return;
-}
+          document.getElementById("grado").value = "";
+          document.getElementById("nombre_elabora").value = "";
+          document.getElementById("cedula_elabora").value = "";
+          document.getElementById("telefono_elabora").value = "";
+          return;
+        }
 
         document.getElementById("cedula_elabora").value = cedula;
         document.getElementById("nombre_elabora").value = data.nombre || "";
@@ -730,12 +682,9 @@
         if (!data.esOficial) {
           document.getElementById("unidad_select").value = data.unidad || "";
           cargarSubunidades();
-
           document.getElementById("subunidad_select").value = data.subunidad || "";
           cargarEstaciones();
-
           document.getElementById("estacion_select").value = data.estacion || "";
-
           document.getElementById("unidad_select").disabled = true;
           document.getElementById("subunidad_select").disabled = true;
           document.getElementById("estacion_select").disabled = true;
@@ -769,17 +718,10 @@
           document.getElementById("consulta_unidad").value = data.unidad || "";
           cargarConsultaDependencias();
 
-          if (data.subunidad) {
-            marcarCheckSiExiste("checks_subunidad", data.subunidad);
-          }
-          if (data.estacion) {
-            marcarCheckSiExiste("checks_estacion", data.estacion);
-          }
-          if (data.organico) {
-            marcarCheckSiExiste("checks_organico", data.organico);
-          }
+          if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
+          if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
+          if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
         }
-
       } catch (error) {
         console.error(error);
         alert("Error validando responsable");
@@ -797,7 +739,6 @@
         unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
 
         const unidades = [...new Set(data.map(x => x.unidad).filter(Boolean))];
-
         unidades.forEach(unidad => {
           const option = document.createElement("option");
           option.value = unidad;
@@ -819,12 +760,10 @@
     function cargarSubunidades() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidadSelect = document.getElementById("subunidad_select");
-
       const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
       const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
 
       subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-
       subunidades.forEach(sub => {
         const option = document.createElement("option");
         option.value = sub;
@@ -868,17 +807,12 @@
 
       organicoSelect.innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
-      let filtrados = estructuraGlobal.filter(x =>
-        x.unidad === unidad &&
-        x.subunidad === subunidad
-      );
-
+      let filtrados = estructuraGlobal.filter(x => x.unidad === unidad && x.subunidad === subunidad);
       if (estacion && estacion.trim() !== "") {
         filtrados = filtrados.filter(x => x.estacion === estacion);
       }
 
       const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
-
       organicos.forEach(o => {
         const option = document.createElement("option");
         option.value = o;
@@ -889,7 +823,6 @@
 
     async function cargarPersonal() {
       const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
-
       if (!cedulaValidada) {
         alert("Primero debes validar al responsable");
         return;
@@ -908,9 +841,7 @@
       try {
         const res = await fetch("/personal-filtrado", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ unidad, subunidad, estacion, organico })
         });
 
@@ -938,11 +869,11 @@
           div.className = "persona";
 
           div.innerHTML = `
-  <b>
-    ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
-    <span class="persona-cc">CC ${p.cedula || ""}</span>
-  </b>
-  <select id="novedad-${p.cedula}">
+            <b>
+              ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
+              <span class="persona-cc">CC ${p.cedula || ""}</span>
+            </b>
+            <select id="novedad-${p.cedula}">
               <option value="">DISPONIBLE</option>
               <option value="SERVICIO">SERVICIO</option>
               <option value="SERVICIO EXTRAORDINARIO">SERVICIO EXTRAORDINARIO</option>
@@ -1008,15 +939,11 @@
 
       try {
         const grado = document.getElementById("grado").value.trim();
-        const rol = (document.getElementById("bloqueExcel").style.display === "block")
-          ? "ADMIN_EXCEL"
-          : "OPERADOR_PARTE";
+        const rol = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
 
         const res = await fetch("/guardar-novedades", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ novedades, estacion, grado, rol })
         });
 
@@ -1059,16 +986,11 @@
         }
       }
 
-      return `UBICACION PARTE
-ESTACION: ${estacion}
-LAT: ${lat}
-LNG: ${lng}
-FECHA: ${fecha}`;
+      return `UBICACION PARTE\nESTACION: ${estacion}\nLAT: ${lat}\nLNG: ${lng}\nFECHA: ${fecha}`;
     }
 
     async function procesarFotoConSello() {
       const input = document.getElementById("foto_parte");
-
       if (!input.files.length) return "";
 
       const file = input.files[0];
@@ -1086,7 +1008,6 @@ FECHA: ${fecha}`;
 
           canvas.width = img.width;
           canvas.height = img.height;
-
           ctx.drawImage(img, 0, 0);
 
           const estacion = document.getElementById("estacion_select").value;
@@ -1125,7 +1046,6 @@ FECHA: ${fecha}`;
       }
 
       const ventana = window.open("", "_blank");
-
       if (!ventana) {
         alert("El navegador bloqueó la ventana del PDF. Permite ventanas emergentes.");
         return;
@@ -1133,12 +1053,8 @@ FECHA: ${fecha}`;
 
       ventana.document.write(`
         <html>
-          <head>
-            <title>Generando PDF...</title>
-          </head>
-          <body style="font-family: Arial, sans-serif; padding: 20px;">
-            Generando PDF, por favor espera...
-          </body>
+          <head><title>Generando PDF...</title></head>
+          <body style="font-family: Arial, sans-serif; padding: 20px;">Generando PDF, por favor espera...</body>
         </html>
       `);
       ventana.document.close();
@@ -1161,9 +1077,7 @@ FECHA: ${fecha}`;
         if (dataVal.guardarOficial) {
           const resGuardar = await fetch("/guardar-parte-pdf", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               tipo: dataVal.tipo || null,
               unidad,
@@ -1178,15 +1092,10 @@ FECHA: ${fecha}`;
           });
 
           let dataGuardar = {};
-          try {
-            dataGuardar = await resGuardar.json();
-          } catch (e) {
-            console.warn("Respuesta no es JSON, se ignora");
-          }
+          try { dataGuardar = await resGuardar.json(); } catch (e) { console.warn("Respuesta no es JSON, se ignora"); }
 
           if (dataGuardar && dataGuardar.ok === false) {
             const mensajeGuardar = dataGuardar.mensaje || dataGuardar.error || "";
-
             if (mensajeGuardar.includes("Ya se registró")) {
               console.warn("Parte ya registrado, se genera PDF sin guardar.");
             } else if (mensajeGuardar.includes("Fuera de horario")) {
@@ -1200,9 +1109,7 @@ FECHA: ${fecha}`;
 
         const fotoBase64 = await procesarFotoConSello();
         const qrTexto = construirTextoQRUbicacion();
-        const qrUrl = qrTexto
-          ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
-          : "";
+        const qrUrl = qrTexto ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}` : "";
 
         ventana.document.open();
         ventana.document.write(`
@@ -1210,127 +1117,43 @@ FECHA: ${fecha}`;
             <head>
               <title>Parte PDF</title>
               <style>
-                body {
-                  font-family: Arial, sans-serif;
-                  padding: 20px;
-                }
-
+                body { font-family: Arial, sans-serif; padding: 20px; }
                 .marca-agua {
-                  position: fixed;
-                  top: 50%;
-                  left: 50%;
-                  transform: translate(-50%, -50%) rotate(-30deg);
-                  font-size: 60px;
-                  color: rgba(0, 0, 0, 0.08);
-                  font-weight: bold;
-                  white-space: nowrap;
-                  z-index: 0;
-                  pointer-events: none;
+                  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
+                  font-size: 60px; color: rgba(0, 0, 0, 0.08); font-weight: bold; white-space: nowrap; z-index: 0; pointer-events: none;
                 }
-
                 .encabezado {
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: flex-start;
-                  gap: 20px;
-                  margin-bottom: 20px;
-                  width: 100%;
-                  position: relative;
-                  z-index: 1;
+                  display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 20px; width: 100%; position: relative; z-index: 1;
                 }
-
-                .titulo {
-                  font-size: 20px;
-                  font-weight: bold;
-                  margin-top: 10px;
-                  flex: 1;
-                }
-
+                .titulo { font-size: 20px; font-weight: bold; margin-top: 10px; flex: 1; }
                 .lado-derecho {
-                  display: flex;
-                  flex-direction: row;
-                  flex-wrap: nowrap;
-                  align-items: flex-start;
-                  justify-content: flex-end;
-                  gap: 14px;
-                  min-width: 230px;
+                  display: flex; flex-direction: row; flex-wrap: nowrap; align-items: flex-start; justify-content: flex-end; gap: 14px; min-width: 230px;
                 }
-
-                .qr-box,
-                .foto-box {
-                  text-align: center;
-                }
-
-                .qr-box img {
-                  width: 95px;
-                  height: 95px;
-                }
-
-                .foto-box img {
-                  width: 120px;
-                  height: 120px;
-                  object-fit: cover;
-                  border-radius: 6px;
-                  border: 1px solid #bbb;
-                }
-
-                .label {
-                  font-size: 10px;
-                  text-align: center;
-                  margin-top: 4px;
-                }
-
-                pre {
-                  white-space: pre-wrap;
-                  font-family: "Courier New", monospace;
-                  font-size: 14px;
-                  position: relative;
-                  z-index: 1;
-                }
+                .qr-box, .foto-box { text-align: center; }
+                .qr-box img { width: 95px; height: 95px; }
+                .foto-box img { width: 120px; height: 120px; object-fit: cover; border-radius: 6px; border: 1px solid #bbb; }
+                .label { font-size: 10px; text-align: center; margin-top: 4px; }
+                pre { white-space: pre-wrap; font-family: "Courier New", monospace; font-size: 14px; position: relative; z-index: 1; }
               </style>
             </head>
             <body>
               <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
-
               <div class="encabezado">
                 <div class="titulo">REGISTRO DEL PARTE</div>
-
                 <div class="lado-derecho">
-                  ${qrUrl ? `
-                    <div class="qr-box">
-                      <img src="${qrUrl}" />
-                      <div class="label">Ubicación</div>
-                    </div>
-                  ` : ""}
-
-                  ${fotoBase64 ? `
-                    <div class="foto-box">
-                      <img src="${fotoBase64}" />
-                      <div class="label">Evidencia</div>
-                    </div>
-                  ` : ""}
+                  ${qrUrl ? `<div class="qr-box"><img src="${qrUrl}" /><div class="label">Ubicación</div></div>` : ""}
+                  ${fotoBase64 ? `<div class="foto-box"><img src="${fotoBase64}" /><div class="label">Evidencia</div></div>` : ""}
                 </div>
               </div>
-
               <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
-
-              <script>
-                window.print();
-              <\/script>
+              <script>window.print();<\/script>
             </body>
           </html>
         `);
         ventana.document.close();
-
       } catch (error) {
         console.error("ERROR PDF:", error);
-
-        try {
-          if (ventana && !ventana.closed) {
-            ventana.close();
-          }
-        } catch (_) {}
-
+        try { if (ventana && !ventana.closed) ventana.close(); } catch (_) {}
         alert("Error PDF: " + (error.message || error));
       }
     }
@@ -1340,7 +1163,6 @@ FECHA: ${fecha}`;
       if (!contenedor) return;
 
       contenedor.innerHTML = "";
-
       valores.forEach(valor => {
         const label = document.createElement("label");
         label.className = "check-item";
@@ -1358,32 +1180,25 @@ FECHA: ${fecha}`;
     function obtenerValoresChecks(idContenedor) {
       const contenedor = document.getElementById(idContenedor);
       if (!contenedor) return [];
-      return Array.from(contenedor.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(ch => ch.value)
-        .filter(Boolean);
+      return Array.from(contenedor.querySelectorAll('input[type="checkbox"]:checked')).map(ch => ch.value).filter(Boolean);
     }
 
     function seleccionarTodasChecks(idContenedor) {
       const contenedor = document.getElementById(idContenedor);
       if (!contenedor) return;
-      contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => {
-        ch.checked = true;
-      });
+      contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => { ch.checked = true; });
     }
 
     function limpiarChecks(idContenedor) {
       const contenedor = document.getElementById(idContenedor);
       if (!contenedor) return;
-      contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => {
-        ch.checked = false;
-      });
+      contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => { ch.checked = false; });
     }
 
     function marcarCheckSiExiste(idContenedor, valor) {
       const contenedor = document.getElementById(idContenedor);
       if (!contenedor) return;
-      const check = Array.from(contenedor.querySelectorAll('input[type="checkbox"]'))
-        .find(ch => ch.value === valor);
+      const check = Array.from(contenedor.querySelectorAll('input[type="checkbox"]')).find(ch => ch.value === valor);
       if (check) check.checked = true;
     }
 
@@ -1392,7 +1207,6 @@ FECHA: ${fecha}`;
       if (!unidadSelect) return;
 
       unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
-
       const unidades = [...new Set(estructuraGlobal.map(x => x.unidad).filter(Boolean))];
 
       unidades.forEach(unidad => {
@@ -1433,7 +1247,6 @@ FECHA: ${fecha}`;
 
     function cargarConsultaDependencias() {
       const unidad = document.getElementById("consulta_unidad").value;
-
       let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
 
       const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
@@ -1462,23 +1275,21 @@ FECHA: ${fecha}`;
     }
 
     function ordenarPorGrado(lista) {
-  const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+      const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
 
-  return [...lista].sort((a, b) => {
-    const ga = (a.grado || "").toUpperCase();
-    const gb = (b.grado || "").toUpperCase();
+      return [...lista].sort((a, b) => {
+        const ga = (a.grado || "").toUpperCase();
+        const gb = (b.grado || "").toUpperCase();
+        const ia = orden.indexOf(ga);
+        const ib = orden.indexOf(gb);
 
-    const ia = orden.indexOf(ga);
-    const ib = orden.indexOf(gb);
+        if (ia === -1 && ib === -1) return 0;
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+    }
 
-    if (ia === -1 && ib === -1) return 0;
-    if (ia === -1) return 1;
-    if (ib === -1) return -1;
-
-    return ia - ib;
-  });
-}
-   
     function obtenerTipoActualPersona(persona) {
       return (persona.tipo_novedad || "").trim().toUpperCase();
     }
@@ -1494,7 +1305,6 @@ FECHA: ${fecha}`;
 
     function obtenerGrupoPorGrado(grado = "") {
       const g = String(grado || "").toUpperCase().trim();
-
       if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIALES";
       if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
       if (["PT", "PP"].includes(g)) return "PATRULLEROS";
@@ -1507,7 +1317,6 @@ FECHA: ${fecha}`;
       resultadoExtra.innerText = "";
 
       const disponibles = extraerDisponiblesConsulta();
-
       if (!disponibles.length) {
         alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
         return;
@@ -1522,31 +1331,21 @@ FECHA: ${fecha}`;
       }
 
       let totalTomar = 0;
+      if (cantidad && cantidad > 0) totalTomar = cantidad;
+      else if (porcentaje && porcentaje > 0) totalTomar = Math.ceil((disponibles.length * porcentaje) / 100);
 
-      if (cantidad && cantidad > 0) {
-        totalTomar = cantidad;
-      } else if (porcentaje && porcentaje > 0) {
-        totalTomar = Math.ceil((disponibles.length * porcentaje) / 100);
-      }
-
-      if (totalTomar > disponibles.length) {
-        totalTomar = disponibles.length;
-      }
+      if (totalTomar > disponibles.length) totalTomar = disponibles.length;
 
       const historial = await obtenerHistorialServicios();
+      const disponiblesOrdenados = [...disponibles].sort((a, b) => {
+        const aCount = historial[String(a.cedula || "").trim()] || 0;
+        const bCount = historial[String(b.cedula || "").trim()] || 0;
+        return aCount - bCount;
+      });
 
-const disponiblesOrdenados = [...disponibles].sort((a, b) => {
-  const aCount = historial[String(a.cedula || "").trim()] || 0;
-  const bCount = historial[String(b.cedula || "").trim()] || 0;
-  return aCount - bCount;
-});
+      const seleccionados = ordenarPorGrado(mezclarArray(disponiblesOrdenados).slice(0, totalTomar));
+      ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
 
-const seleccionados = ordenarPorGrado(
-  mezclarArray(disponiblesOrdenados).slice(0, totalTomar)
-);
-
-ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
-      
       seleccionados.forEach(p => {
         p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
       });
@@ -1570,7 +1369,6 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
       resultadoExtra.innerText = "";
 
       const disponibles = extraerDisponiblesConsulta();
-
       if (!disponibles.length) {
         alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
         return;
@@ -1600,7 +1398,6 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
       ];
 
       const totalSolicitado = config.reduce((acc, item) => acc + (item.cantidad > 0 ? item.cantidad : 0), 0);
-
       if (totalSolicitado <= 0) {
         alert("Debes ingresar al menos una cantidad en algún grupo.");
         return;
@@ -1618,7 +1415,6 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
 
           if (grupo !== cfg.nombre) return false;
           if (usados.has(String(p.cedula))) return false;
-
           if (cfg.grados.length === 0) return true;
           return cfg.grados.includes(grado);
         });
@@ -1628,10 +1424,7 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
         elegidos.forEach(p => {
           usados.add(String(p.cedula));
           p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
-          seleccionadosFinales.push({
-            ...p,
-            grupo_extra: cfg.nombre
-          });
+          seleccionadosFinales.push({ ...p, grupo_extra: cfg.nombre });
         });
       });
 
@@ -1639,9 +1432,9 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
         alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
         return;
       }
-      
+
       ultimosSeleccionadosExtra = seleccionadosFinales.map(p => ({ ...p }));
-      
+
       let texto = "";
       texto += `SERVICIO EXTRAORDINARIO APLICADO - POR GRUPOS\n\n`;
       texto += `DISPONIBLES ANTES: ${disponibles.length}\n`;
@@ -1709,12 +1502,8 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
 
         const res = await fetch(url, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            novedades: novedadesSeleccionadas
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ novedades: novedadesSeleccionadas })
         });
 
         const data = await res.json();
@@ -1725,10 +1514,7 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
         }
 
         resultado.style.color = dataVal.extemporaneo ? "red" : "black";
-        resultado.innerText = dataVal.extemporaneo
-          ? "⚠️ REPORTE EXTEMPORÁNEO\n\n" + data.texto
-          : data.texto;
-
+        resultado.innerText = dataVal.extemporaneo ? "⚠️ REPORTE EXTEMPORÁNEO\n\n" + data.texto : data.texto;
       } catch (error) {
         console.error(error);
         resultado.innerText = "Error conectando con el servidor";
@@ -1743,15 +1529,13 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
       const tiposFiltro = obtenerValoresChecks("checks_tipo");
 
       const grado = document.getElementById("grado").value.trim();
-      const rol = (document.getElementById("bloqueExcel").style.display === "block")
-        ? "ADMIN_EXCEL"
-        : "OPERADOR_PARTE";
+      const rol = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
 
       const generalBox = document.getElementById("resultado_general");
       const detalleBox = document.getElementById("resultado_detalle");
 
-      generalBox.innerText = "";
-      detalleBox.innerText = "";
+      generalBox.innerHTML = "";
+      detalleBox.innerHTML = "";
       document.getElementById("resultado_extra").innerText = "";
 
       if (!unidad) {
@@ -1762,18 +1546,8 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
       try {
         const res = await fetch("/consulta-novedades", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            unidad,
-            subunidades,
-            estaciones,
-            organicos,
-            grado,
-            rol,
-            tiposFiltro
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ unidad, subunidades, estaciones, organicos, grado, rol, tiposFiltro })
         });
 
         const data = await res.json();
@@ -1785,7 +1559,6 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
 
         ultimoResultadoConsulta = Array.isArray(data.personalCompleto) ? data.personalCompleto : [];
         renderizarConsultaDesdeRespuesta(data);
-
       } catch (error) {
         console.error(error);
         alert("Error consultando novedades");
@@ -1793,85 +1566,84 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
     }
 
     function renderizarConsultaDesdeRespuesta(data) {
-  const generalBox = document.getElementById("resultado_general");
-  const detalleBox = document.getElementById("resultado_detalle");
+      const generalBox = document.getElementById("resultado_general");
+      const detalleBox = document.getElementById("resultado_detalle");
 
-  let htmlGeneral = `
-    <div class="tabla-wrap">
-      <table class="tabla-app">
-        <thead>
-          <tr>
-            <th>Tipo</th>
-            <th>Conteo</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  data.general.forEach(item => {
-    htmlGeneral += `
-      <tr>
-        <td>${item.tipo || ""}</td>
-        <td>${item.conteo || ""}</td>
-        <td>${item.total || 0}</td>
-      </tr>
-    `;
-  });
-
-  htmlGeneral += `
-        </tbody>
-      </table>
-    </div>
-  `;
-
-  let htmlDetalle = "";
-
-  data.detalleAgrupado.forEach(grupo => {
-    htmlDetalle += `
-      <div class="tabla-wrap">
-        <div style="font-weight:700; margin:4px 0 10px 0; color: var(--azul-principal);">
-          ${grupo.tipo} | ${grupo.conteo} | ${grupo.total}
-        </div>
-        <table class="tabla-app">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Grado</th>
-              <th>Apellidos</th>
-              <th>Nombres</th>
-              <th>Cédula</th>
-              <th>Teléfono</th>
-              <th>Estación</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    grupo.personas.forEach((p, i) => {
-      htmlDetalle += `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${p.grado || ""}</td>
-          <td>${p.apellidos || ""}</td>
-          <td>${p.nombres || ""}</td>
-          <td>${p.cedula || ""}</td>
-          <td>${p.telefono || ""}</td>
-          <td>${p.estacion || ""}</td>
-        </tr>
+      let htmlGeneral = `
+        <div class="tabla-wrap">
+          <table class="tabla-app">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Conteo</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
       `;
-    });
 
-    htmlDetalle += `
-          </tbody>
-        </table>
-      </div>
-    `;
-  });
+      data.general.forEach(item => {
+        htmlGeneral += `
+          <tr>
+            <td>${item.tipo || ""}</td>
+            <td>${item.conteo || ""}</td>
+            <td>${item.total || 0}</td>
+          </tr>
+        `;
+      });
 
-  generalBox.innerHTML = htmlGeneral;
-  detalleBox.innerHTML = htmlDetalle;
-}
+      htmlGeneral += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      let htmlDetalle = "";
+
+      data.detalleAgrupado.forEach(grupo => {
+        htmlDetalle += `
+          <div class="tabla-wrap">
+            <div class="bloque-titulo-tabla">${grupo.tipo} | ${grupo.conteo} | ${grupo.total}</div>
+            <table class="tabla-app">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Grado</th>
+                  <th>Apellidos</th>
+                  <th>Nombres</th>
+                  <th>Cédula</th>
+                  <th>Teléfono</th>
+                  <th>Estación</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        grupo.personas.forEach((p, i) => {
+          htmlDetalle += `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${p.grado || ""}</td>
+              <td>${p.apellidos || ""}</td>
+              <td>${p.nombres || ""}</td>
+              <td>${p.cedula || ""}</td>
+              <td>${p.telefono || ""}</td>
+              <td>${p.estacion || ""}</td>
+            </tr>
+          `;
+        });
+
+        htmlDetalle += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      });
+
+      generalBox.innerHTML = htmlGeneral;
+      detalleBox.innerHTML = htmlDetalle;
+    }
+
     function renderizarConsultaDesdeMemoria() {
       const personal = [...ultimoResultadoConsulta];
 
@@ -1894,7 +1666,6 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
       }
 
       const agrupados = {};
-
       personal.forEach(p => {
         const tipo = obtenerTipoActualPersona(p) || "DISPONIBLE";
         if (!agrupados[tipo]) agrupados[tipo] = [];
@@ -1930,11 +1701,7 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
       const detalleAgrupado = [];
 
       const conteoEfectiva = contarGrupo(personal);
-      general.push({
-        tipo: "FUERZA EFECTIVA",
-        conteo: formatoConteo(conteoEfectiva),
-        total: personal.length
-      });
+      general.push({ tipo: "FUERZA EFECTIVA", conteo: formatoConteo(conteoEfectiva), total: personal.length });
 
       const tiposExistentes = [
         ...ordenTipos.filter(t => agrupados[t]),
@@ -1945,12 +1712,7 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
         const lista = agrupados[tipo];
         const conteo = contarGrupo(lista);
 
-        general.push({
-          tipo,
-          conteo: formatoConteo(conteo),
-          total: lista.length
-        });
-
+        general.push({ tipo, conteo: formatoConteo(conteo), total: lista.length });
         detalleAgrupado.push({
           tipo,
           conteo: formatoConteo(conteo),
@@ -1970,221 +1732,181 @@ ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
     }
 
     async function guardarServicioExtraordinario() {
-      console.log("🔥 INTENTANDO GUARDAR SERVICIO EXTRAORDINARIO");
-  try {
-    if (!ultimosSeleccionadosExtra.length) return;
+      try {
+        if (!ultimosSeleccionadosExtra.length) return;
 
-    const responsableCedula = document.getElementById("cedula_elabora").value.trim();
-    const responsableNombre = document.getElementById("nombre_elabora").value.trim();
+        const responsableCedula = document.getElementById("cedula_elabora").value.trim();
+        const responsableNombre = document.getElementById("nombre_elabora").value.trim();
 
-   const res = await fetch("/guardar-servicio-extraordinario", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    personal: ultimosSeleccionadosExtra,
-    responsable_cedula: responsableCedula,
-    responsable_nombre: responsableNombre
-  })
-});
+        const res = await fetch("/guardar-servicio-extraordinario", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            personal: ultimosSeleccionadosExtra,
+            responsable_cedula: responsableCedula,
+            responsable_nombre: responsableNombre
+          })
+        });
 
-const data = await res.json();
-
-    if (!data.ok) {
-      console.error("No se pudo guardar servicio extraordinario:", data.error || data.mensaje || data);
-      return;
+        const data = await res.json();
+        if (!data.ok) {
+          console.error("No se pudo guardar servicio extraordinario:", data.error || data.mensaje || data);
+          return;
+        }
+      } catch (error) {
+        console.error("Error guardando servicio extraordinario:", error);
+      }
     }
-
-    console.log("Servicio extraordinario guardado correctamente ✅");
-  } catch (error) {
-    console.error("Error guardando servicio extraordinario:", error);
-  }
-}
 
     async function obtenerHistorialServicios() {
-  try {
-    const grado = document.getElementById("grado").value.trim();
-    const rol = (document.getElementById("bloqueExcel").style.display === "block")
-      ? "ADMIN_EXCEL"
-      : "OPERADOR_PARTE";
+      try {
+        const grado = document.getElementById("grado").value.trim();
+        const rol = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
 
-    const unidad = document.getElementById("consulta_unidad")?.value || "";
-    const subunidades = obtenerValoresChecks("checks_subunidad");
-    const estaciones = obtenerValoresChecks("checks_estacion");
-    const organicos = obtenerValoresChecks("checks_organico");
+        const unidad = document.getElementById("consulta_unidad")?.value || "";
+        const subunidades = obtenerValoresChecks("checks_subunidad");
+        const estaciones = obtenerValoresChecks("checks_estacion");
+        const organicos = obtenerValoresChecks("checks_organico");
 
-    const res = await fetch("/historial-servicio-extraordinario", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        unidad,
-        subunidades,
-        estaciones,
-        organicos,
-        grado,
-        rol
-      })
-    });
+        const res = await fetch("/historial-servicio-extraordinario", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ unidad, subunidades, estaciones, organicos, grado, rol })
+        });
 
-    const data = await res.json();
+        const data = await res.json();
+        if (!data.ok || !Array.isArray(data.data)) return {};
 
-    if (!data.ok || !Array.isArray(data.data)) {
-      return {};
+        const historial = {};
+        data.data.forEach(item => {
+          const cedula = String(item.cedula || "").trim();
+          const veces = parseInt(item.veces || "0", 10);
+          if (cedula) historial[cedula] = veces;
+        });
+
+        return historial;
+      } catch (error) {
+        console.error("Error obteniendo historial:", error);
+        return {};
+      }
     }
 
-    const historial = {};
+    function formatearFecha(fecha) {
+      if (!fecha) return "";
+      return new Date(fecha).toLocaleDateString("es-CO");
+    }
 
-    data.data.forEach(item => {
-      const cedula = String(item.cedula || "").trim();
-      const veces = parseInt(item.veces || "0", 10);
+    async function consultarHistorialServicioExtraordinario() {
+      const resultado = document.getElementById("resultado_historial_extra");
+      resultado.innerText = "Consultando...";
 
-      if (cedula) {
-        historial[cedula] = veces;
+      const fechaInicio = document.getElementById("historial_fecha_inicio")?.value || "";
+      const fechaFin = document.getElementById("historial_fecha_fin")?.value || "";
+      const unidad = document.getElementById("consulta_unidad")?.value || "";
+      const subunidades = obtenerValoresChecks("checks_subunidad");
+      const estaciones = obtenerValoresChecks("checks_estacion");
+      const organicos = obtenerValoresChecks("checks_organico");
+      const grado = document.getElementById("grado").value.trim();
+      const rol = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+
+      try {
+        const res = await fetch("/historial-servicio-extraordinario", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ unidad, subunidades, estaciones, organicos, fechaInicio, fechaFin, grado, rol })
+        });
+
+        const data = await res.json();
+        if (!data.ok) {
+          resultado.innerText = "Error consultando historial";
+          return;
+        }
+
+        if (!data.data || !data.data.length) {
+          resultado.innerText = "No hay registros";
+          return;
+        }
+
+        let texto = "HISTORIAL SERVICIOS EXTRAORDINARIOS\n\n";
+        data.data
+          .sort((a, b) => parseInt(b.veces || "0", 10) - parseInt(a.veces || "0", 10))
+          .forEach((p, i) => {
+            texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - Veces: ${p.veces || 0} - Última vez: ${formatearFecha(p.ultima_vez)}\n`;
+          });
+
+        resultado.innerText = texto;
+      } catch (error) {
+        console.error(error);
+        resultado.innerText = "Error en servidor";
       }
-    });
+    }
 
-    return historial;
-  } catch (error) {
-    console.error("Error obteniendo historial:", error);
-    return {};
-  }
-}
+    function descargarNovedadesTotales() {
+      if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) {
+        alert("Primero consulta las novedades.");
+        return;
+      }
+
+      let texto = "NOVEDADES TOTALES\n\n";
+      ultimoResultadoConsulta.forEach((p, i) => {
+        const tipo = (p.tipo_novedad || "DISPONIBLE").trim() || "DISPONIBLE";
+        texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${tipo} | ${p.estacion || ""}\n`;
+      });
+
+      const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "novedades_totales.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function descargarServicioExtraordinario() {
+      if (!ultimosSeleccionadosExtra || !ultimosSeleccionadosExtra.length) {
+        alert("No hay personal seleccionado en servicio extraordinario.");
+        return;
+      }
+
+      let texto = "SERVICIO EXTRAORDINARIO\n\n";
+      ultimosSeleccionadosExtra.forEach((p, i) => {
+        texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${p.estacion || ""}\n`;
+      });
+
+      const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "servicio_extraordinario.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function togglePanel(id) {
+      const panel = document.getElementById(id);
+      if (!panel) return;
+      panel.style.display = panel.style.display === "block" ? "none" : "block";
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
       const consultaUnidad = document.getElementById("consulta_unidad");
-      if (consultaUnidad) {
-        consultaUnidad.addEventListener("change", cargarConsultaDependencias);
-      }
-
+      if (consultaUnidad) consultaUnidad.addEventListener("change", cargarConsultaDependencias);
       cargarChecksGruposExtra();
+
+      document.getElementById("bloqueExcel").style.display = "none";
+      document.getElementById("bloqueUbicacion").style.display = "none";
+      document.getElementById("bloqueNovedades").style.display = "none";
+      document.getElementById("bloqueParte").style.display = "none";
+      document.getElementById("bloqueConsultaGeneral").style.display = "none";
+      document.getElementById("bloqueExtraordinario").style.display = "none";
+      document.getElementById("bloqueHistorialExtra").style.display = "none";
+
+      cargarEstructura();
     });
-
-function formatearFecha(fecha) {
-  if (!fecha) return "";
-  return new Date(fecha).toLocaleDateString("es-CO");
-}
-    
-async function consultarHistorialServicioExtraordinario() {
-  const resultado = document.getElementById("resultado_historial_extra");
-  resultado.innerText = "Consultando...";
-
-  const fechaInicio = document.getElementById("historial_fecha_inicio")?.value || "";
-  const fechaFin = document.getElementById("historial_fecha_fin")?.value || "";
-
-  const unidad = document.getElementById("consulta_unidad")?.value || "";
-  const subunidades = obtenerValoresChecks("checks_subunidad");
-  const estaciones = obtenerValoresChecks("checks_estacion");
-  const organicos = obtenerValoresChecks("checks_organico");
-
-  const grado = document.getElementById("grado").value.trim();
-  const rol = (document.getElementById("bloqueExcel").style.display === "block")
-    ? "ADMIN_EXCEL"
-    : "OPERADOR_PARTE";
-
-  try {
-    const res = await fetch("/historial-servicio-extraordinario", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        unidad,
-        subunidades,
-        estaciones,
-        organicos,
-        fechaInicio,
-        fechaFin,
-        grado,
-        rol
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      resultado.innerText = "Error consultando historial";
-      return;
-    }
-
-    if (!data.data || !data.data.length) {
-      resultado.innerText = "No hay registros";
-      return;
-    }
-
-    let texto = "HISTORIAL SERVICIOS EXTRAORDINARIOS\n\n";
-
-    data.data
-      .sort((a, b) => parseInt(b.veces || "0", 10) - parseInt(a.veces || "0", 10))
-      .forEach((p, i) => {
-       texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - Veces: ${p.veces || 0} - Última vez: ${formatearFecha(p.ultima_vez)}\n`;
-      });
-
-    resultado.innerText = texto;
-
-  } catch (error) {
-    console.error(error);
-    resultado.innerText = "Error en servidor";
-  }
-}
-
-    function togglePanel(id) {
-  const panel = document.getElementById(id);
-  if (!panel) return;
-
-  if (panel.style.display === "block") {
-    panel.style.display = "none";
-  } else {
-    panel.style.display = "block";
-  }
-}
-
-function descargarNovedadesTotales() {
-  if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) {
-    alert("Primero consulta las novedades.");
-    return;
-  }
-
-  let texto = "NOVEDADES TOTALES\n\n";
-
-  ultimoResultadoConsulta.forEach((p, i) => {
-    const tipo = (p.tipo_novedad || "DISPONIBLE").trim() || "DISPONIBLE";
-    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${tipo} | ${p.estacion || ""}\n`;
-  });
-
-  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "novedades_totales.txt";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function descargarServicioExtraordinario() {
-  if (!ultimosSeleccionadosExtra || !ultimosSeleccionadosExtra.length) {
-    alert("No hay personal seleccionado en servicio extraordinario.");
-    return;
-  }
-
-  let texto = "SERVICIO EXTRAORDINARIO\n\n";
-
-  ultimosSeleccionadosExtra.forEach((p, i) => {
-    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${p.estacion || ""}\n`;
-  });
-
-  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "servicio_extraordinario.txt";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-    
-    cargarEstructura();
-     </script>
+  </script>
 </body>
 </html>
