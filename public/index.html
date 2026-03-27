@@ -674,38 +674,9 @@
     });
 
     const data = await res.json();
-alert("RESPUESTA: " + JSON.stringify(data));
+    alert("RESPUESTA: " + JSON.stringify(data));
 
-    if (!data.ok) {
-      document.getElementById("datos_responsable").innerText = "No autorizado";
-
-      document.getElementById("bloqueExcel").style.display = "none";
-      document.getElementById("bloqueUbicacion").style.display = "none";
-      document.getElementById("bloqueNovedades").style.display = "none";
-      document.getElementById("bloqueParte").style.display = "none";
-      document.getElementById("bloqueConsultaGeneral").style.display = "none";
-      document.getElementById("bloqueExtraordinario").style.display = "none";
-      document.getElementById("bloqueHistorialExtra").style.display = "none";
-      document.getElementById("bloqueControlCumplimiento").style.display = "none";
-
-      document.getElementById("unidad_select").value = "";
-      document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-      document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-      document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
-
-      document.getElementById("unidad_select").disabled = true;
-      document.getElementById("subunidad_select").disabled = true;
-      document.getElementById("estacion_select").disabled = true;
-
-      document.getElementById("grado").value = "";
-      document.getElementById("nombre_elabora").value = "";
-      document.getElementById("cedula_elabora").value = "";
-      document.getElementById("telefono_elabora").value = "";
-
-      window.responsable = null;
-      return;
-    }
-
+   
     document.getElementById("cedula_elabora").value = data.cedula || cedula;
     document.getElementById("nombre_elabora").value = data.nombre || "";
     document.getElementById("grado").value = data.grado || "";
