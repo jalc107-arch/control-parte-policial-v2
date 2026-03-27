@@ -1927,30 +1927,39 @@ function renderizarExtraordinario(lista) {
   window.listaExtra = lista;
 }
 
-function cambiarExtra(index, valor) {
-  if (valor !== "NO") return;
+function cambiarExtraEstado(index, valor) {
+  if (!window.listaExtra || !window.listaExtra[index]) return;
 
+  window.listaExtra[index].estadoExtra = valor;
+  renderizarExtraordinario(window.listaExtra);
+}
+
+function reemplazarExtra(index) {
   if (!window.listaExtra || !window.listaExtra.length) return;
   if (!window.ultimoResultadoConsulta || !window.ultimoResultadoConsulta.length) return;
 
   const yaSeleccionados = new Set(
-    window.listaExtra.map(p => String(p.cedula || "").trim())
+    window.listaExtra
+      .filter((_, i) => i !== index)
+      .map(p => String(p.cedula || "").trim())
   );
 
   const reemplazo = window.ultimoResultadoConsulta.find(p => {
     const ced = String(p.cedula || "").trim();
     const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
-
     return !yaSeleccionados.has(ced) && !tipo;
   });
 
   if (!reemplazo) {
     alert("No hay más personal disponible para reemplazar.");
-    renderizarExtraordinario(window.listaExtra);
     return;
   }
 
-  window.listaExtra[index] = { ...reemplazo };
+  window.listaExtra[index] = {
+    ...reemplazo,
+    estadoExtra: "SI"
+  };
+
   renderizarExtraordinario(window.listaExtra);
 }
     
