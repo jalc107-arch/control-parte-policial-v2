@@ -1767,6 +1767,51 @@ renderizarExtraordinario(window.listaExtra);
       }
     }
 
+async function guardarServicioExtraordinarioFinal() {
+  if (!window.listaExtra || !window.listaExtra.length) {
+    alert("No hay personal seleccionado para servicio extraordinario");
+    return;
+  }
+
+  if (!window.responsable) {
+    alert("Responsable no definido");
+    return;
+  }
+
+  const listaFinal = window.listaExtra.filter(p => p.estadoExtra !== "NO");
+
+  if (!listaFinal.length) {
+    alert("No hay personal válido para guardar");
+    return;
+  }
+
+  try {
+    const res = await fetch("/guardar-servicio-extraordinario", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        personal: listaFinal,
+        responsable_cedula: window.responsable.cedula,
+        responsable_nombre: window.responsable.nombre
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+      alert("Servicio extraordinario guardado correctamente ✅");
+    } else {
+      alert("Error: " + data.error);
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Error en servidor");
+  }
+}
+    
     async function obtenerHistorialServicios() {
       try {
         const grado = document.getElementById("grado").value.trim();
