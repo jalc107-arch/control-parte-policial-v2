@@ -1899,15 +1899,26 @@ function renderizarExtraordinario(lista) {
     const div = document.createElement("div");
     div.className = "persona";
 
+    const estado = p.estadoExtra || "SI";
+
     div.innerHTML = `
       <b>
         ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
         <span class="persona-cc">CC ${p.cedula || ""}</span>
       </b>
-      <select onchange="cambiarExtra(${i}, this.value)">
-        <option value="SI">SI</option>
-        <option value="NO">NO</option>
-      </select>
+
+      <div class="acciones-inline" style="justify-content:flex-start;">
+        <select onchange="cambiarExtraEstado(${i}, this.value)">
+          <option value="SI" ${estado === "SI" ? "selected" : ""}>SI</option>
+          <option value="NO" ${estado === "NO" ? "selected" : ""}>NO</option>
+        </select>
+
+        ${estado === "NO" ? `
+          <button type="button" onclick="reemplazarExtra(${i})">
+            Reemplazar
+          </button>
+        ` : ""}
+      </div>
     `;
 
     contenedor.appendChild(div);
