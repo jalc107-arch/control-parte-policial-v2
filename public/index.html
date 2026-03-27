@@ -1361,9 +1361,8 @@
       });
 
       resultadoExtra.innerText = texto;
-      renderizarExtraordinario(
-  seleccionados.map(p => ({ ...p, estadoExtra: "SI" }))
-);
+     window.listaExtra = seleccionados.map(p => ({ ...p, estadoExtra: "SI" }));
+renderizarExtraordinario(window.listaExtra);
       renderizarConsultaDesdeMemoria();
       guardarServicioExtraordinario();
     }
@@ -1461,9 +1460,8 @@
       });
 
       resultadoExtra.innerText = texto;
-      renderizarExtraordinario(
-  seleccionadosFinales.map(p => ({ ...p, estadoExtra: "SI" }))
-);
+     window.listaExtra = seleccionadosFinales.map(p => ({ ...p, estadoExtra: "SI" }));
+renderizarExtraordinario(window.listaExtra);
       renderizarConsultaDesdeMemoria();
       guardarServicioExtraordinario();
     }
