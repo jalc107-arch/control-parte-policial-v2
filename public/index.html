@@ -593,7 +593,23 @@
     </div>
   </div>
 
-  <script>
+<!-- 🔥 MÓDULO 9 -->
+<div class="seccion" id="bloqueControlCumplimiento" style="display:none;">
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelControlCumplimiento')">
+    9. Control de cumplimiento diario
+  </button>
+
+  <div id="panelControlCumplimiento" class="panel-contenido">
+    <div class="acciones-inline">
+      <button onclick="consultarControlCumplimientoDiario()">Consultar control diario</button>
+    </div>
+
+    <div id="resultado_control_cumplimiento"></div>
+  </div>
+</div>
+
+<script>
+  
     let estructuraGlobal = [];
     let ultimoResultadoConsulta = [];
     let ultimosSeleccionadosExtra = [];
