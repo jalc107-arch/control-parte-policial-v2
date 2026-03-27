@@ -1984,8 +1984,30 @@ function renderizarExtraordinario(lista) {
   });
 
   window.listaExtra = lista;
+actualizarResumenExtra();
 }
 
+    
+function actualizarResumenExtra() {
+  const resultadoExtra = document.getElementById("resultado_extra");
+  if (!resultadoExtra) return;
+  if (!window.listaExtra || !window.listaExtra.length) {
+    resultadoExtra.innerText = "";
+    return;
+  }
+
+  let texto = "";
+  texto += `SERVICIO EXTRAORDINARIO AJUSTADO\n\n`;
+  texto += `ASIGNADOS: ${window.listaExtra.length}\n\n`;
+
+  window.listaExtra.forEach((p, i) => {
+    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+  });
+
+  resultadoExtra.innerText = texto;
+}
+
+    
 function cambiarExtraEstado(index, valor) {
   if (!window.listaExtra || !window.listaExtra[index]) return;
 
