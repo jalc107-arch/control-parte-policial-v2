@@ -2115,7 +2115,6 @@ function reemplazarExtra(index) {
   box.innerHTML = "Consultando...";
 
   try {
-   const fecha = document.getElementById("fecha_control").value;
     const fecha = document.getElementById("fecha_control").value;
     const res = await fetch(`/control-cumplimiento-diario?fecha=${fecha}`);
     const data = await res.json();
