@@ -673,6 +673,7 @@
           document.getElementById("nombre_elabora").value = "";
           document.getElementById("cedula_elabora").value = "";
           document.getElementById("telefono_elabora").value = "";
+          window.responsable = null;
           return;
         }
 
@@ -685,6 +686,13 @@
         document.getElementById("nombre_elabora").value = data.nombre || "";
         document.getElementById("cedula_elabora").value = data.cedula || "";
         document.getElementById("telefono_elabora").value = data.telefono || "";
+
+        window.responsable = {
+  cedula: data.cedula || "",
+  nombre: data.nombre || "",
+  grado: data.grado || "",
+  telefono: data.telefono || ""
+};
 
         if (!data.esOficial) {
           document.getElementById("unidad_select").value = data.unidad || "";
