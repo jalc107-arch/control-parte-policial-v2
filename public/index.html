@@ -395,6 +395,29 @@
       <div class="acciones-inline">
         <button onclick="cargarPersonal()">Continuar</button>
       </div>
+      <div id="bloqueNovedades" style="display:none; margin-top:18px;">
+  <div class="sub-card">
+    <h3>Asignar novedad</h3>
+    <div id="lista"></div>
+    <div class="acciones-inline">
+      <button onclick="guardarNovedades()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="bloqueParte" style="display:none; margin-top:18px;">
+  <div class="sub-card">
+    <h3>Salida del parte</h3>
+    <div class="acciones-inline">
+      <button onclick="generarParte()">Generar</button>
+      <button onclick="descargarPDF()">Descargar</button>
+    </div>
+    <div class="campo-corto">
+      <input type="file" id="foto_parte" accept="image/*" capture="environment" class="input-archivo-minimal">
+    </div>
+    <pre id="resultado"></pre>
+  </div>
+</div>
     </div>
 
     <div class="seccion" id="bloqueNovedades" style="display:none;">
