@@ -2129,7 +2129,8 @@ function reemplazarExtra(index) {
   box.innerHTML = "Consultando...";
 
   try {
-    const res = await fetch("/control-cumplimiento-diario");
+   const fecha = document.getElementById("fecha_control").value;
+    const res = await fetch(`/control-cumplimiento-diario?fecha=${fecha}`);
     const data = await res.json();
 
     if (!data.ok) {
@@ -2226,13 +2227,11 @@ function reemplazarExtra(index) {
   }
 }
   
-    document.addEventListener("DOMContentLoaded", () => {
-      const inputFecha = document.getElementById("fecha_control");
+    const inputFecha = document.getElementById("fecha_control");
 if (inputFecha) {
   const hoy = new Date().toISOString().split("T")[0];
   inputFecha.value = hoy;
 }
-
       
       const consultaUnidad = document.getElementById("consulta_unidad");
       if (consultaUnidad) consultaUnidad.addEventListener("change", cargarConsultaDependencias);
