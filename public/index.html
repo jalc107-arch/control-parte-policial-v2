@@ -1942,22 +1942,28 @@ function reemplazarExtra(index) {
   if (!window.listaExtra || !window.listaExtra.length) return;
   if (!window.ultimoResultadoConsulta || !window.ultimoResultadoConsulta.length) return;
 
+  const actual = window.listaExtra[index];
+  const cedulaActual = String(actual?.cedula || "").trim();
+
   const yaSeleccionados = new Set(
     window.listaExtra
       .filter((_, i) => i !== index)
       .map(p => String(p.cedula || "").trim())
   );
 
-  const reemplazo = window.ultimoResultadoConsulta.find(p => {
+  const disponiblesBase = window.ultimoResultadoConsulta.filter(p => {
     const ced = String(p.cedula || "").trim();
     const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
-    return !yaSeleccionados.has(ced) && !tipo;
+
+    return ced !== cedulaActual && !yaSeleccionados.has(ced) && (tipo === "" || tipo === "DISPONIBLE");
   });
 
-  if (!reemplazo) {
+  if (!disponiblesBase.length) {
     alert("No hay más personal disponible para reemplazar.");
     return;
   }
+
+  const reemplazo = disponiblesBase[0];
 
   window.listaExtra[index] = {
     ...reemplazo,
