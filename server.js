@@ -618,14 +618,43 @@ if (horario.esMediodia) {
       if (!n.cedula || !n.tipo) continue;
 
       await pool.query(
-        `INSERT INTO novedades (cedula, estacion, tipo_novedad, fecha)
-         VALUES ($1, $2, $3, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date)
-         ON CONFLICT (cedula, fecha)
-         DO UPDATE SET
-           estacion = EXCLUDED.estacion,
-           tipo_novedad = EXCLUDED.tipo_novedad`,
-        [n.cedula, estacion, n.tipo]
-      );
+  `INSERT INTO novedades (
+      cedula,
+      estacion,
+      tipo_novedad,
+      fecha,
+      actualizado_por_cedula,
+      actualizado_por_nombre,
+      hora_registro,
+      franja
+   )
+   VALUES (
+      $1,
+      $2,
+      $3,
+      (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date,
+      $4,
+      $5,
+      (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
+      $6
+   )
+   ON CONFLICT (cedula, fecha)
+   DO UPDATE SET
+      estacion = EXCLUDED.estacion,
+      tipo_novedad = EXCLUDED.tipo_novedad,
+      actualizado_por_cedula = EXCLUDED.actualizado_por_cedula,
+      actualizado_por_nombre = EXCLUDED.actualizado_por_nombre,
+      hora_registro = EXCLUDED.hora_registro,
+      franja = EXCLUDED.franja`,
+  [
+    n.cedula,
+    estacion,
+    n.tipo,
+    responsable_cedula,
+    responsable_nombre,
+    franja
+  ]
+);
     }
 
     return res.json({
