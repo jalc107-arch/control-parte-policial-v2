@@ -1938,7 +1938,7 @@ function cambiarExtraEstado(index, valor) {
 
 function reemplazarExtra(index) {
   if (!window.listaExtra || !window.listaExtra.length) return;
-  if (!window.ultimoResultadoConsulta || !window.ultimoResultadoConsulta.length) return;
+  if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) return;
 
   const actual = window.listaExtra[index];
   const cedulaActual = String(actual?.cedula || "").trim();
@@ -1949,11 +1949,15 @@ function reemplazarExtra(index) {
       .map(p => String(p.cedula || "").trim())
   );
 
-  const disponiblesBase = window.ultimoResultadoConsulta.filter(p => {
+  const disponiblesBase = ultimoResultadoConsulta.filter(p => {
     const ced = String(p.cedula || "").trim();
     const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
 
-    return ced !== cedulaActual && !yaSeleccionados.has(ced) && (tipo === "" || tipo === "DISPONIBLE");
+    return (
+      ced !== cedulaActual &&
+      !yaSeleccionados.has(ced) &&
+      (tipo === "" || tipo === "DISPONIBLE")
+    );
   });
 
   if (!disponiblesBase.length) {
