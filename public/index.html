@@ -1359,7 +1359,10 @@
       });
 
       const seleccionados = ordenarPorGrado(mezclarArray(disponiblesOrdenados).slice(0, totalTomar));
-      ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p }));
+      ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p, estadoExtra: "SI" }));
+window.listaExtra = ordenarListaExtraPorGrado(
+  seleccionados.map(p => ({ ...p, estadoExtra: "SI" }))
+);
 
       seleccionados.forEach(p => {
         p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
@@ -1449,7 +1452,10 @@ renderizarExtraordinario(window.listaExtra);
         return;
       }
 
-      ultimosSeleccionadosExtra = seleccionadosFinales.map(p => ({ ...p }));
+     ultimosSeleccionadosExtra = seleccionadosFinales.map(p => ({ ...p, estadoExtra: "SI" }));
+window.listaExtra = ordenarListaExtraPorGrado(
+  seleccionadosFinales.map(p => ({ ...p, estadoExtra: "SI" }))
+);
 
       let texto = "";
       texto += `SERVICIO EXTRAORDINARIO APLICADO - POR GRUPOS\n\n`;
