@@ -1927,26 +1927,31 @@ async function guardarServicioExtraordinarioFinal() {
     }
 
     function descargarServicioExtraordinario() {
-      if (!ultimosSeleccionadosExtra || !ultimosSeleccionadosExtra.length) {
-        alert("No hay personal seleccionado en servicio extraordinario.");
-        return;
-      }
+  const listaDescarga = (window.listaExtra && window.listaExtra.length)
+    ? ordenarListaExtraPorGrado(window.listaExtra)
+    : [];
 
-      let texto = "SERVICIO EXTRAORDINARIO\n\n";
-      ultimosSeleccionadosExtra.forEach((p, i) => {
-        texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${p.estacion || ""}\n`;
-      });
+  if (!listaDescarga.length) {
+    alert("No hay personal seleccionado en servicio extraordinario.");
+    return;
+  }
 
-      const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "servicio_extraordinario.txt";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
+  let texto = "SERVICIO EXTRAORDINARIO\n\n";
+
+  listaDescarga.forEach((p, i) => {
+    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${p.estacion || ""}\n`;
+  });
+
+  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "servicio_extraordinario.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 function ordenarListaExtraPorGrado(lista) {
   const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
