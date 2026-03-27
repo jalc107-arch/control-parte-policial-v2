@@ -1029,6 +1029,7 @@ app.post("/consulta-novedades", async (req, res) => {
     p.subunidad,
     p.estacion,
     p.organico,
+    p.aptitud,
     COALESCE(n.tipo_novedad, '') AS tipo_novedad
   FROM personal p
         LEFT JOIN novedades n
