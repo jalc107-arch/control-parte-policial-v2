@@ -1887,6 +1887,33 @@
       URL.revokeObjectURL(url);
     }
 
+function renderizarExtraordinario(lista) {
+  const contenedor = document.getElementById("lista_extraordinario");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+
+  lista.forEach((p, i) => {
+    const div = document.createElement("div");
+    div.className = "persona";
+
+    div.innerHTML = `
+      <b>
+        ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
+        <span class="persona-cc">CC ${p.cedula || ""}</span>
+      </b>
+      <select onchange="cambiarExtra(${i}, this.value)">
+        <option value="SI">SI</option>
+        <option value="NO">NO</option>
+      </select>
+    `;
+
+    contenedor.appendChild(div);
+  });
+
+  window.listaExtra = lista;
+}
+    
     function togglePanel(id) {
       const panel = document.getElementById(id);
       if (!panel) return;
