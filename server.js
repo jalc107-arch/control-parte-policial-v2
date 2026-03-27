@@ -603,6 +603,17 @@ app.post("/guardar-novedades", async (req, res) => {
       }
     }
 
+const horario = validarHorarioParte();
+let franja = "general";
+
+if (horario.esMediodia) {
+  franja = "mediodia";
+} else if (horario.tipo === "mañana") {
+  franja = "mañana";
+} else if (horario.tipo === "noche") {
+  franja = "noche";
+}
+    
     for (const n of novedades) {
       if (!n.cedula || !n.tipo) continue;
 
