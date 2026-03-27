@@ -2227,6 +2227,13 @@ function reemplazarExtra(index) {
 }
   
     document.addEventListener("DOMContentLoaded", () => {
+      const inputFecha = document.getElementById("fecha_control");
+if (inputFecha) {
+  const hoy = new Date().toISOString().split("T")[0];
+  inputFecha.value = hoy;
+}
+
+      
       const consultaUnidad = document.getElementById("consulta_unidad");
       if (consultaUnidad) consultaUnidad.addEventListener("change", cargarConsultaDependencias);
       cargarChecksGruposExtra();
