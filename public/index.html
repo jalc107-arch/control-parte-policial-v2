@@ -1313,10 +1313,15 @@
       return !obtenerTipoActualPersona(persona);
     }
 
-    function extraerDisponiblesConsulta() {
-      if (!ultimoResultadoConsulta.length) return [];
-      return ultimoResultadoConsulta.filter(p => esDisponiblePersona(p));
-    }
+   function extraerDisponiblesConsulta() {
+  if (!ultimoResultadoConsulta.length) return [];
+
+  return ultimoResultadoConsulta.filter(p => {
+    const disponible = esDisponiblePersona(p);
+    const aptitud = String(p.aptitud || "").trim().toUpperCase();
+    return disponible && aptitud === "APTO";
+  });
+}
 
     function obtenerGrupoPorGrado(grado = "") {
       const g = String(grado || "").toUpperCase().trim();
