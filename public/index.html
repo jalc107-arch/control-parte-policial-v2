@@ -676,7 +676,18 @@
     const data = await res.json();
     alert("RESPUESTA: " + JSON.stringify(data));
 
-   
+    // ❌ No existe la cédula
+if (!data.ok) {
+   alert("Cédula no encontrada");
+   return;
+}
+
+// ⚠️ Existe pero sin permisos
+if (!data.autorizado) {
+   alert("No tiene permisos");
+   return;
+}
+  
     document.getElementById("cedula_elabora").value = data.cedula || cedula;
     document.getElementById("nombre_elabora").value = data.nombre || "";
     document.getElementById("grado").value = data.grado || "";
