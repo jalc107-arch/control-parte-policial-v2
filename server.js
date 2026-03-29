@@ -837,6 +837,7 @@ app.get("/control-cumplimiento-diario", async (req, res) => {
     res.json({
       ok: true,
       fecha,
+      totalEstaciones: estacionesEsperadas.length,
       partesMananaReportadas: [...partesManana],
       partesNocheReportadas: [...partesNoche],
       novedadesDiaReportadas: [...novedadesDia],
