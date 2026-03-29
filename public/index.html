@@ -2368,14 +2368,14 @@ const disponiblesOrdenados = disponiblesBase.sort((a, b) => {
 // 🔥 Toma el mejor candidato
 const reemplazo = disponiblesOrdenados[0];
 
-  window.listaExtra[index] = {
+ window.listaExtra[index] = {
   ...reemplazo,
   estadoExtra: "SI"
 };
 
 window.listaExtra = ordenarPorGrado(window.listaExtra);
 renderizarExtraordinario(window.listaExtra);
-}
+actualizarTextoResultadoExtra();
     
     function togglePanel(id) {
       const panel = document.getElementById(id);
