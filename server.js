@@ -234,6 +234,17 @@ function obtenerGrupoPorGrado(grado = "") {
   return "OTROS";
 }
 
+function obtenerNivelJerarquico(grado = "") {
+  const g = String(grado || "").toUpperCase().trim();
+
+  if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIAL";
+  if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
+  if (["PT", "PP"].includes(g)) return "PATRULLERO";
+  if (["AUX"].includes(g)) return "AUXILIAR";
+
+  return "OTRO";
+}
+
 function contarGrupoLista(lista) {
   return {
     oficiales: lista.filter(p => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((p.grado || "").toUpperCase())).length,
