@@ -389,11 +389,21 @@
     <div class="seccion">
       <h2>Paso 1 — Validación</h2>
       <div class="campo-corto">
-        <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
-      </div>
-      <div class="acciones-inline">
-        <button onclick="validarResponsable()">Validar responsable</button>
-      </div>
+  <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
+</div>
+
+<div class="acciones-inline">
+  <button type="button" onclick="enviarCodigoOTP()">Enviar código</button>
+</div>
+
+<div class="campo-corto">
+  <input id="codigo_otp" placeholder="Ingresa el código recibido" />
+</div>
+
+<div class="acciones-inline">
+  <button type="button" onclick="validarCodigoOTP()">Validar código</button>
+</div>
+      
       <div id="datos_responsable" style="margin-top:10px; font-weight:bold;"></div>
 
       <div style="display:none;">
