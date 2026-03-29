@@ -331,6 +331,55 @@
     @media (min-width: 768px) {
       .grid-extra { grid-template-columns: 1fr 1fr; }
     }
+
+    .tarjetas-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tarjeta-resumen {
+  border-radius: 12px;
+  padding: 14px;
+  text-align: left;
+  border: 1px solid var(--gris-borde);
+  background: var(--blanco);
+  box-shadow: var(--sombra-suave);
+}
+
+.tarjeta-resumen .titulo {
+  font-size: 12px;
+  color: var(--gris-texto);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.tarjeta-resumen .valor {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--azul-principal);
+}
+
+.estado-ok {
+  background: #ECFDF3;
+  border: 1px solid #ABEFC6;
+  color: #067647;
+}
+
+.estado-alerta {
+  background: #FEF3F2;
+  border: 1px solid #FECDCA;
+  color: #B42318;
+}
+
+.estado-parcial {
+  background: #FFFAEB;
+  border: 1px solid #FEDF89;
+  color: #B54708;
+}
+    
+    
   </style>
 </head>
 <body>
