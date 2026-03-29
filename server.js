@@ -595,14 +595,21 @@ app.post("/guardar-novedades", async (req, res) => {
 
     const { estado, esMediodia } = validarHorarioParte();
 
-    if (!esExento) {
-      if (!esMediodia && estado === "bloqueado") {
-        return res.json({
-          ok: false,
-          mensaje: "⚠️ Fuera de horario. Solo puedes trabajar en modo consulta, sin guardar novedades."
-        });
-      }
-    }
+    const config = await pool.query(
+  "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
+);
+
+const parteExtraGlobal =
+  config.rows.length > 0 && config.rows[0].valor === "true";
+
+   if (!esExento && !parteExtraGlobal) {
+  if (!esMediodia && estado === "bloqueado") {
+    return res.json({
+      ok: false,
+      mensaje: "⚠️ Fuera de horario. Solo puedes trabajar en modo consulta, sin guardar novedades."
+    });
+  }
+}
 
 const horario = validarHorarioParte();
 let franja = "general";
