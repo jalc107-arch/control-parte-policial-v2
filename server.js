@@ -15,21 +15,8 @@ const __dirname = path.dirname(__filename);
 const upload = multer({ dest: "uploads/" });
 
 async function enviarWhatsAppOTP(telefono, codigo) {
-  const apiUrl = process.env.WHATSAPP_API_URL;
-  const apiToken = process.env.WHATSAPP_API_TOKEN;
-  const instanceId = process.env.WHATSAPP_INSTANCE_ID || "";
-
-  if (!apiUrl || !apiToken) {
-    throw new Error("Faltan variables de entorno de WhatsApp");
-  }
-
-  // Ajuste básico del número
   let destino = String(telefono || "").replace(/\D/g, "");
-  if (!destino) {
-    throw new Error("Teléfono inválido");
-  }
 
-  // Si viene sin indicativo, asumimos Colombia
   if (!destino.startsWith("57")) {
     destino = `57${destino}`;
   }
@@ -43,29 +30,24 @@ Su código de verificación es: ${codigo}
 Vigencia: 5 minutos
 No compartir este código.`;
 
-  const payload = {
-    to: destino,
-    body: mensaje
-  };
-
-  // Si tu proveedor usa instanceId, se lo mandamos también
-  if (instanceId) {
-    payload.instanceId = instanceId;
-  }
-
-  const res = await fetch(apiUrl, {
+  const res = await fetch(process.env.WHATSAPP_API_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiToken}`
+      "Content-Type": "application/json"
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      token: process.env.WHATSAPP_API_TOKEN,
+      to: destino,
+      body: mensaje
+    })
   });
 
-  const data = await res.json().catch(() => ({}));
+  const data = await res.json();
+
+  console.log("RESPUESTA WHATSAPP:", data);
 
   if (!res.ok) {
-    throw new Error(data?.message || "No se pudo enviar el WhatsApp");
+    throw new Error(data?.message || "Error enviando WhatsApp");
   }
 
   return data;
