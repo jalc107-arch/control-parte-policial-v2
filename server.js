@@ -1771,6 +1771,77 @@ app.post("/enviar-codigo", async (req, res) => {
 });
 
 // =========================
+// OTP - VALIDAR CODIGO
+// =========================
+app.post("/validar-codigo", async (req, res) => {
+  const { cedula, codigo } = req.body;
+
+  try {
+    // 🔒 Validación básica
+    if (!cedula || !codigo) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: "Cédula y código son obligatorios"
+      });
+    }
+
+    // 🔍 Buscar código más reciente
+    const result = await pool.query(
+      `SELECT id, expira, usado
+       FROM otp_codigos
+       WHERE cedula = $1
+         AND codigo = $2
+       ORDER BY id DESC
+       LIMIT 1`,
+      [cedula, codigo]
+    );
+
+    // ❌ No existe
+    if (result.rows.length === 0) {
+      return res.json({
+        ok: false,
+        mensaje: "Código inválido"
+      });
+    }
+
+    const otp = result.rows[0];
+
+    // ❌ Ya usado
+    if (otp.usado) {
+      return res.json({
+        ok: false,
+        mensaje: "Este código ya fue utilizado"
+      });
+    }
+
+    // ❌ Expirado
+    if (new Date() > new Date(otp.expira)) {
+      return res.json({
+        ok: false,
+        mensaje: "El código ha expirado"
+      });
+    }
+
+    // ✅ Marcar como usado
+    await pool.query(
+      "UPDATE otp_codigos SET usado = true WHERE id = $1",
+      [otp.id]
+    );
+
+    return res.json({
+      ok: true,
+      mensaje: "Código validado correctamente"
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
+// =========================
 // LEVANTAR SERVIDOR
 // =========================
 app.listen(PORT, "0.0.0.0", () => {
