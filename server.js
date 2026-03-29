@@ -14,6 +14,56 @@ const __dirname = path.dirname(__filename);
 
 const upload = multer({ dest: "uploads/" });
 
+async function enviarWhatsAppOTP(telefono, codigo) {
+  const apiUrl = process.env.WHATSAPP_API_URL;
+  const apiToken = process.env.WHATSAPP_API_TOKEN;
+  const instanceId = process.env.WHATSAPP_INSTANCE_ID || "";
+
+  if (!apiUrl || !apiToken) {
+    throw new Error("Faltan variables de entorno de WhatsApp");
+  }
+
+  // Ajuste básico del número
+  let destino = String(telefono || "").replace(/\D/g, "");
+  if (!destino) {
+    throw new Error("Teléfono inválido");
+  }
+
+  // Si viene sin indicativo, asumimos Colombia
+  if (!destino.startsWith("57")) {
+    destino = `57${destino}`;
+  }
+
+  const mensaje = `Código de acceso Control de Partes: ${codigo}. Vigencia: 5 minutos. No lo compartas.`;
+
+  const payload = {
+    to: destino,
+    body: mensaje
+  };
+
+  // Si tu proveedor usa instanceId, se lo mandamos también
+  if (instanceId) {
+    payload.instanceId = instanceId;
+  }
+
+  const res = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data?.message || "No se pudo enviar el WhatsApp");
+  }
+
+  return data;
+}
+
 function obtenerPartesFechaBogota() {
   const partes = new Intl.DateTimeFormat("en-GB", {
     timeZone: "America/Bogota",
