@@ -1065,22 +1065,29 @@ app.post("/guardar-parte-pdf", async (req, res) => {
 
   const { estado, esMediodia } = validarHorarioParte();
 
-  if (!esOficial) {
-    if (esMediodia) {
-      return res.json({
-        ok: false,
-        mensaje: "⛔ Al mediodía solo se registran novedades. No se guarda parte."
-      });
-    }
+  const config = await pool.query(
+  "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
+);
 
-    if (estado === "bloqueado") {
-      return res.json({
-        ok: false,
-        mensaje: "⛔ Fuera de horario. No se puede guardar el parte."
-      });
-    }
+const parteExtraGlobal =
+  config.rows.length > 0 && config.rows[0].valor === "true";
+  
+if (!esOficial && !parteExtraGlobal) {
+  if (esMediodia) {
+    return res.json({
+      ok: false,
+      mensaje: "⛔ Al mediodía solo se registran novedades. No se guarda parte."
+    });
   }
 
+  if (estado === "bloqueado") {
+    return res.json({
+      ok: false,
+      mensaje: "⛔ Fuera de horario. No se puede guardar el parte."
+    });
+  }
+}
+  
   if (!tipo && !esOficial) {
     return res.json({
       ok: false,
