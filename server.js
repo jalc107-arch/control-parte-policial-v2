@@ -34,7 +34,14 @@ async function enviarWhatsAppOTP(telefono, codigo) {
     destino = `57${destino}`;
   }
 
-  const mensaje = `Código de acceso Control de Partes: ${codigo}. Vigencia: 5 minutos. No lo compartas.`;
+  const mensaje = `POLICÍA NACIONAL DE COLOMBIA
+
+Sistema Control de Partes
+
+Su código de verificación es: ${codigo}
+
+Vigencia: 5 minutos
+No compartir este código.`;
 
   const payload = {
     to: destino,
@@ -1782,6 +1789,21 @@ app.post("/enviar-codigo", async (req, res) => {
 
     const persona = personaResult.rows[0];
     const telefono = String(persona.telefono || "").trim();
+
+    // 🔒 Limitar intentos (máximo 3 códigos por 5 minutos)
+const intentos = await pool.query(
+  `SELECT COUNT(*) FROM otp_codigos
+   WHERE cedula = $1
+   AND created_at > NOW() - INTERVAL '5 minutes'`,
+  [cedula]
+);
+
+if (parseInt(intentos.rows[0].count, 10) >= 3) {
+  return res.json({
+    ok: false,
+    mensaje: "Has solicitado muchos códigos. Intenta en 5 minutos."
+  });
+}
 
     if (!telefono) {
       return res.json({
