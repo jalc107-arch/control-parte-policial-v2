@@ -1050,16 +1050,17 @@ app.post("/parte-texto", async (req, res) => {
 // ==============================
 app.post("/guardar-parte-pdf", async (req, res) => {
   const {
-    tipo,
-    unidad,
-    subunidad,
-    estacion,
-    grado_responsable,
-    nombre_responsable,
-    cedula_responsable,
-    telefono_responsable,
-    texto_parte
-  } = req.body;
+  tipo,
+  unidad,
+  subunidad,
+  estacion,
+  grado_responsable,
+  nombre_responsable,
+  cedula_responsable,
+  telefono_responsable,
+  texto_parte,
+  novedades = []
+} = req.body;
 
   const grado = (grado_responsable || "").toUpperCase().trim().replace(/\s+/g, "");
   const esOficial = esGradoOficial(grado);
