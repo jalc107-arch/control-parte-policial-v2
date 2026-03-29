@@ -774,6 +774,71 @@ async function cambiarParteExtraGlobal(activo) {
     alert("Error en servidor");
   }
 }
+
+async function enviarCodigoOTP() {
+  const cedula = document.getElementById("cedula_responsable").value.trim();
+
+  if (!cedula) {
+    alert("Ingresa la cédula");
+    return;
+  }
+
+  try {
+    const res = await fetch("/enviar-codigo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.mensaje || "No se pudo generar el código");
+      return;
+    }
+
+    alert("Código enviado correctamente");
+  } catch (error) {
+    console.error(error);
+    alert("Error enviando código");
+  }
+}
+
+async function validarCodigoOTP() {
+  const cedula = document.getElementById("cedula_responsable").value.trim();
+  const codigo = document.getElementById("codigo_otp").value.trim();
+
+  if (!cedula) {
+    alert("Ingresa la cédula");
+    return;
+  }
+
+  if (!codigo) {
+    alert("Ingresa el código");
+    return;
+  }
+
+  try {
+    const res = await fetch("/validar-codigo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula, codigo })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.mensaje || "Código inválido");
+      return;
+    }
+
+    alert("Código validado correctamente");
+    await validarResponsable();
+  } catch (error) {
+    console.error(error);
+    alert("Error validando código");
+  }
+}
   
    async function validarResponsable() {
   const cedula = document.getElementById("cedula_responsable").value.trim();
