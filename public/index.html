@@ -799,8 +799,8 @@ async function enviarCodigoOTP() {
       alert(data.mensaje || "No se pudo generar el código");
       return;
     }
-
-    alert("Código enviado correctamente");
+alert("Se envió un código de seguridad al celular registrado");
+   
   } catch (error) {
     console.error(error);
     alert("Error enviando código");
