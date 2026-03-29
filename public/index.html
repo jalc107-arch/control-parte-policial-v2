@@ -702,6 +702,7 @@
     let estructuraGlobal = [];
     let ultimoResultadoConsulta = [];
     let ultimosSeleccionadosExtra = [];
+    let otpValidado = false;
 
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
@@ -783,6 +784,8 @@ async function enviarCodigoOTP() {
     return;
   }
 
+  otpValidado = false;
+
   try {
     const res = await fetch("/enviar-codigo", {
       method: "POST",
@@ -818,6 +821,7 @@ async function validarCodigoOTP() {
     return;
   }
 
+  
   try {
     const res = await fetch("/validar-codigo", {
       method: "POST",
@@ -832,6 +836,8 @@ async function validarCodigoOTP() {
       return;
     }
 
+otpValidado = true;
+    
     alert("Código validado correctamente");
     await validarResponsable();
   } catch (error) {
@@ -842,6 +848,11 @@ async function validarCodigoOTP() {
   
    async function validarResponsable() {
   const cedula = document.getElementById("cedula_responsable").value.trim();
+
+     if (!otpValidado) {
+  alert("Primero debes validar el código de seguridad");
+  return;
+}
 
   document.getElementById("lista").innerHTML = "";
   document.getElementById("resultado").innerText = "";
