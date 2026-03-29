@@ -680,7 +680,26 @@ app.get("/validar-parte", async (req, res) => {
     const esOficial = esGradoOficial(grado);
     const esExento = esOficial || rol === "ADMIN_EXCEL";
 
+    const config = await pool.query(
+  "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
+);
+
+const parteExtraGlobal =
+  config.rows.length > 0 && config.rows[0].valor === "true";
+
     const { tipo, estado, mensaje, esMediodia, extemporaneo } = validarHorarioParte();
+
+    if (parteExtraGlobal) {
+  return res.json({
+    ok: true,
+    tipo: "extraordinario_global",
+    estado: "extraordinario_global",
+    mensaje: "Parte extraordinario habilitado por administración",
+    esMediodia: false,
+    extemporaneo: true,
+    guardarOficial: true
+  });
+}
 
     if (esExento) {
       return res.json({
