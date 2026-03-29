@@ -2292,16 +2292,31 @@ function reemplazarExtra(index) {
       .map(p => String(p.cedula || "").trim())
   );
 
-  const disponiblesBase = ultimoResultadoConsulta.filter(p => {
-    const ced = String(p.cedula || "").trim();
-    const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
+  function obtenerNivelCliente(grado = "") {
+  const g = String(grado || "").toUpperCase().trim();
 
-    return (
-      ced !== cedulaActual &&
-      !yaSeleccionados.has(ced) &&
-      (tipo === "" || tipo === "DISPONIBLE")
-    );
-  });
+  if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIAL";
+  if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
+  if (["PT", "PP"].includes(g)) return "PATRULLERO";
+  if (["AUX"].includes(g)) return "AUXILIAR";
+
+  return "OTRO";
+}
+
+const nivelActual = obtenerNivelCliente(actual?.grado || "");
+
+const disponiblesBase = window.ultimoResultadoConsulta.filter(p => {
+  const ced = String(p.cedula || "").trim();
+  const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
+  const nivelNuevo = obtenerNivelCliente(p.grado || "");
+
+  return (
+    ced !== cedulaActual &&
+    !yaSeleccionados.has(ced) &&
+    (tipo === "" || tipo === "DISPONIBLE") &&
+    nivelNuevo === nivelActual
+  );
+});
 
   if (!disponiblesBase.length) {
     alert("No hay más personal disponible para reemplazar.");
