@@ -664,7 +664,29 @@
   </div>
 
 </div>
-  
+
+    <div class="seccion" id="bloqueConfigExtraGlobal" style="display:none;">
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelConfigExtraGlobal')">
+    10. Control parte extraordinario global
+  </button>
+
+  <div id="panelConfigExtraGlobal" class="panel-contenido">
+    <div id="estado_extra_global" style="margin-bottom:10px; font-weight:700;"></div>
+
+    <div class="acciones-inline">
+      <button type="button" onclick="cambiarParteExtraGlobal(true)">
+        Activar
+      </button>
+      <button type="button" onclick="cambiarParteExtraGlobal(false)">
+        Desactivar
+      </button>
+      <button type="button" onclick="consultarParteExtraGlobal()">
+        Actualizar estado
+      </button>
+    </div>
+  </div>
+</div>
+    
 <script>
   
     let estructuraGlobal = [];
@@ -696,27 +718,6 @@
       }
     }
 
-<div class="seccion" id="bloqueConfigExtraGlobal" style="display:none;">
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelConfigExtraGlobal')">
-    10. Control parte extraordinario global
-  </button>
-
-  <div id="panelConfigExtraGlobal" class="panel-contenido">
-    <div id="estado_extra_global" style="margin-bottom:10px; font-weight:700;"></div>
-
-    <div class="acciones-inline">
-      <button type="button" onclick="cambiarParteExtraGlobal(true)">
-        Activar
-      </button>
-      <button type="button" onclick="cambiarParteExtraGlobal(false)">
-        Desactivar
-      </button>
-      <button type="button" onclick="consultarParteExtraGlobal()">
-        Actualizar estado
-      </button>
-    </div>
-  </div>
-</div>
   
    async function validarResponsable() {
   const cedula = document.getElementById("cedula_responsable").value.trim();
