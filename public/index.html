@@ -718,6 +718,52 @@
       }
     }
 
+async function consultarParteExtraGlobal() {
+  const box = document.getElementById("estado_extra_global");
+  if (!box) return;
+
+  box.innerText = "Consultando estado...";
+
+  try {
+    const res = await fetch("/config/parte-extra-global");
+    const data = await res.json();
+
+    if (!data.ok) {
+      box.innerText = "Error consultando estado";
+      return;
+    }
+
+    box.innerText = data.activo
+      ? "✅ Parte extraordinario global: ACTIVADO"
+      : "⛔ Parte extraordinario global: DESACTIVADO";
+  } catch (error) {
+    console.error(error);
+    box.innerText = "Error en servidor";
+  }
+}
+
+async function cambiarParteExtraGlobal(activo) {
+  try {
+    const res = await fetch("/config/parte-extra-global", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ activo })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert("Error actualizando configuración");
+      return;
+    }
+
+    alert(data.mensaje);
+    consultarParteExtraGlobal();
+  } catch (error) {
+    console.error(error);
+    alert("Error en servidor");
+  }
+}
   
    async function validarResponsable() {
   const cedula = document.getElementById("cedula_responsable").value.trim();
@@ -2367,52 +2413,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("bloqueHistorialExtra").style.display = "none";
   document.getElementById("bloqueControlCumplimiento").style.display = "none";
 
-  async function consultarParteExtraGlobal() {
-  const box = document.getElementById("estado_extra_global");
-  if (!box) return;
-
-  box.innerText = "Consultando estado...";
-
-  try {
-    const res = await fetch("/config/parte-extra-global");
-    const data = await res.json();
-
-    if (!data.ok) {
-      box.innerText = "Error consultando estado";
-      return;
-    }
-
-    box.innerText = data.activo
-      ? "✅ Parte extraordinario global: ACTIVADO"
-      : "⛔ Parte extraordinario global: DESACTIVADO";
-  } catch (error) {
-    console.error(error);
-    box.innerText = "Error en servidor";
-  }
-}
-
-async function cambiarParteExtraGlobal(activo) {
-  try {
-    const res = await fetch("/config/parte-extra-global", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ activo })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert("Error actualizando configuración");
-      return;
-    }
-
-    alert(data.mensaje);
-    consultarParteExtraGlobal();
-  } catch (error) {
-    console.error(error);
-    alert("Error en servidor");
-  }
-}
+  
 
   cargarEstructura();
 });
