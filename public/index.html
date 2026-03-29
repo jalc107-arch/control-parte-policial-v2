@@ -802,12 +802,15 @@ if (!data.autorizado) {
       document.getElementById("bloqueExtraordinario").style.display = "block";
       document.getElementById("bloqueHistorialExtra").style.display = "block";
       document.getElementById("bloqueControlCumplimiento").style.display = "block";
+      document.getElementById("bloqueConfigExtraGlobal").style.display = "block";
+      consultarParteExtraGlobal();
     } else {
       document.getElementById("bloqueOrganico").style.display = "none";
       document.getElementById("bloqueConsultaGeneral").style.display = "none";
       document.getElementById("bloqueExtraordinario").style.display = "none";
       document.getElementById("bloqueHistorialExtra").style.display = "none";
       document.getElementById("bloqueControlCumplimiento").style.display = "none";
+      document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
     }
 
     cargarFiltrosConsulta();
