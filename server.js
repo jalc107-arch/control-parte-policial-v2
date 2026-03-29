@@ -1704,6 +1704,71 @@ app.post("/config/parte-extra-global", async (req, res) => {
   }
 });
 
+// =========================
+// OTP - ENVIAR CODIGO
+// =========================
+app.post("/enviar-codigo", async (req, res) => {
+  const { cedula } = req.body;
+
+  try {
+    if (!cedula) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: "Cédula obligatoria"
+      });
+    }
+
+    const personaResult = await pool.query(
+      "SELECT cedula, telefono, nombres, apellidos FROM personal WHERE cedula = $1 LIMIT 1",
+      [cedula]
+    );
+
+    if (personaResult.rows.length === 0) {
+      return res.json({
+        ok: false,
+        mensaje: "Cédula no encontrada"
+      });
+    }
+
+    const persona = personaResult.rows[0];
+    const telefono = String(persona.telefono || "").trim();
+
+    if (!telefono) {
+      return res.json({
+        ok: false,
+        mensaje: "El funcionario no tiene teléfono registrado"
+      });
+    }
+
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    const expira = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
+
+    await pool.query(
+      `INSERT INTO otp_codigos (cedula, codigo, expira, usado)
+       VALUES ($1, $2, $3, false)`,
+      [cedula, codigo, expira]
+    );
+
+    // 🔥 Por ahora lo dejamos visible en logs mientras conectamos WhatsApp
+    console.log("OTP generado:", {
+      cedula,
+      telefono,
+      codigo,
+      expira
+    });
+
+    return res.json({
+      ok: true,
+      mensaje: "Código generado correctamente"
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
 
 // =========================
 // LEVANTAR SERVIDOR
