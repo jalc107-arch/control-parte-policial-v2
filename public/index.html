@@ -2251,6 +2251,22 @@ function renderizarExtraordinario(lista) {
   actualizarResumenExtra();
 }
 
+  function actualizarTextoResultadoExtra() {
+  const resultadoExtra = document.getElementById("resultado_extra");
+  if (!resultadoExtra || !window.listaExtra || !window.listaExtra.length) return;
+
+  const seleccionados = ordenarPorGrado(window.listaExtra);
+
+  let texto = "";
+  texto += "SERVICIO EXTRAORDINARIO ACTUALIZADO\n\n";
+  texto += `ASIGNADOS: ${seleccionados.length}\n\n`;
+
+  seleccionados.forEach((p, i) => {
+    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+  });
+
+  resultadoExtra.innerText = texto;
+}
     
 function actualizarResumenExtra() {
   const resultadoExtra = document.getElementById("resultado_extra");
