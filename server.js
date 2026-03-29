@@ -1596,6 +1596,60 @@ app.post("/config/parte-extra-global", async (req, res) => {
 });
 
 // =========================
+// CONFIG PARTE EXTRA GLOBAL
+// =========================
+app.get("/config/parte-extra-global", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
+    );
+
+    const activo =
+      result.rows.length > 0 && String(result.rows[0].valor) === "true";
+
+    res.json({
+      ok: true,
+      activo
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
+app.post("/config/parte-extra-global", async (req, res) => {
+  try {
+    const { activo } = req.body;
+
+    await pool.query(
+      `
+      INSERT INTO configuracion_sistema (clave, valor)
+      VALUES ('parte_extra_global', $1)
+      ON CONFLICT (clave)
+      DO UPDATE SET valor = EXCLUDED.valor
+      `,
+      [activo ? "true" : "false"]
+    );
+
+    res.json({
+      ok: true,
+      activo: !!activo,
+      mensaje: activo
+        ? "Parte extraordinario global ACTIVADO"
+        : "Parte extraordinario global DESACTIVADO"
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
+
+// =========================
 // LEVANTAR SERVIDOR
 // =========================
 app.listen(PORT, "0.0.0.0", () => {
