@@ -2326,11 +2326,12 @@ const disponiblesBase = window.ultimoResultadoConsulta.filter(p => {
   const reemplazo = disponiblesBase[0];
 
   window.listaExtra[index] = {
-    ...reemplazo,
-    estadoExtra: "SI"
-  };
+  ...reemplazo,
+  estadoExtra: "SI"
+};
 
-  renderizarExtraordinario(window.listaExtra);
+window.listaExtra = ordenarPorGrado(window.listaExtra);
+renderizarExtraordinario(window.listaExtra);
 }
     
     function togglePanel(id) {
