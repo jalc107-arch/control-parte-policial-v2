@@ -1799,19 +1799,19 @@ app.post("/enviar-codigo", async (req, res) => {
       [cedula, codigo, expira]
     );
 
-    // 🔥 Por ahora lo dejamos visible en logs mientras conectamos WhatsApp
-    console.log("OTP generado:", {
-      cedula,
-      telefono,
-      codigo,
-      expira
-    });
+    await enviarWhatsAppOTP(telefono, codigo);
 
-    return res.json({
-      ok: true,
-      mensaje: "Código generado correctamente"
-    });
+console.log("OTP enviado:", {
+  cedula,
+  telefono,
+  expira
+});
 
+return res.json({
+  ok: true,
+  mensaje: "Código enviado correctamente al teléfono registrado"
+});
+    
   } catch (error) {
     return res.status(500).json({
       ok: false,
