@@ -2323,7 +2323,34 @@ const disponiblesBase = window.ultimoResultadoConsulta.filter(p => {
     return;
   }
 
-  const reemplazo = disponiblesBase[0];
+  function ordenGradoCliente(g) {
+  const mapa = {
+    "CR": 1,
+    "TC": 2,
+    "MY": 3,
+    "CT": 4,
+    "TE": 5,
+    "ST": 6,
+    "CM": 7,
+    "SC": 8,
+    "IJ": 9,
+    "IT": 10,
+    "SI": 11,
+    "PT": 12,
+    "PP": 13,
+    "AUX": 14
+  };
+
+  return mapa[String(g || "").toUpperCase()] || 99;
+}
+
+// 🔥 Ordena antes de escoger
+const disponiblesOrdenados = disponiblesBase.sort((a, b) => {
+  return ordenGradoCliente(a.grado) - ordenGradoCliente(b.grado);
+});
+
+// 🔥 Toma el mejor candidato
+const reemplazo = disponiblesOrdenados[0];
 
   window.listaExtra[index] = {
   ...reemplazo,
