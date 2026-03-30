@@ -1834,18 +1834,27 @@ if (parseInt(intentos.rows[0].count, 10) >= 3) {
       [cedula, codigo, expira]
     );
 
-    await enviarWhatsAppOTP(telefono, codigo);
+    try {
+  await enviarWhatsAppOTP(telefono, codigo);
 
-console.log("OTP enviado:", {
-  cedula,
-  telefono,
-  expira
-});
+  console.log("OTP enviado:", {
+    cedula,
+    telefono,
+    expira
+  });
 
-return res.json({
-  ok: true,
-  mensaje: "Código enviado correctamente al teléfono registrado"
-});
+  return res.json({
+    ok: true,
+    mensaje: "Código enviado correctamente al teléfono registrado"
+  });
+} catch (envioError) {
+  console.error("ERROR ENVIO OTP:", envioError.message);
+
+  return res.status(500).json({
+    ok: false,
+    mensaje: `No se pudo enviar el código por WhatsApp: ${envioError.message}`
+  });
+}
     
   } catch (error) {
     return res.status(500).json({
