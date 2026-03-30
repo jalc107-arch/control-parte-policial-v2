@@ -2587,8 +2587,6 @@ document.addEventListener("DOMContentLoaded", () => {
     consultaUnidad.addEventListener("change", cargarConsultaDependencias);
   }
 
-  cargarChecksGruposExtra();
-
   document.getElementById("bloqueExcel").style.display = "none";
   document.getElementById("bloqueUbicacion").style.display = "none";
   document.getElementById("bloqueNovedades").style.display = "none";
@@ -2599,11 +2597,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("bloqueControlCumplimiento").style.display = "none";
   document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
 
-  
-
+  cargarChecksGruposExtra();
   cargarEstructura();
 });
-  
-  </script>
+</script>
 </body>
 </html>
