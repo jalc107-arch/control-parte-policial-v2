@@ -704,6 +704,45 @@
     let ultimosSeleccionadosExtra = [];
     let otpValidado = false;
 
+  async function cambiarParteExtraGlobal(activo) {
+  try {
+    const res = await fetch("/config/parte-extra-global", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ activo })
+    });
+
+    const data = await res.json();
+
+    alert(data.mensaje || "Estado actualizado");
+
+    consultarParteExtraGlobal();
+  } catch (err) {
+    console.error(err);
+    alert("Error cambiando estado global");
+  }
+}
+
+async function consultarParteExtraGlobal() {
+  try {
+    const res = await fetch("/config/parte-extra-global");
+    const data = await res.json();
+
+    const div = document.getElementById("estado_extra_global");
+
+    if (!div) return;
+
+    div.innerHTML = data.activo
+      ? "🟢 Parte extraordinario global: ACTIVADO"
+      : "🔴 Parte extraordinario global: DESACTIVADO";
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
       if (!input.files.length) {
