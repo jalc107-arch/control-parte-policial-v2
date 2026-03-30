@@ -1834,7 +1834,7 @@ if (parseInt(intentos.rows[0].count, 10) >= 3) {
       [cedula, codigo, expira]
     );
 
-    try {
+   try {
   await enviarWhatsAppOTP(telefono, codigo);
 
   console.log("OTP enviado:", {
