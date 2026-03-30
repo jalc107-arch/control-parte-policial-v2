@@ -14,45 +14,6 @@ const __dirname = path.dirname(__filename);
 
 const upload = multer({ dest: "uploads/" });
 
-async function enviarWhatsAppOTP(telefono, codigo) {
-  let destino = String(telefono || "").replace(/\D/g, "");
-
-  if (!destino.startsWith("57")) {
-    destino = `57${destino}`;
-  }
-
-  const mensaje = `POLICÍA NACIONAL DE COLOMBIA
-
-Sistema Control de Partes
-
-Su código de verificación es: ${codigo}
-
-Vigencia: 5 minutos
-No compartir este código.`;
-
-  const res = await fetch(process.env.WHATSAPP_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      token: process.env.WHATSAPP_API_TOKEN,
-      to: destino,
-      body: mensaje
-    })
-  });
-
-  const data = await res.json();
-
-  console.log("RESPUESTA WHATSAPP:", data);
-
-  if (!res.ok) {
-    throw new Error(data?.message || "Error enviando WhatsApp");
-  }
-
-  return data;
-}
-
 function obtenerPartesFechaBogota() {
   const partes = new Intl.DateTimeFormat("en-GB", {
     timeZone: "America/Bogota",
@@ -232,17 +193,6 @@ function obtenerGrupoPorGrado(grado = "") {
   if (["PT", "PP"].includes(g)) return "PATRULLEROS";
   if (["AUX"].includes(g)) return "AUXILIARES";
   return "OTROS";
-}
-
-function obtenerNivelJerarquico(grado = "") {
-  const g = String(grado || "").toUpperCase().trim();
-
-  if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIAL";
-  if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
-  if (["PT", "PP"].includes(g)) return "PATRULLERO";
-  if (["AUX"].includes(g)) return "AUXILIAR";
-
-  return "OTRO";
 }
 
 function contarGrupoLista(lista) {
@@ -645,21 +595,14 @@ app.post("/guardar-novedades", async (req, res) => {
 
     const { estado, esMediodia } = validarHorarioParte();
 
-    const config = await pool.query(
-  "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
-);
-
-const parteExtraGlobal =
-  config.rows.length > 0 && config.rows[0].valor === "true";
-
-   if (!esExento && !parteExtraGlobal) {
-  if (!esMediodia && estado === "bloqueado") {
-    return res.json({
-      ok: false,
-      mensaje: "⚠️ Fuera de horario. Solo puedes trabajar en modo consulta, sin guardar novedades."
-    });
-  }
-}
+    if (!esExento) {
+      if (!esMediodia && estado === "bloqueado") {
+        return res.json({
+          ok: false,
+          mensaje: "⚠️ Fuera de horario. Solo puedes trabajar en modo consulta, sin guardar novedades."
+        });
+      }
+    }
 
 const horario = validarHorarioParte();
 let franja = "general";
@@ -737,26 +680,7 @@ app.get("/validar-parte", async (req, res) => {
     const esOficial = esGradoOficial(grado);
     const esExento = esOficial || rol === "ADMIN_EXCEL";
 
-    const config = await pool.query(
-  "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
-);
-
-const parteExtraGlobal =
-  config.rows.length > 0 && config.rows[0].valor === "true";
-
     const { tipo, estado, mensaje, esMediodia, extemporaneo } = validarHorarioParte();
-
-    if (parteExtraGlobal) {
-  return res.json({
-    ok: true,
-    tipo: "extraordinario_global",
-    estado: "extraordinario_global",
-    mensaje: "Parte extraordinario habilitado por administración",
-    esMediodia: false,
-    extemporaneo: true,
-    guardarOficial: true
-  });
-}
 
     if (esExento) {
       return res.json({
@@ -887,7 +811,6 @@ app.get("/control-cumplimiento-diario", async (req, res) => {
     res.json({
       ok: true,
       fecha,
-      totalEstaciones: estacionesEsperadas.length,
       partesMananaReportadas: [...partesManana],
       partesNocheReportadas: [...partesNoche],
       novedadesDiaReportadas: [...novedadesDia],
@@ -1108,8 +1031,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
     nombre_responsable,
     cedula_responsable,
     telefono_responsable,
-    texto_parte,
-    novedades = [] // 🔥 NUEVO
+    texto_parte
   } = req.body;
 
   const grado = (grado_responsable || "").toUpperCase().trim().replace(/\s+/g, "");
@@ -1117,15 +1039,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
 
   const { estado, esMediodia } = validarHorarioParte();
 
-  const config = await pool.query(
-    "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
-  );
-
-  const parteExtraGlobal =
-    config.rows.length > 0 && config.rows[0].valor === "true";
-
-  // 🔒 VALIDACIONES
-  if (!esOficial && !parteExtraGlobal) {
+  if (!esOficial) {
     if (esMediodia) {
       return res.json({
         ok: false,
@@ -1149,60 +1063,6 @@ app.post("/guardar-parte-pdf", async (req, res) => {
   }
 
   try {
-    // 🔥 GUARDAR NOVEDADES AUTOMÁTICAMENTE
-    if (Array.isArray(novedades) && novedades.length > 0) {
-      const horario = validarHorarioParte();
-
-      let franja = "general";
-      if (horario.esMediodia) franja = "mediodia";
-      else if (horario.tipo === "mañana") franja = "mañana";
-      else if (horario.tipo === "noche") franja = "noche";
-
-      for (const n of novedades) {
-        if (!n.cedula || !n.tipo) continue;
-
-        await pool.query(
-          `INSERT INTO novedades (
-            cedula,
-            estacion,
-            tipo_novedad,
-            fecha,
-            actualizado_por_cedula,
-            actualizado_por_nombre,
-            hora_registro,
-            franja
-          )
-          VALUES (
-            $1,
-            $2,
-            $3,
-            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date,
-            $4,
-            $5,
-            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
-            $6
-          )
-          ON CONFLICT (cedula, fecha)
-          DO UPDATE SET
-            estacion = EXCLUDED.estacion,
-            tipo_novedad = EXCLUDED.tipo_novedad,
-            actualizado_por_cedula = EXCLUDED.actualizado_por_cedula,
-            actualizado_por_nombre = EXCLUDED.actualizado_por_nombre,
-            hora_registro = EXCLUDED.hora_registro,
-            franja = EXCLUDED.franja`,
-          [
-            n.cedula,
-            estacion,
-            n.tipo,
-            cedula_responsable,
-            nombre_responsable,
-            franja
-          ]
-        );
-      }
-    }
-
-    // 🔥 GUARDAR PARTE
     const result = await pool.query(
       `INSERT INTO partes (
         tipo,
@@ -1234,7 +1094,6 @@ app.post("/guardar-parte-pdf", async (req, res) => {
       ok: true,
       data: result.rows[0]
     });
-
   } catch (error) {
     res.status(500).json({
       ok: false,
@@ -1242,6 +1101,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
     });
   }
 });
+
 // =========================
 // CONSULTA GENERAL DE NOVEDADES (SOLO OFICIALES Y ADMIN)
 // =========================
@@ -1647,265 +1507,7 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
     });
   }
 });
-
-// =========================
-// CONFIG PARTE EXTRA GLOBAL
-// =========================
-app.get("/config/parte-extra-global", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
-    );
-
-    const activo =
-      result.rows.length > 0 && String(result.rows[0].valor) === "true";
-
-    res.json({
-      ok: true,
-      activo
-    });
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
-});
-
-app.post("/config/parte-extra-global", async (req, res) => {
-  try {
-    const { activo } = req.body;
-
-    await pool.query(
-      `
-      INSERT INTO configuracion_sistema (clave, valor)
-      VALUES ('parte_extra_global', $1)
-      ON CONFLICT (clave)
-      DO UPDATE SET valor = EXCLUDED.valor
-      `,
-      [activo ? "true" : "false"]
-    );
-
-    res.json({
-      ok: true,
-      activo: !!activo,
-      mensaje: activo
-        ? "Parte extraordinario global ACTIVADO"
-        : "Parte extraordinario global DESACTIVADO"
-    });
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
-});
-
-// =========================
-// CONFIG PARTE EXTRA GLOBAL
-// =========================
-app.get("/config/parte-extra-global", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
-    );
-
-    const activo =
-      result.rows.length > 0 && String(result.rows[0].valor) === "true";
-
-    res.json({
-      ok: true,
-      activo
-    });
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
-});
-
-app.post("/config/parte-extra-global", async (req, res) => {
-  try {
-    const { activo } = req.body;
-
-    await pool.query(
-      `
-      INSERT INTO configuracion_sistema (clave, valor)
-      VALUES ('parte_extra_global', $1)
-      ON CONFLICT (clave)
-      DO UPDATE SET valor = EXCLUDED.valor
-      `,
-      [activo ? "true" : "false"]
-    );
-
-    res.json({
-      ok: true,
-      activo: !!activo,
-      mensaje: activo
-        ? "Parte extraordinario global ACTIVADO"
-        : "Parte extraordinario global DESACTIVADO"
-    });
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
-});
-
-// =========================
-// OTP - ENVIAR CODIGO
-// =========================
-app.post("/enviar-codigo", async (req, res) => {
-  const { cedula } = req.body;
-
-  try {
-    if (!cedula) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: "Cédula obligatoria"
-      });
-    }
-
-    const personaResult = await pool.query(
-      "SELECT cedula, telefono, nombres, apellidos FROM personal WHERE cedula = $1 LIMIT 1",
-      [cedula]
-    );
-
-    if (personaResult.rows.length === 0) {
-      return res.json({
-        ok: false,
-        mensaje: "Cédula no encontrada"
-      });
-    }
-
-    const persona = personaResult.rows[0];
-    const telefono = String(persona.telefono || "").trim();
-
-    // 🔒 Limitar intentos (máximo 3 códigos por 5 minutos)
-const intentos = await pool.query(
-  `SELECT COUNT(*) FROM otp_codigos
-   WHERE cedula = $1
-   AND created_at > NOW() - INTERVAL '5 minutes'`,
-  [cedula]
-);
-
-if (parseInt(intentos.rows[0].count, 10) >= 3) {
-  return res.json({
-    ok: false,
-    mensaje: "Has solicitado muchos códigos. Intenta en 5 minutos."
-  });
-}
-
-    if (!telefono) {
-      return res.json({
-        ok: false,
-        mensaje: "El funcionario no tiene teléfono registrado"
-      });
-    }
-
-    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-    const expira = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
-
-    await pool.query(
-      `INSERT INTO otp_codigos (cedula, codigo, expira, usado)
-       VALUES ($1, $2, $3, false)`,
-      [cedula, codigo, expira]
-    );
-
-    await enviarWhatsAppOTP(telefono, codigo);
-
-console.log("OTP enviado:", {
-  cedula,
-  telefono,
-  expira
-});
-
-return res.json({
-  ok: true,
-  mensaje: "Código enviado correctamente al teléfono registrado"
-});
-    
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
-});
-
-// =========================
-// OTP - VALIDAR CODIGO
-// =========================
-app.post("/validar-codigo", async (req, res) => {
-  const { cedula, codigo } = req.body;
-
-  try {
-    // 🔒 Validación básica
-    if (!cedula || !codigo) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: "Cédula y código son obligatorios"
-      });
-    }
-
-    // 🔍 Buscar código más reciente
-    const result = await pool.query(
-      `SELECT id, expira, usado
-       FROM otp_codigos
-       WHERE cedula = $1
-         AND codigo = $2
-       ORDER BY id DESC
-       LIMIT 1`,
-      [cedula, codigo]
-    );
-
-    // ❌ No existe
-    if (result.rows.length === 0) {
-      return res.json({
-        ok: false,
-        mensaje: "Código inválido"
-      });
-    }
-
-    const otp = result.rows[0];
-
-    // ❌ Ya usado
-    if (otp.usado) {
-      return res.json({
-        ok: false,
-        mensaje: "Este código ya fue utilizado"
-      });
-    }
-
-    // ❌ Expirado
-    if (new Date() > new Date(otp.expira)) {
-      return res.json({
-        ok: false,
-        mensaje: "El código ha expirado"
-      });
-    }
-
-    // ✅ Marcar como usado
-    await pool.query(
-      "UPDATE otp_codigos SET usado = true WHERE id = $1",
-      [otp.id]
-    );
-
-    return res.json({
-      ok: true,
-      mensaje: "Código validado correctamente"
-    });
-
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
-});
-
+  
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
