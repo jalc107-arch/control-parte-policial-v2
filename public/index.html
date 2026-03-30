@@ -331,55 +331,6 @@
     @media (min-width: 768px) {
       .grid-extra { grid-template-columns: 1fr 1fr; }
     }
-
-    .tarjetas-resumen {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.tarjeta-resumen {
-  border-radius: 12px;
-  padding: 14px;
-  text-align: left;
-  border: 1px solid var(--gris-borde);
-  background: var(--blanco);
-  box-shadow: var(--sombra-suave);
-}
-
-.tarjeta-resumen .titulo {
-  font-size: 12px;
-  color: var(--gris-texto);
-  margin-bottom: 6px;
-  font-weight: 700;
-}
-
-.tarjeta-resumen .valor {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--azul-principal);
-}
-
-.estado-ok {
-  background: #ECFDF3;
-  border: 1px solid #ABEFC6;
-  color: #067647;
-}
-
-.estado-alerta {
-  background: #FEF3F2;
-  border: 1px solid #FECDCA;
-  color: #B42318;
-}
-
-.estado-parcial {
-  background: #FFFAEB;
-  border: 1px solid #FEDF89;
-  color: #B54708;
-}
-    
-    
   </style>
 </head>
 <body>
@@ -389,21 +340,11 @@
     <div class="seccion">
       <h2>Paso 1 — Validación</h2>
       <div class="campo-corto">
-  <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
-</div>
-
-<div class="acciones-inline">
-  <button type="button" onclick="enviarCodigoOTP()">Enviar código</button>
-</div>
-
-<div class="campo-corto">
-  <input id="codigo_otp" placeholder="Ingresa el código recibido" />
-</div>
-
-<div class="acciones-inline">
-  <button type="button" onclick="validarCodigoOTP()">Validar código</button>
-</div>
-      
+        <input id="cedula_responsable" placeholder="Cédula de quien saca el parte" />
+      </div>
+      <div class="acciones-inline">
+        <button onclick="validarResponsable()">Validar responsable</button>
+      </div>
       <div id="datos_responsable" style="margin-top:10px; font-weight:bold;"></div>
 
       <div style="display:none;">
@@ -674,74 +615,12 @@
   </div>
 
 </div>
-
-    <div class="seccion" id="bloqueConfigExtraGlobal" style="display:none;">
-  <button type="button" class="panel-toggle" onclick="togglePanel('panelConfigExtraGlobal')">
-    10. Control parte extraordinario global
-  </button>
-
-  <div id="panelConfigExtraGlobal" class="panel-contenido">
-    <div id="estado_extra_global" style="margin-bottom:10px; font-weight:700;"></div>
-
-    <div class="acciones-inline">
-      <button type="button" onclick="cambiarParteExtraGlobal(true)">
-        Activar
-      </button>
-      <button type="button" onclick="cambiarParteExtraGlobal(false)">
-        Desactivar
-      </button>
-      <button type="button" onclick="consultarParteExtraGlobal()">
-        Actualizar estado
-      </button>
-    </div>
-  </div>
-</div>
-    
+  
 <script>
   
     let estructuraGlobal = [];
     let ultimoResultadoConsulta = [];
     let ultimosSeleccionadosExtra = [];
-    let otpValidado = false;
-
-  async function cambiarParteExtraGlobal(activo) {
-  try {
-    const res = await fetch("/config/parte-extra-global", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ activo })
-    });
-
-    const data = await res.json();
-
-    alert(data.mensaje || "Estado actualizado");
-
-    consultarParteExtraGlobal();
-  } catch (err) {
-    console.error(err);
-    alert("Error cambiando estado global");
-  }
-}
-
-async function consultarParteExtraGlobal() {
-  try {
-    const res = await fetch("/config/parte-extra-global");
-    const data = await res.json();
-
-    const div = document.getElementById("estado_extra_global");
-
-    if (!div) return;
-
-    div.innerHTML = data.activo
-      ? "🟢 Parte extraordinario global: ACTIVADO"
-      : "🔴 Parte extraordinario global: DESACTIVADO";
-
-  } catch (err) {
-    console.error(err);
-  }
-}
 
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
@@ -768,130 +647,8 @@ async function consultarParteExtraGlobal() {
       }
     }
 
-async function consultarParteExtraGlobal() {
-  const box = document.getElementById("estado_extra_global");
-  if (!box) return;
-
-  box.innerText = "Consultando estado...";
-
-  try {
-    const res = await fetch("/config/parte-extra-global");
-    const data = await res.json();
-
-    if (!data.ok) {
-      box.innerText = "Error consultando estado";
-      return;
-    }
-
-    box.innerText = data.activo
-      ? "✅ Parte extraordinario global: ACTIVADO"
-      : "⛔ Parte extraordinario global: DESACTIVADO";
-  } catch (error) {
-    console.error(error);
-    box.innerText = "Error en servidor";
-  }
-}
-
-async function cambiarParteExtraGlobal(activo) {
-  try {
-    const res = await fetch("/config/parte-extra-global", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ activo })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert("Error actualizando configuración");
-      return;
-    }
-
-    alert(data.mensaje);
-    consultarParteExtraGlobal();
-  } catch (error) {
-    console.error(error);
-    alert("Error en servidor");
-  }
-}
-
-async function enviarCodigoOTP() {
-  const cedula = document.getElementById("cedula_responsable").value.trim();
-
-  if (!cedula) {
-    alert("Ingresa la cédula");
-    return;
-  }
-
-  otpValidado = false;
-
-  try {
-    const res = await fetch("/enviar-codigo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cedula })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.mensaje || "No se pudo generar el código");
-      return;
-    }
-alert("Se envió un código de seguridad al celular registrado");
-   
-  } catch (error) {
-    console.error(error);
-    alert("Error enviando código");
-  }
-}
-
-async function validarCodigoOTP() {
-  const cedula = document.getElementById("cedula_responsable").value.trim();
-  const codigo = document.getElementById("codigo_otp").value.trim();
-
-  if (!cedula) {
-    alert("Ingresa la cédula");
-    return;
-  }
-
-  if (!codigo) {
-    alert("Ingresa el código");
-    return;
-  }
-
-  
-  try {
-    const res = await fetch("/validar-codigo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cedula, codigo })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.mensaje || "Código inválido");
-      return;
-    }
-
-otpValidado = true;
-    
-    alert("Código validado correctamente");
-    await validarResponsable();
-  } catch (error) {
-    console.error(error);
-    alert("Error validando código");
-  }
-}
-  
    async function validarResponsable() {
   const cedula = document.getElementById("cedula_responsable").value.trim();
-
-     if (!otpValidado) {
-  alert("Primero debes validar el código de seguridad");
-  return;
-}
 
   document.getElementById("lista").innerHTML = "";
   document.getElementById("resultado").innerText = "";
@@ -974,15 +731,12 @@ if (!data.autorizado) {
       document.getElementById("bloqueExtraordinario").style.display = "block";
       document.getElementById("bloqueHistorialExtra").style.display = "block";
       document.getElementById("bloqueControlCumplimiento").style.display = "block";
-      document.getElementById("bloqueConfigExtraGlobal").style.display = "block";
-      consultarParteExtraGlobal();
     } else {
       document.getElementById("bloqueOrganico").style.display = "none";
       document.getElementById("bloqueConsultaGeneral").style.display = "none";
       document.getElementById("bloqueExtraordinario").style.display = "none";
       document.getElementById("bloqueHistorialExtra").style.display = "none";
       document.getElementById("bloqueControlCumplimiento").style.display = "none";
-      document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
     }
 
     cargarFiltrosConsulta();
@@ -1366,8 +1120,7 @@ document.getElementById("bloqueParte").style.display = "block";
               nombre_responsable: nombre,
               cedula_responsable: cedula,
               telefono_responsable: telefono,
-              texto_parte: contenido,
-              novedades: novedadesSeleccionadas              
+              texto_parte: contenido
             })
           });
 
@@ -2290,22 +2043,6 @@ function renderizarExtraordinario(lista) {
   actualizarResumenExtra();
 }
 
-  function actualizarTextoResultadoExtra() {
-  const resultadoExtra = document.getElementById("resultado_extra");
-  if (!resultadoExtra || !window.listaExtra || !window.listaExtra.length) return;
-
-  const seleccionados = ordenarPorGrado(window.listaExtra);
-
-  let texto = "";
-  texto += "SERVICIO EXTRAORDINARIO ACTUALIZADO\n\n";
-  texto += `ASIGNADOS: ${seleccionados.length}\n\n`;
-
-  seleccionados.forEach((p, i) => {
-    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
-  });
-
-  resultadoExtra.innerText = texto;
-}
     
 function actualizarResumenExtra() {
   const resultadoExtra = document.getElementById("resultado_extra");
@@ -2347,74 +2084,31 @@ function reemplazarExtra(index) {
       .map(p => String(p.cedula || "").trim())
   );
 
-  function obtenerNivelCliente(grado = "") {
-  const g = String(grado || "").toUpperCase().trim();
+  const disponiblesBase = ultimoResultadoConsulta.filter(p => {
+    const ced = String(p.cedula || "").trim();
+    const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
 
-  if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIAL";
-  if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
-  if (["PT", "PP"].includes(g)) return "PATRULLERO";
-  if (["AUX"].includes(g)) return "AUXILIAR";
-
-  return "OTRO";
-}
-
-const nivelActual = obtenerNivelCliente(actual?.grado || "");
-
-const disponiblesBase = window.ultimoResultadoConsulta.filter(p => {
-  const ced = String(p.cedula || "").trim();
-  const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
-  const nivelNuevo = obtenerNivelCliente(p.grado || "");
-
-  return (
-    ced !== cedulaActual &&
-    !yaSeleccionados.has(ced) &&
-    (tipo === "" || tipo === "DISPONIBLE") &&
-    nivelNuevo === nivelActual
-  );
-});
+    return (
+      ced !== cedulaActual &&
+      !yaSeleccionados.has(ced) &&
+      (tipo === "" || tipo === "DISPONIBLE")
+    );
+  });
 
   if (!disponiblesBase.length) {
     alert("No hay más personal disponible para reemplazar.");
     return;
   }
 
-  function ordenGradoCliente(g) {
-  const mapa = {
-    "CR": 1,
-    "TC": 2,
-    "MY": 3,
-    "CT": 4,
-    "TE": 5,
-    "ST": 6,
-    "CM": 7,
-    "SC": 8,
-    "IJ": 9,
-    "IT": 10,
-    "SI": 11,
-    "PT": 12,
-    "PP": 13,
-    "AUX": 14
+  const reemplazo = disponiblesBase[0];
+
+  window.listaExtra[index] = {
+    ...reemplazo,
+    estadoExtra: "SI"
   };
 
-  return mapa[String(g || "").toUpperCase()] || 99;
+  renderizarExtraordinario(window.listaExtra);
 }
-
-// 🔥 Ordena antes de escoger
-const disponiblesOrdenados = disponiblesBase.sort((a, b) => {
-  return ordenGradoCliente(a.grado) - ordenGradoCliente(b.grado);
-});
-
-// 🔥 Toma el mejor candidato
-const reemplazo = disponiblesOrdenados[0];
-
- window.listaExtra[index] = {
-  ...reemplazo,
-  estadoExtra: "SI"
-};
-
-window.listaExtra = ordenarPorGrado(window.listaExtra);
-renderizarExtraordinario(window.listaExtra);
-actualizarTextoResultadoExtra();
     
     function togglePanel(id) {
       const panel = document.getElementById(id);
@@ -2435,56 +2129,6 @@ actualizarTextoResultadoExtra();
       box.innerHTML = "Error consultando control diario";
       return;
     }
-
-    const totalEstaciones = data.totalEstaciones || 0;
-
-const pendientesManana = data.faltanManana?.length || 0;
-const pendientesNoche = data.faltanNoche?.length || 0;
-const pendientesNovedades = data.faltanNovedadesDia?.length || 0;
-
-const cumplidasManana = totalEstaciones - pendientesManana;
-const cumplidasNoche = totalEstaciones - pendientesNoche;
-const cumplidasNovedades = totalEstaciones - pendientesNovedades;
-
-function estadoClase(pendientes) {
-  if (pendientes === 0) return "estado-ok";
-  if (pendientes <= 2) return "estado-parcial";
-  return "estado-alerta";
-}
-
-box.innerHTML = `
-  <div class="tarjetas-resumen">
-    <div class="tarjeta-resumen">
-      <div class="titulo">Total estaciones</div>
-      <div class="valor">${totalEstaciones}</div>
-    </div>
-
-    <div class="tarjeta-resumen ${estadoClase(pendientesManana)}">
-      <div class="titulo">Parte mañana</div>
-      <div class="valor">${cumplidasManana}/${totalEstaciones}</div>
-    </div>
-
-    <div class="tarjeta-resumen ${estadoClase(pendientesNoche)}">
-      <div class="titulo">Parte noche</div>
-      <div class="valor">${cumplidasNoche}/${totalEstaciones}</div>
-    </div>
-
-    <div class="tarjeta-resumen ${estadoClase(pendientesNovedades)}">
-      <div class="titulo">Novedades día</div>
-      <div class="valor">${cumplidasNovedades}/${totalEstaciones}</div>
-    </div>
-  </div>
-
-  <div class="tabla-wrap">
-    <div class="bloque-titulo-tabla">Fecha: ${data.fecha}</div>
-  </div>
-
-  ${pintarLista("Pendientes mañana", data.faltanManana)}
-  ${pintarLista("Pendientes noche", data.faltanNoche)}
-  ${pintarLista("Pendientes novedades día", data.faltanNovedadesDia)}
-  ${pintarDetalleMediodia(data.novedadesMediodiaDetalle)}
-  ${pintarLista("Pendientes mediodía", data.faltanNovedadesMediodia)}
-`;
 
     function pintarLista(titulo, lista) {
       if (!lista || !lista.length) {
@@ -2597,9 +2241,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("bloqueExtraordinario").style.display = "none";
   document.getElementById("bloqueHistorialExtra").style.display = "none";
   document.getElementById("bloqueControlCumplimiento").style.display = "none";
-  document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
-
-  
 
   cargarEstructura();
 });
