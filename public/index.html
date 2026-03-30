@@ -699,50 +699,132 @@
     
 <script>
   
-    let estructuraGlobal = [];
-    let ultimoResultadoConsulta = [];
-    let ultimosSeleccionadosExtra = [];
-    let otpValidado = false;
+let estructuraGlobal = [];
+let ultimoResultadoConsulta = [];
+let ultimosSeleccionadosExtra = [];
+let otpValidado = false;
 
-  async function cambiarParteExtraGlobal(activo) {
+// =========================
+// MÓDULO 10 - PARTE EXTRA GLOBAL
+// =========================
+async function consultarParteExtraGlobal() {
+  const box = document.getElementById("estado_extra_global");
+  if (!box) return;
+
+  box.innerText = "Consultando estado...";
+
+  try {
+    const res = await fetch("/config/parte-extra-global");
+    const data = await res.json();
+
+    if (!data.ok) {
+      box.innerText = "Error consultando estado";
+      return;
+    }
+
+    box.innerText = data.activo
+      ? "✅ Parte extraordinario global: ACTIVADO"
+      : "⛔ Parte extraordinario global: DESACTIVADO";
+  } catch (error) {
+    console.error(error);
+    box.innerText = "Error en servidor";
+  }
+}
+
+async function cambiarParteExtraGlobal(activo) {
   try {
     const res = await fetch("/config/parte-extra-global", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ activo })
     });
 
     const data = await res.json();
 
-    alert(data.mensaje || "Estado actualizado");
+    if (!data.ok) {
+      alert("Error actualizando configuración");
+      return;
+    }
 
+    alert(data.mensaje);
     consultarParteExtraGlobal();
-  } catch (err) {
-    console.error(err);
-    alert("Error cambiando estado global");
+  } catch (error) {
+    console.error(error);
+    alert("Error en servidor");
   }
 }
 
-async function consultarParteExtraGlobal() {
+// =========================
+// OTP
+// =========================
+async function enviarCodigoOTP() {
+  const cedula = document.getElementById("cedula_responsable").value.trim();
+
+  if (!cedula) {
+    alert("Ingresa la cédula");
+    return;
+  }
+
+  otpValidado = false;
+
   try {
-    const res = await fetch("/config/parte-extra-global");
+    const res = await fetch("/enviar-codigo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula })
+    });
+
     const data = await res.json();
 
-    const div = document.getElementById("estado_extra_global");
+    if (!data.ok) {
+      alert(data.mensaje || "No se pudo generar el código");
+      return;
+    }
 
-    if (!div) return;
-
-    div.innerHTML = data.activo
-      ? "🟢 Parte extraordinario global: ACTIVADO"
-      : "🔴 Parte extraordinario global: DESACTIVADO";
-
-  } catch (err) {
-    console.error(err);
+    alert("Se envió un código de seguridad al celular registrado");
+  } catch (error) {
+    console.error(error);
+    alert("Error enviando código");
   }
 }
 
+async function validarCodigoOTP() {
+  const cedula = document.getElementById("cedula_responsable").value.trim();
+  const codigo = document.getElementById("codigo_otp").value.trim();
+
+  if (!cedula) {
+    alert("Ingresa la cédula");
+    return;
+  }
+
+  if (!codigo) {
+    alert("Ingresa el código");
+    return;
+  }
+
+  try {
+    const res = await fetch("/validar-codigo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula, codigo })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.mensaje || "Código inválido");
+      return;
+    }
+
+    otpValidado = true;
+    alert("Código validado correctamente");
+    await validarResponsable();
+  } catch (error) {
+    console.error(error);
+    alert("Error validando código");
+  }
+}
+  
     async function subirExcel() {
       const input = document.getElementById("fileExcel");
       if (!input.files.length) {
