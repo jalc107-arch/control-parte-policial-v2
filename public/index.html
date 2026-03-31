@@ -850,46 +850,6 @@ async function validarCodigoOTP() {
       }
     }
 
-
-async function validarCodigoOTP() {
-  const cedula = document.getElementById("cedula_responsable").value.trim();
-  const codigo = document.getElementById("codigo_otp").value.trim();
-
-  if (!cedula) {
-    alert("Ingresa la cédula");
-    return;
-  }
-
-  if (!codigo) {
-    alert("Ingresa el código");
-    return;
-  }
-
-  
-  try {
-    const res = await fetch("/validar-codigo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cedula, codigo })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.mensaje || "Código inválido");
-      return;
-    }
-
-otpValidado = true;
-    
-    alert("Código validado correctamente");
-    await validarResponsable();
-  } catch (error) {
-    console.error(error);
-    alert("Error validando código");
-  }
-}
-  
    async function validarResponsable() {
   const cedula = document.getElementById("cedula_responsable").value.trim();
 
