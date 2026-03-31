@@ -2595,17 +2595,6 @@ box.innerHTML = `
       `;
     }
 
-    box.innerHTML = `
-      <div class="tabla-wrap">
-        <div class="bloque-titulo-tabla">Fecha de control: ${data.fecha}</div>
-      </div>
-
-      ${pintarLista("Estaciones pendientes parte mañana", data.faltanManana)}
-      ${pintarLista("Estaciones pendientes parte noche", data.faltanNoche)}
-      ${pintarLista("Estaciones pendientes novedades del día", data.faltanNovedadesDia)}
-      ${pintarDetalleMediodia(data.novedadesMediodiaDetalle)}
-      ${pintarLista("Estaciones pendientes novedades de mediodía", data.faltanNovedadesMediodia)}
-    `;
   } catch (error) {
     console.error(error);
     box.innerHTML = "Error en servidor";
