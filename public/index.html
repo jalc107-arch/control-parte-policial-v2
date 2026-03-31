@@ -2522,12 +2522,14 @@ async function consultarControlCumplimientoDiario() {
       ${pintarDetalleMediodia(data.novedadesMediodiaDetalle)}
       ${pintarLista("Pendientes mediodía", data.faltanNovedadesMediodia)}
     `;
+
   } catch (error) {
     console.error(error);
     box.innerHTML = "Error en servidor";
   }
 }
-  document.addEventListener("DOMContentLoaded", () => {
+
+document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
   if (inputFecha) {
     const hoy = new Date().toISOString().split("T")[0];
