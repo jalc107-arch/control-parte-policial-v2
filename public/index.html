@@ -430,23 +430,27 @@
     <div class="seccion" id="bloqueUbicacion" style="display:none;">
       <h2>Paso 3 — Registro del servicio</h2>
 
-      <select id="unidad_select" multiple onchange="cargarSubunidades()">
-</select>
-<br>
+      <select id="unidad_select" onchange="cargarSubunidades()">
+        <option value="">Seleccionar UNIDAD</option>
+      </select>
+      <br>
 
-<select id="subunidad_select" multiple onchange="cargarEstaciones(); cargarOrganicos()">
-</select>
-<br>
+      <select id="subunidad_select" onchange="cargarEstaciones(); cargarOrganicos()">
+        <option value="">Seleccionar SUBUNIDAD</option>
+      </select>
+      <br>
 
-<select id="estacion_select" multiple onchange="cargarOrganicos()">
-</select>
-<br>
+      <select id="estacion_select" onchange="cargarOrganicos()">
+        <option value="">Seleccionar ESTACIÓN</option>
+      </select>
+      <br>
 
-<div id="bloqueOrganico" style="display:block;">
-  <select id="organico_select" multiple>
-  </select>
-  <br>
-</div>
+      <div id="bloqueOrganico" style="display:none;">
+        <select id="organico_select">
+          <option value="">Seleccionar ORGÁNICO</option>
+        </select>
+        <br>
+      </div>
 
       <div class="acciones-inline">
         <button onclick="cargarPersonal()">Continuar</button>
@@ -993,85 +997,69 @@ if (!data.autorizado) {
     }
 
     function cargarSubunidades() {
-  const unidades = obtenerValoresSelect("unidad_select");
-  const subunidadSelect = document.getElementById("subunidad_select");
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidadSelect = document.getElementById("subunidad_select");
+      const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+      const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
 
-  const filtrados = estructuraGlobal.filter(x =>
-    unidades.length === 0 || unidades.includes(x.unidad)
-  );
+      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+      subunidades.forEach(sub => {
+        const option = document.createElement("option");
+        option.value = sub;
+        option.textContent = sub;
+        subunidadSelect.appendChild(option);
+      });
 
-  const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
-
-  subunidadSelect.innerHTML = "";
-  subunidades.forEach(sub => {
-    const option = document.createElement("option");
-    option.value = sub;
-    option.textContent = sub;
-    subunidadSelect.appendChild(option);
-  });
-
-  document.getElementById("estacion_select").innerHTML = "";
-  document.getElementById("organico_select").innerHTML = "";
-}
+      document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+      document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+    }
 
     function cargarEstaciones() {
-  const unidades = obtenerValoresSelect("unidad_select");
-  const subunidades = obtenerValoresSelect("subunidad_select");
-  const estacionSelect = document.getElementById("estacion_select");
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const estacionSelect = document.getElementById("estacion_select");
 
-  estacionSelect.innerHTML = "";
+      estacionSelect.innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
 
-  const estaciones = [
-    ...new Set(
-      estructuraGlobal
-        .filter(x =>
-          (unidades.length === 0 || unidades.includes(x.unidad)) &&
-          (subunidades.length === 0 || subunidades.includes(x.subunidad))
+      const estaciones = [
+        ...new Set(
+          estructuraGlobal
+            .filter(x => x.unidad === unidad && x.subunidad === subunidad)
+            .map(x => x.estacion)
+            .filter(Boolean)
         )
-        .map(x => x.estacion)
-        .filter(Boolean)
-    )
-  ];
+      ];
 
-  estaciones.forEach(estacion => {
-    const option = document.createElement("option");
-    option.value = estacion;
-    option.textContent = estacion;
-    estacionSelect.appendChild(option);
-  });
-}
-  
-  
+      estaciones.forEach(estacion => {
+        const option = document.createElement("option");
+        option.value = estacion;
+        option.textContent = estacion;
+        estacionSelect.appendChild(option);
+      });
+    }
+
     function cargarOrganicos() {
-  const unidades = obtenerValoresSelect("unidad_select");
-  const subunidades = obtenerValoresSelect("subunidad_select");
-  const estaciones = obtenerValoresSelect("estacion_select");
-  const organicoSelect = document.getElementById("organico_select");
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const estacion = document.getElementById("estacion_select").value;
+      const organicoSelect = document.getElementById("organico_select");
 
-  organicoSelect.innerHTML = "";
+      organicoSelect.innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
-  let filtrados = estructuraGlobal.filter(x =>
-    (unidades.length === 0 || unidades.includes(x.unidad)) &&
-    (subunidades.length === 0 || subunidades.includes(x.subunidad)) &&
-    (estaciones.length === 0 || estaciones.includes(x.estacion))
-  );
+      let filtrados = estructuraGlobal.filter(x => x.unidad === unidad && x.subunidad === subunidad);
+      if (estacion && estacion.trim() !== "") {
+        filtrados = filtrados.filter(x => x.estacion === estacion);
+      }
 
-  const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
+      const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
+      organicos.forEach(o => {
+        const option = document.createElement("option");
+        option.value = o;
+        option.textContent = o;
+        organicoSelect.appendChild(option);
+      });
+    }
 
-  organicos.forEach(o => {
-    const option = document.createElement("option");
-    option.value = o;
-    option.textContent = o;
-    organicoSelect.appendChild(option);
-  });
-}
-
-  function obtenerValoresSelect(id) {
-  const select = document.getElementById(id);
-  if (!select) return [];
-  return Array.from(select.selectedOptions).map(o => o.value).filter(Boolean);
-}
-  
     async function cargarPersonal() {
       const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
       if (!cedulaValidada) {
@@ -1079,28 +1067,23 @@ if (!data.autorizado) {
         return;
       }
 
-      const unidades = obtenerValoresSelect("unidad_select");
-const subunidades = obtenerValoresSelect("subunidad_select");
-const estaciones = obtenerValoresSelect("estacion_select");
-const organicos = obtenerValoresSelect("organico_select");
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const estacion = document.getElementById("estacion_select").value;
+      const organico = document.getElementById("organico_select")?.value || "";
 
-if (!unidades.length || !subunidades.length) {
-  alert("Unidad y subunidad son obligatorias");
-  return;
-}
+      if (!unidad || !subunidad) {
+        alert("Unidad y subunidad son obligatorias");
+        return;
+      }
 
       try {
         const res = await fetch("/personal-filtrado", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    unidades,
-    subunidades,
-    estaciones,
-    organicos
-  })
-});
-        
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ unidad, subunidad, estacion, organico })
+        });
+
         const data = await res.json();
         const contenedor = document.getElementById("lista");
         contenedor.innerHTML = "";
@@ -1177,8 +1160,7 @@ document.getElementById("bloqueParte").style.display = "block";
 
     async function guardarNovedades() {
       const personas = document.querySelectorAll(".persona");
-      const estacionesSeleccionadas = obtenerValoresSelect("estacion_select");
-      const estacion = estacionesSeleccionadas.join(", ");
+      const estacion = document.getElementById("estacion_select").value;
       const novedades = [];
 
       const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
@@ -1321,13 +1303,9 @@ document.getElementById("bloqueParte").style.display = "block";
       `);
       ventana.document.close();
 
-     const unidadesSeleccionadas = obtenerValoresSelect("unidad_select");
-const subunidadesSeleccionadas = obtenerValoresSelect("subunidad_select");
-const estacionesSeleccionadas = obtenerValoresSelect("estacion_select");
-
-const unidad = unidadesSeleccionadas.join(", ");
-const subunidad = subunidadesSeleccionadas.join(", ");
-const estacion = estacionesSeleccionadas.join(", ").trim().toUpperCase();
+      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
       const grado = document.getElementById("grado").value.trim();
       const nombre = document.getElementById("nombre_elabora").value.trim();
       const cedula = document.getElementById("cedula_elabora").value.trim();
@@ -1763,18 +1741,13 @@ renderizarExtraordinario(window.listaExtra);
     }
 
     async function generarParte() {
-      const unidadesSeleccionadas = obtenerValoresSelect("unidad_select");
-const estacionesSeleccionadas = obtenerValoresSelect("estacion_select");
-const organicosSeleccionados = obtenerValoresSelect("organico_select");
-
-const unidad = unidadesSeleccionadas.join(", ");
-const estacion = estacionesSeleccionadas.join(", ").trim().toUpperCase();
-const organico = organicosSeleccionados.join(", ");
+      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+      const unidad = document.getElementById("unidad_select").value;
       const grado = document.getElementById("grado").value.trim();
       const nombre = document.getElementById("nombre_elabora").value.trim();
       const cedula = document.getElementById("cedula_elabora").value.trim();
       const telefono = document.getElementById("telefono_elabora").value.trim();
-      
+      const organico = document.getElementById("organico_select").value;
       const resultado = document.getElementById("resultado");
 
       if (!estacion && !organico) {
