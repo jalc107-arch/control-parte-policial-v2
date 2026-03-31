@@ -851,37 +851,6 @@ async function validarCodigoOTP() {
     }
 
 
-async function enviarCodigoOTP() {
-  const cedula = document.getElementById("cedula_responsable").value.trim();
-
-  if (!cedula) {
-    alert("Ingresa la cédula");
-    return;
-  }
-
-  otpValidado = false;
-
-  try {
-    const res = await fetch("/enviar-codigo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cedula })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.mensaje || "No se pudo generar el código");
-      return;
-    }
-alert("Se envió un código de seguridad al celular registrado");
-   
-  } catch (error) {
-    console.error(error);
-    alert("Error enviando código");
-  }
-}
-
 async function validarCodigoOTP() {
   const cedula = document.getElementById("cedula_responsable").value.trim();
   const codigo = document.getElementById("codigo_otp").value.trim();
@@ -2457,10 +2426,10 @@ actualizarTextoResultadoExtra();
       if (!panel) return;
       panel.style.display = panel.style.display === "block" ? "none" : "block";
     }
-
-  
-  async function consultarControlCumplimientoDiario() {
+async function consultarControlCumplimientoDiario() {
   const box = document.getElementById("resultado_control_cumplimiento");
+  if (!box) return;
+
   box.innerHTML = "Consultando...";
 
   try {
@@ -2474,54 +2443,19 @@ actualizarTextoResultadoExtra();
     }
 
     const totalEstaciones = data.totalEstaciones || 0;
+    const pendientesManana = data.faltanManana?.length || 0;
+    const pendientesNoche = data.faltanNoche?.length || 0;
+    const pendientesNovedades = data.faltanNovedadesDia?.length || 0;
 
-const pendientesManana = data.faltanManana?.length || 0;
-const pendientesNoche = data.faltanNoche?.length || 0;
-const pendientesNovedades = data.faltanNovedadesDia?.length || 0;
+    const cumplidasManana = totalEstaciones - pendientesManana;
+    const cumplidasNoche = totalEstaciones - pendientesNoche;
+    const cumplidasNovedades = totalEstaciones - pendientesNovedades;
 
-const cumplidasManana = totalEstaciones - pendientesManana;
-const cumplidasNoche = totalEstaciones - pendientesNoche;
-const cumplidasNovedades = totalEstaciones - pendientesNovedades;
-
-function estadoClase(pendientes) {
-  if (pendientes === 0) return "estado-ok";
-  if (pendientes <= 2) return "estado-parcial";
-  return "estado-alerta";
-}
-
-box.innerHTML = `
-  <div class="tarjetas-resumen">
-    <div class="tarjeta-resumen">
-      <div class="titulo">Total estaciones</div>
-      <div class="valor">${totalEstaciones}</div>
-    </div>
-
-    <div class="tarjeta-resumen ${estadoClase(pendientesManana)}">
-      <div class="titulo">Parte mañana</div>
-      <div class="valor">${cumplidasManana}/${totalEstaciones}</div>
-    </div>
-
-    <div class="tarjeta-resumen ${estadoClase(pendientesNoche)}">
-      <div class="titulo">Parte noche</div>
-      <div class="valor">${cumplidasNoche}/${totalEstaciones}</div>
-    </div>
-
-    <div class="tarjeta-resumen ${estadoClase(pendientesNovedades)}">
-      <div class="titulo">Novedades día</div>
-      <div class="valor">${cumplidasNovedades}/${totalEstaciones}</div>
-    </div>
-  </div>
-
-  <div class="tabla-wrap">
-    <div class="bloque-titulo-tabla">Fecha: ${data.fecha}</div>
-  </div>
-
-  ${pintarLista("Pendientes mañana", data.faltanManana)}
-  ${pintarLista("Pendientes noche", data.faltanNoche)}
-  ${pintarLista("Pendientes novedades día", data.faltanNovedadesDia)}
-  ${pintarDetalleMediodia(data.novedadesMediodiaDetalle)}
-  ${pintarLista("Pendientes mediodía", data.faltanNovedadesMediodia)}
-`;
+    function estadoClase(pendientes) {
+      if (pendientes === 0) return "estado-ok";
+      if (pendientes <= 2) return "estado-parcial";
+      return "estado-alerta";
+    }
 
     function pintarLista(titulo, lista) {
       if (!lista || !lista.length) {
@@ -2595,12 +2529,45 @@ box.innerHTML = `
       `;
     }
 
+    box.innerHTML = `
+      <div class="tarjetas-resumen">
+        <div class="tarjeta-resumen">
+          <div class="titulo">Total estaciones</div>
+          <div class="valor">${totalEstaciones}</div>
+        </div>
+
+        <div class="tarjeta-resumen ${estadoClase(pendientesManana)}">
+          <div class="titulo">Parte mañana</div>
+          <div class="valor">${cumplidasManana}/${totalEstaciones}</div>
+        </div>
+
+        <div class="tarjeta-resumen ${estadoClase(pendientesNoche)}">
+          <div class="titulo">Parte noche</div>
+          <div class="valor">${cumplidasNoche}/${totalEstaciones}</div>
+        </div>
+
+        <div class="tarjeta-resumen ${estadoClase(pendientesNovedades)}">
+          <div class="titulo">Novedades día</div>
+          <div class="valor">${cumplidasNovedades}/${totalEstaciones}</div>
+        </div>
+      </div>
+
+      <div class="tabla-wrap">
+        <div class="bloque-titulo-tabla">Fecha: ${data.fecha}</div>
+      </div>
+
+      ${pintarLista("Pendientes mañana", data.faltanManana)}
+      ${pintarLista("Pendientes noche", data.faltanNoche)}
+      ${pintarLista("Pendientes novedades día", data.faltanNovedadesDia)}
+      ${pintarDetalleMediodia(data.novedadesMediodiaDetalle)}
+      ${pintarLista("Pendientes mediodía", data.faltanNovedadesMediodia)}
+    `;
   } catch (error) {
     console.error(error);
     box.innerHTML = "Error en servidor";
   }
 }
-
+  
   document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
   if (inputFecha) {
