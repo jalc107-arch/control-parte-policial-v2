@@ -1381,7 +1381,12 @@ async function descargarPDF() {
       }
     }
 
-    const fotoBase64 = await procesarFotoConSello();
+    let fotoBase64 = "";
+try {
+  fotoBase64 = await procesarFotoConSello();
+} catch (e) {
+  console.warn("Error procesando foto:", e);
+}
     const qrTexto = construirTextoQRUbicacion();
     const qrUrl = qrTexto
       ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
