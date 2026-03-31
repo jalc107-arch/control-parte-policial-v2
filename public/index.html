@@ -1177,7 +1177,8 @@ document.getElementById("bloqueParte").style.display = "block";
 
     async function guardarNovedades() {
       const personas = document.querySelectorAll(".persona");
-      const estacion = document.getElementById("estacion_select").value;
+      const estacionesSeleccionadas = obtenerValoresSelect("estacion_select");
+      const estacion = estacionesSeleccionadas.join(", ");
       const novedades = [];
 
       const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
@@ -1320,9 +1321,13 @@ document.getElementById("bloqueParte").style.display = "block";
       `);
       ventana.document.close();
 
-      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-      const unidad = document.getElementById("unidad_select").value;
-      const subunidad = document.getElementById("subunidad_select").value;
+     const unidadesSeleccionadas = obtenerValoresSelect("unidad_select");
+const subunidadesSeleccionadas = obtenerValoresSelect("subunidad_select");
+const estacionesSeleccionadas = obtenerValoresSelect("estacion_select");
+
+const unidad = unidadesSeleccionadas.join(", ");
+const subunidad = subunidadesSeleccionadas.join(", ");
+const estacion = estacionesSeleccionadas.join(", ").trim().toUpperCase();
       const grado = document.getElementById("grado").value.trim();
       const nombre = document.getElementById("nombre_elabora").value.trim();
       const cedula = document.getElementById("cedula_elabora").value.trim();
@@ -1758,13 +1763,18 @@ renderizarExtraordinario(window.listaExtra);
     }
 
     async function generarParte() {
-      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-      const unidad = document.getElementById("unidad_select").value;
+      const unidadesSeleccionadas = obtenerValoresSelect("unidad_select");
+const estacionesSeleccionadas = obtenerValoresSelect("estacion_select");
+const organicosSeleccionados = obtenerValoresSelect("organico_select");
+
+const unidad = unidadesSeleccionadas.join(", ");
+const estacion = estacionesSeleccionadas.join(", ").trim().toUpperCase();
+const organico = organicosSeleccionados.join(", ");
       const grado = document.getElementById("grado").value.trim();
       const nombre = document.getElementById("nombre_elabora").value.trim();
       const cedula = document.getElementById("cedula_elabora").value.trim();
       const telefono = document.getElementById("telefono_elabora").value.trim();
-      const organico = document.getElementById("organico_select").value;
+      
       const resultado = document.getElementById("resultado");
 
       if (!estacion && !organico) {
