@@ -1837,6 +1837,7 @@ renderizarExtraordinario(window.listaExtra);
         }
 
         ultimoResultadoConsulta = Array.isArray(data.personalCompleto) ? data.personalCompleto : [];
+        window.ultimoResultadoConsulta = ultimoResultadoConsulta;
         renderizarConsultaDesdeRespuesta(data);
       } catch (error) {
         console.error(error);
