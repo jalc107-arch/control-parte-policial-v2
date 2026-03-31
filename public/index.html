@@ -2344,7 +2344,7 @@ function reemplazarExtra(index) {
 
 const nivelActual = obtenerNivelCliente(actual?.grado || "");
 
-const disponiblesBase = window.ultimoResultadoConsulta.filter(p => {
+const disponiblesBase = ultimoResultadoConsulta.filter(p => {
   const ced = String(p.cedula || "").trim();
   const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
   const nivelNuevo = obtenerNivelCliente(p.grado || "");
