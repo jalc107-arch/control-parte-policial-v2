@@ -1279,206 +1279,130 @@ document.getElementById("bloqueParte").style.display = "block";
       });
     }
 
-async function descargarPDF() {
-  let contenido = document.getElementById("resultado").innerText.trim();
-  contenido = contenido.replace(/^⚠️ REPORTE EXTEMPORÁNEO\s*\n\s*/i, "");
-  contenido = contenido.replace(/^PARTE DE PERSONAL\s*\n/i, "");
+    async function descargarPDF() {
+      let contenido = document.getElementById("resultado").innerText.trim();
+      contenido = contenido.replace(/^⚠️ REPORTE EXTEMPORÁNEO\s*\n\s*/i, "");
+      contenido = contenido.replace(/^PARTE DE PERSONAL\s*\n/i, "");
 
-  if (!contenido) {
-    alert("Primero genera el parte");
-    return;
-  }
-
-  const ventana = window.open("", "_blank");
-  if (!ventana) {
-    alert("El navegador bloqueó la ventana del PDF. Permite ventanas emergentes.");
-    return;
-  }
-
-  ventana.document.write(`
-    <html>
-      <head><title>Generando PDF...</title></head>
-      <body style="font-family: Arial, sans-serif; padding: 20px;">Generando PDF, por favor espera...</body>
-    </html>
-  `);
-  ventana.document.close();
-
-  const unidadesSeleccionadas = obtenerValoresSelect("unidad_select");
-  const subunidadesSeleccionadas = obtenerValoresSelect("subunidad_select");
-  const estacionesSeleccionadas = obtenerValoresSelect("estacion_select");
-  const organicosSeleccionados = obtenerValoresSelect("organico_select");
-
-  const unidad = unidadesSeleccionadas.join(", ");
-  const subunidad = subunidadesSeleccionadas.join(", ");
-  const estacion = estacionesSeleccionadas.join(", ").trim().toUpperCase();
-  const organico = organicosSeleccionados.join(", ");
-
-  const grado = document.getElementById("grado").value.trim();
-  const nombre = document.getElementById("nombre_elabora").value.trim();
-  const cedula = document.getElementById("cedula_elabora").value.trim();
-  const telefono = document.getElementById("telefono_elabora").value.trim();
-
-  const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
-  const rolUsuario =
-    document.getElementById("bloqueExcel").style.display === "block"
-      ? "ADMIN_EXCEL"
-      : "OPERADOR_PARTE";
-
-  try {
-    const validar = await fetch(
-      `/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`
-    );
-    const dataVal = await validar.json();
-
-    const personas = document.querySelectorAll(".persona");
-    const novedadesSeleccionadas = [];
-
-    personas.forEach(p => {
-      const select = p.querySelector("select");
-      if (!select) return;
-
-      const cedulaPersona = select.id.replace("novedad-", "");
-      const tipo = select.value || "";
-      novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
-    });
-
-    if (dataVal.guardarOficial) {
-      const resGuardar = await fetch("/guardar-parte-pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: dataVal.tipo || null,
-          unidad,
-          subunidad,
-          estacion,
-          grado_responsable: grado,
-          nombre_responsable: nombre,
-          cedula_responsable: cedula,
-          telefono_responsable: telefono,
-          texto_parte: contenido,
-          novedades: novedadesSeleccionadas
-        })
-      });
-
-      let dataGuardar = {};
-      try {
-        dataGuardar = await resGuardar.json();
-      } catch (e) {
-        console.warn("Respuesta no es JSON, se ignora");
+      if (!contenido) {
+        alert("Primero genera el parte");
+        return;
       }
 
-      if (dataGuardar && dataGuardar.ok === false) {
-        const mensajeGuardar = dataGuardar.mensaje || dataGuardar.error || "";
+      const ventana = window.open("", "_blank");
+      if (!ventana) {
+        alert("El navegador bloqueó la ventana del PDF. Permite ventanas emergentes.");
+        return;
+      }
 
-        if (mensajeGuardar.includes("Ya se registró")) {
-          console.warn("Parte ya registrado, se genera PDF sin guardar.");
-        } else if (mensajeGuardar.includes("Fuera de horario")) {
-          console.warn("Fuera de horario, se genera PDF en modo consulta.");
-        } else {
-          alert(mensajeGuardar || "No se pudo guardar el parte");
-          return;
+      ventana.document.write(`
+        <html>
+          <head><title>Generando PDF...</title></head>
+          <body style="font-family: Arial, sans-serif; padding: 20px;">Generando PDF, por favor espera...</body>
+        </html>
+      `);
+      ventana.document.close();
+
+      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const grado = document.getElementById("grado").value.trim();
+      const nombre = document.getElementById("nombre_elabora").value.trim();
+      const cedula = document.getElementById("cedula_elabora").value.trim();
+      const telefono = document.getElementById("telefono_elabora").value.trim();
+
+      const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
+      const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+
+      try {
+        const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
+        const dataVal = await validar.json();
+
+        if (dataVal.guardarOficial) {
+          const resGuardar = await fetch("/guardar-parte-pdf", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tipo: dataVal.tipo || null,
+              unidad,
+              subunidad,
+              estacion,
+              grado_responsable: grado,
+              nombre_responsable: nombre,
+              cedula_responsable: cedula,
+              telefono_responsable: telefono,
+              texto_parte: contenido,
+              novedades: novedadesSeleccionadas              
+            })
+          });
+
+          let dataGuardar = {};
+          try { dataGuardar = await resGuardar.json(); } catch (e) { console.warn("Respuesta no es JSON, se ignora"); }
+
+          if (dataGuardar && dataGuardar.ok === false) {
+            const mensajeGuardar = dataGuardar.mensaje || dataGuardar.error || "";
+            if (mensajeGuardar.includes("Ya se registró")) {
+              console.warn("Parte ya registrado, se genera PDF sin guardar.");
+            } else if (mensajeGuardar.includes("Fuera de horario")) {
+              console.warn("Fuera de horario, se genera PDF en modo consulta.");
+            } else {
+              alert(mensajeGuardar || "No se pudo guardar el parte");
+              return;
+            }
+          }
         }
+
+        const fotoBase64 = await procesarFotoConSello();
+        const qrTexto = construirTextoQRUbicacion();
+        const qrUrl = qrTexto ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}` : "";
+
+        ventana.document.open();
+        ventana.document.write(`
+          <html>
+            <head>
+              <title>Parte PDF</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                .marca-agua {
+                  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
+                  font-size: 60px; color: rgba(0, 0, 0, 0.08); font-weight: bold; white-space: nowrap; z-index: 0; pointer-events: none;
+                }
+                .encabezado {
+                  display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 20px; width: 100%; position: relative; z-index: 1;
+                }
+                .titulo { font-size: 20px; font-weight: bold; margin-top: 10px; flex: 1; }
+                .lado-derecho {
+                  display: flex; flex-direction: row; flex-wrap: nowrap; align-items: flex-start; justify-content: flex-end; gap: 14px; min-width: 230px;
+                }
+                .qr-box, .foto-box { text-align: center; }
+                .qr-box img { width: 95px; height: 95px; }
+                .foto-box img { width: 120px; height: 120px; object-fit: cover; border-radius: 6px; border: 1px solid #bbb; }
+                .label { font-size: 10px; text-align: center; margin-top: 4px; }
+                pre { white-space: pre-wrap; font-family: "Courier New", monospace; font-size: 14px; position: relative; z-index: 1; }
+              </style>
+            </head>
+            <body>
+              <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
+              <div class="encabezado">
+                <div class="titulo">REGISTRO DEL PARTE</div>
+                <div class="lado-derecho">
+                  ${qrUrl ? `<div class="qr-box"><img src="${qrUrl}" /><div class="label">Ubicación</div></div>` : ""}
+                  ${fotoBase64 ? `<div class="foto-box"><img src="${fotoBase64}" /><div class="label">Evidencia</div></div>` : ""}
+                </div>
+              </div>
+              <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+              <script>window.print();<\/script>
+            </body>
+          </html>
+        `);
+        ventana.document.close();
+      } catch (error) {
+        console.error("ERROR PDF:", error);
+        try { if (ventana && !ventana.closed) ventana.close(); } catch (_) {}
+        alert("Error PDF: " + (error.message || error));
       }
     }
 
-    let fotoBase64 = "";
-try {
-  fotoBase64 = await procesarFotoConSello();
-} catch (e) {
-  console.warn("Error procesando foto:", e);
-}
-    const qrTexto = construirTextoQRUbicacion();
-    const qrUrl = qrTexto
-      ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
-      : "";
-
-    ventana.document.open();
-    ventana.document.write(`
-      <html>
-        <head>
-          <title>Parte PDF</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .marca-agua {
-              position: fixed;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%) rotate(-30deg);
-              font-size: 60px;
-              color: rgba(0, 0, 0, 0.08);
-              font-weight: bold;
-              white-space: nowrap;
-              z-index: 0;
-              pointer-events: none;
-            }
-            .encabezado {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              gap: 20px;
-              margin-bottom: 20px;
-              width: 100%;
-              position: relative;
-              z-index: 1;
-            }
-            .titulo {
-              font-size: 20px;
-              font-weight: bold;
-              margin-top: 10px;
-              flex: 1;
-            }
-            .lado-derecho {
-              display: flex;
-              flex-direction: row;
-              flex-wrap: nowrap;
-              align-items: flex-start;
-              justify-content: flex-end;
-              gap: 14px;
-              min-width: 230px;
-            }
-            .qr-box, .foto-box { text-align: center; }
-            .qr-box img { width: 95px; height: 95px; }
-            .foto-box img {
-              width: 120px;
-              height: 120px;
-              object-fit: cover;
-              border-radius: 6px;
-              border: 1px solid #bbb;
-            }
-            .label { font-size: 10px; text-align: center; margin-top: 4px; }
-            pre {
-              white-space: pre-wrap;
-              font-family: "Courier New", monospace;
-              font-size: 14px;
-              position: relative;
-              z-index: 1;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
-          <div class="encabezado">
-            <div class="titulo">REGISTRO DEL PARTE</div>
-            <div class="lado-derecho">
-              ${qrUrl ? `<div class="qr-box"><img src="${qrUrl}" /><div class="label">Ubicación</div></div>` : ""}
-              ${fotoBase64 ? `<div class="foto-box"><img src="${fotoBase64}" /><div class="label">Evidencia</div></div>` : ""}
-            </div>
-          </div>
-          <pre>${contenido.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
-          <script>window.print();<\/script>
-        </body>
-      </html>
-    `);
-    ventana.document.close();
-  } catch (error) {
-    console.error("ERROR PDF:", error);
-    try {
-      if (ventana && !ventana.closed) ventana.close();
-    } catch (_) {}
-    alert("Error PDF: " + (error.message || error));
-  }
-}
-  
     function pintarChecks(idContenedor, valores) {
       const contenedor = document.getElementById(idContenedor);
       if (!contenedor) return;
@@ -2401,7 +2325,7 @@ function reemplazarExtra(index) {
 
 const nivelActual = obtenerNivelCliente(actual?.grado || "");
 
-const disponiblesBase = ultimoResultadoConsulta.filter(p => {
+const disponiblesBase = window.ultimoResultadoConsulta.filter(p => {
   const ced = String(p.cedula || "").trim();
   const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
   const nivelNuevo = obtenerNivelCliente(p.grado || "");
