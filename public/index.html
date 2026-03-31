@@ -1318,26 +1318,7 @@ document.getElementById("bloqueParte").style.display = "block";
         const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
         const dataVal = await validar.json();
 
-        const personas = document.querySelectorAll(".persona");
-const novedadesSeleccionadas = [];
-
-personas.forEach(p => {
-  const select = p.querySelector("select");
-  const cedulaPersona = select.id.replace("novedad-", "");
-  const tipo = select.value || "";
-  novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
-});
-
         if (dataVal.guardarOficial) {
-          const personas = document.querySelectorAll(".persona");
-const novedadesSeleccionadas = [];
-
-personas.forEach(p => {
-  const select = p.querySelector("select");
-  const cedulaPersona = select.id.replace("novedad-", "");
-  const tipo = select.value || "";
-  novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
-});
           const resGuardar = await fetch("/guardar-parte-pdf", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
