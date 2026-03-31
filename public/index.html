@@ -2554,38 +2554,6 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarChecksGruposExtra();
   cargarEstructura();
 });
-
-  async function enviarCodigoOTP() {
-  const cedula = document.getElementById("cedula").value;
-
-  if (!cedula) {
-    alert("Ingrese la cédula");
-    return;
-  }
-
-  try {
-    const res = await fetch("/enviar-otp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ cedula })
-    });
-
-    const data = await res.json();
-
-    if (data.ok) {
-      alert("Código enviado por WhatsApp");
-    } else {
-      alert("Error: " + data.error);
-    }
-
-  } catch (error) {
-    console.error(error);
-    alert("Error enviando código");
-  }
-}
-  
 </script>
 </body>
 </html>
