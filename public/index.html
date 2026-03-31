@@ -1079,10 +1079,10 @@ if (!data.autorizado) {
         return;
       }
 
-      const unidades = obtenerValoresSelect("unidad_select");
-const subunidades = obtenerValoresSelect("subunidad_select");
-const estaciones = obtenerValoresSelect("estacion_select");
-const organicos = obtenerValoresSelect("organico_select");
+      const unidad = document.getElementById("unidad_select").value;
+      const subunidad = document.getElementById("subunidad_select").value;
+      const estacion = document.getElementById("estacion_select").value;
+      const organico = document.getElementById("organico_select")?.value || "";
 
 if (!unidades.length || !subunidades.length) {
   alert("Unidad y subunidad son obligatorias");
