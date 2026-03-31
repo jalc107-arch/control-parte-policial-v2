@@ -430,27 +430,23 @@
     <div class="seccion" id="bloqueUbicacion" style="display:none;">
       <h2>Paso 3 — Registro del servicio</h2>
 
-      <select id="unidad_select" onchange="cargarSubunidades()">
-        <option value="">Seleccionar UNIDAD</option>
-      </select>
-      <br>
+      <select id="unidad_select" multiple onchange="cargarSubunidades()">
+</select>
+<br>
 
-      <select id="subunidad_select" onchange="cargarEstaciones(); cargarOrganicos()">
-        <option value="">Seleccionar SUBUNIDAD</option>
-      </select>
-      <br>
+<select id="subunidad_select" multiple onchange="cargarEstaciones(); cargarOrganicos()">
+</select>
+<br>
 
-      <select id="estacion_select" onchange="cargarOrganicos()">
-        <option value="">Seleccionar ESTACIÓN</option>
-      </select>
-      <br>
+<select id="estacion_select" multiple onchange="cargarOrganicos()">
+</select>
+<br>
 
-      <div id="bloqueOrganico" style="display:none;">
-        <select id="organico_select">
-          <option value="">Seleccionar ORGÁNICO</option>
-        </select>
-        <br>
-      </div>
+<div id="bloqueOrganico" style="display:block;">
+  <select id="organico_select" multiple>
+  </select>
+  <br>
+</div>
 
       <div class="acciones-inline">
         <button onclick="cargarPersonal()">Continuar</button>
