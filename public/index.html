@@ -1091,11 +1091,16 @@ if (!unidades.length || !subunidades.length) {
 
       try {
         const res = await fetch("/personal-filtrado", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ unidad, subunidad, estacion, organico })
-        });
-
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    unidades,
+    subunidades,
+    estaciones,
+    organicos
+  })
+});
+        
         const data = await res.json();
         const contenedor = document.getElementById("lista");
         contenedor.innerHTML = "";
