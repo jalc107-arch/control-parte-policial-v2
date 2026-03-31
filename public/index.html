@@ -993,69 +993,85 @@ if (!data.autorizado) {
     }
 
     function cargarSubunidades() {
-      const unidad = document.getElementById("unidad_select").value;
-      const subunidadSelect = document.getElementById("subunidad_select");
-      const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
-      const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
+  const unidades = obtenerValoresSelect("unidad_select");
+  const subunidadSelect = document.getElementById("subunidad_select");
 
-      subunidadSelect.innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-      subunidades.forEach(sub => {
-        const option = document.createElement("option");
-        option.value = sub;
-        option.textContent = sub;
-        subunidadSelect.appendChild(option);
-      });
+  const filtrados = estructuraGlobal.filter(x =>
+    unidades.length === 0 || unidades.includes(x.unidad)
+  );
 
-      document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-      document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
-    }
+  const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
+
+  subunidadSelect.innerHTML = "";
+  subunidades.forEach(sub => {
+    const option = document.createElement("option");
+    option.value = sub;
+    option.textContent = sub;
+    subunidadSelect.appendChild(option);
+  });
+
+  document.getElementById("estacion_select").innerHTML = "";
+  document.getElementById("organico_select").innerHTML = "";
+}
 
     function cargarEstaciones() {
-      const unidad = document.getElementById("unidad_select").value;
-      const subunidad = document.getElementById("subunidad_select").value;
-      const estacionSelect = document.getElementById("estacion_select");
+  const unidades = obtenerValoresSelect("unidad_select");
+  const subunidades = obtenerValoresSelect("subunidad_select");
+  const estacionSelect = document.getElementById("estacion_select");
 
-      estacionSelect.innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+  estacionSelect.innerHTML = "";
 
-      const estaciones = [
-        ...new Set(
-          estructuraGlobal
-            .filter(x => x.unidad === unidad && x.subunidad === subunidad)
-            .map(x => x.estacion)
-            .filter(Boolean)
+  const estaciones = [
+    ...new Set(
+      estructuraGlobal
+        .filter(x =>
+          (unidades.length === 0 || unidades.includes(x.unidad)) &&
+          (subunidades.length === 0 || subunidades.includes(x.subunidad))
         )
-      ];
+        .map(x => x.estacion)
+        .filter(Boolean)
+    )
+  ];
 
-      estaciones.forEach(estacion => {
-        const option = document.createElement("option");
-        option.value = estacion;
-        option.textContent = estacion;
-        estacionSelect.appendChild(option);
-      });
-    }
-
+  estaciones.forEach(estacion => {
+    const option = document.createElement("option");
+    option.value = estacion;
+    option.textContent = estacion;
+    estacionSelect.appendChild(option);
+  });
+}
+  
+  
     function cargarOrganicos() {
-      const unidad = document.getElementById("unidad_select").value;
-      const subunidad = document.getElementById("subunidad_select").value;
-      const estacion = document.getElementById("estacion_select").value;
-      const organicoSelect = document.getElementById("organico_select");
+  const unidades = obtenerValoresSelect("unidad_select");
+  const subunidades = obtenerValoresSelect("subunidad_select");
+  const estaciones = obtenerValoresSelect("estacion_select");
+  const organicoSelect = document.getElementById("organico_select");
 
-      organicoSelect.innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+  organicoSelect.innerHTML = "";
 
-      let filtrados = estructuraGlobal.filter(x => x.unidad === unidad && x.subunidad === subunidad);
-      if (estacion && estacion.trim() !== "") {
-        filtrados = filtrados.filter(x => x.estacion === estacion);
-      }
+  let filtrados = estructuraGlobal.filter(x =>
+    (unidades.length === 0 || unidades.includes(x.unidad)) &&
+    (subunidades.length === 0 || subunidades.includes(x.subunidad)) &&
+    (estaciones.length === 0 || estaciones.includes(x.estacion))
+  );
 
-      const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
-      organicos.forEach(o => {
-        const option = document.createElement("option");
-        option.value = o;
-        option.textContent = o;
-        organicoSelect.appendChild(option);
-      });
-    }
+  const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
 
+  organicos.forEach(o => {
+    const option = document.createElement("option");
+    option.value = o;
+    option.textContent = o;
+    organicoSelect.appendChild(option);
+  });
+}
+
+  function obtenerValoresSelect(id) {
+  const select = document.getElementById(id);
+  if (!select) return [];
+  return Array.from(select.selectedOptions).map(o => o.value).filter(Boolean);
+}
+  
     async function cargarPersonal() {
       const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
       if (!cedulaValidada) {
@@ -1063,15 +1079,15 @@ if (!data.autorizado) {
         return;
       }
 
-      const unidad = document.getElementById("unidad_select").value;
-      const subunidad = document.getElementById("subunidad_select").value;
-      const estacion = document.getElementById("estacion_select").value;
-      const organico = document.getElementById("organico_select")?.value || "";
+      const unidades = obtenerValoresSelect("unidad_select");
+const subunidades = obtenerValoresSelect("subunidad_select");
+const estaciones = obtenerValoresSelect("estacion_select");
+const organicos = obtenerValoresSelect("organico_select");
 
-      if (!unidad || !subunidad) {
-        alert("Unidad y subunidad son obligatorias");
-        return;
-      }
+if (!unidades.length || !subunidades.length) {
+  alert("Unidad y subunidad son obligatorias");
+  return;
+}
 
       try {
         const res = await fetch("/personal-filtrado", {
