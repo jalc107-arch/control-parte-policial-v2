@@ -2356,88 +2356,91 @@ function cambiarExtraEstado(index, valor) {
   renderizarExtraordinario(window.listaExtra);
 }
 
-function reemplazarExtra(index) {
+async function reemplazarExtra(index) {
   if (!window.listaExtra || !window.listaExtra.length) return;
   if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) return;
+
+  const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
+  if (!fechaServicio) {
+    alert("Debes seleccionar la fecha del servicio.");
+    return;
+  }
 
   const actual = window.listaExtra[index];
   const cedulaActual = String(actual?.cedula || "").trim();
 
+  const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
+  const ocupadosSet = new Set(cedulasOcupadas);
+
   const yaSeleccionados = new Set(
     window.listaExtra
-      .filter((_, i) => i !== index)
+      .filter((_, i) => i !== index && _.estadoExtra !== "NO")
       .map(p => String(p.cedula || "").trim())
   );
 
   function obtenerNivelCliente(grado = "") {
-  const g = String(grado || "").toUpperCase().trim();
+    const g = String(grado || "").toUpperCase().trim();
 
-  if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIAL";
-  if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
-  if (["PT", "PP"].includes(g)) return "PATRULLERO";
-  if (["AUX"].includes(g)) return "AUXILIAR";
+    if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIAL";
+    if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
+    if (["PT", "PP"].includes(g)) return "PATRULLERO";
+    if (["AUX"].includes(g)) return "AUXILIAR";
 
-  return "OTRO";
-}
+    return "OTRO";
+  }
 
-const nivelActual = obtenerNivelCliente(actual?.grado || "");
+  const nivelActual = obtenerNivelCliente(actual?.grado || "");
+  const subunidadActual = String(actual?.subunidad || "").trim().toUpperCase();
 
-const disponiblesBase = ultimoResultadoConsulta.filter(p => {
-  const ced = String(p.cedula || "").trim();
-  const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
-  const nivelNuevo = obtenerNivelCliente(p.grado || "");
+  const disponiblesBase = ultimoResultadoConsulta.filter(p => {
+    const ced = String(p.cedula || "").trim();
+    const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
+    const aptitud = String(p.aptitud || "").trim().toUpperCase();
+    const nivelNuevo = obtenerNivelCliente(p.grado || "");
+    const subunidadNueva = String(p.subunidad || "").trim().toUpperCase();
 
-  return (
-    ced !== cedulaActual &&
-    !yaSeleccionados.has(ced) &&
-    (tipo === "" || tipo === "DISPONIBLE") &&
-    nivelNuevo === nivelActual
-  );
-});
+    return (
+      ced !== cedulaActual &&
+      !yaSeleccionados.has(ced) &&
+      !ocupadosSet.has(ced) &&
+      (tipo === "" || tipo === "DISPONIBLE") &&
+      aptitud === "APTO" &&
+      nivelNuevo === nivelActual &&
+      subunidadNueva === subunidadActual
+    );
+  });
 
   if (!disponiblesBase.length) {
-    alert("No hay más personal disponible para reemplazar.");
+    alert("No hay más personal APTO, DISPONIBLE y libre en otro servicio para reemplazar.");
     return;
   }
 
   function ordenGradoCliente(g) {
-  const mapa = {
-    "CR": 1,
-    "TC": 2,
-    "MY": 3,
-    "CT": 4,
-    "TE": 5,
-    "ST": 6,
-    "CM": 7,
-    "SC": 8,
-    "IJ": 9,
-    "IT": 10,
-    "SI": 11,
-    "PT": 12,
-    "PP": 13,
-    "AUX": 14
+    const mapa = {
+      "CR": 1, "TC": 2, "MY": 3, "CT": 4, "TE": 5, "ST": 6,
+      "CM": 7, "SC": 8, "IJ": 9, "IT": 10, "SI": 11,
+      "PT": 12, "PP": 13, "AUX": 14
+    };
+    return mapa[String(g || "").toUpperCase()] || 99;
+  }
+
+  const disponiblesOrdenados = [...disponiblesBase].sort((a, b) => {
+    return ordenGradoCliente(a.grado) - ordenGradoCliente(b.grado);
+  });
+
+  const reemplazo = disponiblesOrdenados[0];
+
+  window.listaExtra[index] = {
+    ...reemplazo,
+    estadoExtra: "SI",
+    tipoAsignacion: "REEMPLAZO"
   };
 
-  return mapa[String(g || "").toUpperCase()] || 99;
+  window.listaExtra = ordenarListaExtraPorGrado(window.listaExtra);
+  renderizarExtraordinario(window.listaExtra);
+  actualizarTextoResultadoExtra();
 }
-
-// 🔥 Ordena antes de escoger
-const disponiblesOrdenados = disponiblesBase.sort((a, b) => {
-  return ordenGradoCliente(a.grado) - ordenGradoCliente(b.grado);
-});
-
-// 🔥 Toma el mejor candidato
-const reemplazo = disponiblesOrdenados[0];
-
- window.listaExtra[index] = {
-  ...reemplazo,
-  estadoExtra: "SI"
-};
-
-window.listaExtra = ordenarPorGrado(window.listaExtra);
-renderizarExtraordinario(window.listaExtra);
-actualizarTextoResultadoExtra();
-   }
+  
     function togglePanel(id) {
       const panel = document.getElementById(id);
       if (!panel) return;
