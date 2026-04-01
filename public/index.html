@@ -1595,65 +1595,15 @@ personas.forEach(p => {
       return "OTROS";
     }
 
-    async function aplicarServicioExtraordinarioSimple() {
-      const resultadoExtra = document.getElementById("resultado_extra");
-      resultadoExtra.innerText = "";
-
-      const disponibles = extraerDisponiblesConsulta();
-      if (!disponibles.length) {
-        alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
-        return;
-      }
-
-      const cantidad = parseInt(document.getElementById("cantidad_extra").value || "0", 10);
-      const porcentaje = parseInt(document.getElementById("porcentaje_extra").value || "0", 10);
-
-      if ((!cantidad || cantidad <= 0) && (!porcentaje || porcentaje <= 0)) {
-        alert("Debes ingresar una cantidad o un porcentaje");
-        return;
-      }
-
-      let totalTomar = 0;
-      if (cantidad && cantidad > 0) totalTomar = cantidad;
-      else if (porcentaje && porcentaje > 0) totalTomar = Math.ceil((disponibles.length * porcentaje) / 100);
-
-      if (totalTomar > disponibles.length) totalTomar = disponibles.length;
-
-      const historial = await obtenerHistorialServicios();
-      const disponiblesOrdenados = [...disponibles].sort((a, b) => {
-        const aCount = historial[String(a.cedula || "").trim()] || 0;
-        const bCount = historial[String(b.cedula || "").trim()] || 0;
-        return aCount - bCount;
-      });
-
-      const seleccionados = ordenarPorGrado(mezclarArray(disponiblesOrdenados).slice(0, totalTomar));
-      ultimosSeleccionadosExtra = seleccionados.map(p => ({ ...p, estadoExtra: "SI" }));
-window.listaExtra = ordenarListaExtraPorGrado(
-  seleccionados.map(p => ({ ...p, estadoExtra: "SI" }))
-);
-
-      seleccionados.forEach(p => {
-        p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
-      });
-
-      let texto = "";
-      texto += `SERVICIO EXTRAORDINARIO APLICADO - MODO SIMPLE\n\n`;
-      texto += `DISPONIBLES ANTES: ${disponibles.length}\n`;
-      texto += `ASIGNADOS: ${seleccionados.length}\n\n`;
-
-      seleccionados.forEach((p, i) => {
-        texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
-      });
-
-      resultadoExtra.innerText = texto;
-     window.listaExtra = seleccionados.map(p => ({ ...p, estadoExtra: "SI" }));
-renderizarExtraordinario(window.listaExtra);
-      renderizarConsultaDesdeMemoria();
-      }
-
-function aplicarServicioExtraordinarioPorGrupos() {
+    async function aplicarServicioExtraordinarioPorGrupos() {
   const resultadoExtra = document.getElementById("resultado_extra");
   resultadoExtra.innerText = "";
+
+  const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
+  if (!fechaServicio) {
+    alert("Debes seleccionar la fecha del servicio.");
+    return;
+  }
 
   const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
 
@@ -1668,6 +1618,9 @@ function aplicarServicioExtraordinarioPorGrupos() {
     alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
     return;
   }
+
+  const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
+  const ocupadosSet = new Set(cedulasOcupadas);
 
   const grados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AUX"];
   const seleccionadosFinales = [];
@@ -1687,6 +1640,7 @@ function aplicarServicioExtraordinarioPorGrupos() {
 
         return (
           !usados.has(ced) &&
+          !ocupadosSet.has(ced) &&
           subunidadPersona === subunidad &&
           gradoPersona === grado
         );
@@ -1695,8 +1649,9 @@ function aplicarServicioExtraordinarioPorGrupos() {
       const elegidos = mezclarArray(candidatos).slice(0, cantidad);
 
       elegidos.forEach(p => {
-        usados.add(String(p.cedula || "").trim());
+        const ced = String(p.cedula || "").trim();
 
+        usados.add(ced);
         p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
 
         seleccionadosFinales.push({
@@ -1729,8 +1684,10 @@ function aplicarServicioExtraordinarioPorGrupos() {
 
   let texto = "";
   texto += `SERVICIO EXTRAORDINARIO GENERADO\n\n`;
+  texto += `FECHA: ${fechaServicio}\n`;
   texto += `SUBUNIDADES: ${subunidades.join(", ")}\n`;
-  texto += `ASIGNADOS: ${seleccionadosFinales.length}\n\n`;
+  texto += `ASIGNADOS: ${seleccionadosFinales.length}\n`;
+  texto += `BLOQUEADOS POR USO PREVIO EN EL DÍA: ${cedulasOcupadas.length}\n\n`;
 
   const agrupados = {};
   seleccionadosFinales.forEach(p => {
@@ -2422,6 +2379,25 @@ actualizarTextoResultadoExtra();
       if (!panel) return;
       panel.style.display = panel.style.display === "block" ? "none" : "block";
     }
+
+async function obtenerCedulasOcupadasServicioExtra() {
+  try {
+    const fecha = document.getElementById("fecha_servicio_extra")?.value || "";
+
+    if (!fecha) return [];
+
+    const res = await fetch(`/servicio-extra-ocupados?fecha=${encodeURIComponent(fecha)}`);
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.ocupados)) return [];
+
+    return data.ocupados.map(x => String(x || "").trim());
+  } catch (error) {
+    console.error("Error consultando ocupados del servicio extraordinario:", error);
+    return [];
+  }
+}
+  
 async function consultarControlCumplimientoDiario() {
   const box = document.getElementById("resultado_control_cumplimiento");
   if (!box) return;
