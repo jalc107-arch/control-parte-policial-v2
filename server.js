@@ -926,6 +926,38 @@ app.get("/control-cumplimiento-diario", async (req, res) => {
   }
 });
 
+app.get("/servicio-extra-ocupados", async (req, res) => {
+  try {
+    const { fecha } = req.query;
+
+    if (!fecha) {
+      return res.status(400).json({
+        ok: false,
+        error: "La fecha es obligatoria"
+      });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT DISTINCT cedula
+      FROM servicios_extraordinarios
+      WHERE fecha = $1
+      `,
+      [fecha]
+    );
+
+    res.json({
+      ok: true,
+      ocupados: result.rows.map(r => String(r.cedula || "").trim()).filter(Boolean)
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
 // =========================
 // GENERAR TEXTO DEL PARTE
 // =========================
