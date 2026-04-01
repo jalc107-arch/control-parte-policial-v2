@@ -1600,17 +1600,19 @@ personas.forEach(p => {
   resultadoExtra.innerText = "";
 
   const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
+      
   if (!fechaServicio) {
     alert("Debes seleccionar la fecha del servicio.");
     return;
   }
 
-  const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+  let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
 
-  if (!subunidades.length) {
-    alert("Debes seleccionar al menos una subunidad de apoyo.");
-    return;
-  }
+// 🔥 AUTOSELECCIÓN AUTOMÁTICA
+if (!subunidades.length) {
+  seleccionarTodasChecks("checks_subunidad_apoyo_extra");
+  subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+}
 
   const disponibles = extraerDisponiblesConsulta();
 
@@ -2559,9 +2561,17 @@ function cargarSubunidadesApoyoExtra() {
 }
 
 function generarDistribucionExtraPorSubunidad() {
-  const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+  let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
+
+  if (!contenedor || !validacion) return;
+
+  // Si no seleccionó ninguna, marca todas automáticamente
+  if (!subunidades.length) {
+    seleccionarTodasChecks("checks_subunidad_apoyo_extra");
+    subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+  }
 
   contenedor.innerHTML = "";
   validacion.innerText = "Sin validar";
@@ -2624,7 +2634,7 @@ function generarDistribucionExtraPorSubunidad() {
 
   validarDistribucionExtra();
 }
-
+  
 function actualizarResumenSubunidadExtra(subunidad) {
   const oficiales =
     (parseInt(document.getElementById(`extra_${subunidad}_CR`)?.value || "0", 10)) +
