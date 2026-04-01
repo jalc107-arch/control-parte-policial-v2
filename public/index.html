@@ -2629,7 +2629,6 @@ function generarDistribucionExtraPorSubunidad() {
 
   if (!contenedor || !validacion) return;
 
-  // 🔥 AUTOSELECCIÓN
   if (!subunidades.length) {
     seleccionarTodasChecks("checks_subunidad_apoyo_extra");
     subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
@@ -2646,23 +2645,55 @@ function generarDistribucionExtraPorSubunidad() {
   const disponibles = extraerDisponiblesConsulta();
 
   if (!disponibles.length) {
-    contenedor.innerHTML = `<div class="ayuda">No hay personal disponible.</div>`;
+    contenedor.innerHTML = `<div class="ayuda">No hay personal disponible. Primero consulta novedades y verifica que exista personal APTO y DISPONIBLE.</div>`;
     return;
   }
 
-  subunidades.forEach(subunidad => {
+  const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+  let seGeneroAlMenosUno = false;
 
-    // 🔥 GRADOS DINÁMICOS POR SUBUNIDAD
+  subunidades.forEach(subunidad => {
+    const disponiblesSubunidad = disponibles.filter(p =>
+      String(p.subunidad || "").trim().toUpperCase() === String(subunidad || "").trim().toUpperCase()
+    );
+
+    if (!disponiblesSubunidad.length) {
+      const bloqueVacio = document.createElement("div");
+      bloqueVacio.className = "tabla-wrap";
+      bloqueVacio.innerHTML = `
+        <div class="bloque-titulo-tabla">${subunidad}</div>
+        <div class="ayuda">No hay personal disponible en esta subunidad.</div>
+        <pre id="resumen_${subunidad}">0-0-0-0 = 0</pre>
+      `;
+      contenedor.appendChild(bloqueVacio);
+      return;
+    }
+
     const grados = [
       ...new Set(
-        disponibles
-          .filter(p => String(p.subunidad || "").trim() === subunidad)
-          .map(p => String(p.grado || "").toUpperCase().trim())
+        disponiblesSubunidad
+          .map(p => String(p.grado || "").trim().toUpperCase())
           .filter(Boolean)
       )
-    ];
+    ].sort((a, b) => {
+      const ia = ordenGrados.indexOf(a);
+      const ib = ordenGrados.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
 
-    if (!grados.length) return;
+    if (!grados.length) {
+      const bloqueVacio = document.createElement("div");
+      bloqueVacio.className = "tabla-wrap";
+      bloqueVacio.innerHTML = `
+        <div class="bloque-titulo-tabla">${subunidad}</div>
+        <div class="ayuda">La subunidad tiene disponibles, pero no tienen grado cargado.</div>
+        <pre id="resumen_${subunidad}">0-0-0-0 = 0</pre>
+      `;
+      contenedor.appendChild(bloqueVacio);
+      return;
+    }
+
+    seGeneroAlMenosUno = true;
 
     const bloque = document.createElement("div");
     bloque.className = "tabla-wrap";
@@ -2675,10 +2706,19 @@ function generarDistribucionExtraPorSubunidad() {
     `;
 
     grados.forEach(g => {
-      html += `<th>${g}</th>`;
+      const cantidadDisponible = disponiblesSubunidad.filter(p =>
+        String(p.grado || "").trim().toUpperCase() === g
+      ).length;
+
+      html += `<th>${g}<br><span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span></th>`;
     });
 
-    html += `</tr></thead><tbody><tr>`;
+    html += `
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+    `;
 
     grados.forEach(g => {
       html += `
@@ -2708,31 +2748,36 @@ function generarDistribucionExtraPorSubunidad() {
     actualizarResumenSubunidadExtra(subunidad);
   });
 
-  validarDistribucionExtra();
+  if (!seGeneroAlMenosUno) {
+    validacion.innerText = "No se generó distribución. Revisa si el resultado de consulta de novedades trae la subunidad en cada funcionario.";
+  } else {
+    validarDistribucionExtra();
+  }
 }
   
 function actualizarResumenSubunidadExtra(subunidad) {
-  const oficiales =
-    (parseInt(document.getElementById(`extra_${subunidad}_CR`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_TC`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_MY`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_CT`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_TE`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_ST`)?.value || "0", 10));
+  const oficialesSet = new Set(["CR","TC","MY","CT","TE","ST"]);
+  const ejecutivoSet = new Set(["CM","SC","IJ","IT","SI"]);
+  const patrullerosSet = new Set(["PT","PP"]);
+  const auxiliaresSet = new Set(["AUX"]);
 
-  const ejecutivo =
-    (parseInt(document.getElementById(`extra_${subunidad}_CM`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_SC`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_IJ`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_IT`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_SI`)?.value || "0", 10));
+  let oficiales = 0;
+  let ejecutivo = 0;
+  let patrulleros = 0;
+  let auxiliares = 0;
 
-  const patrulleros =
-    (parseInt(document.getElementById(`extra_${subunidad}_PT`)?.value || "0", 10)) +
-    (parseInt(document.getElementById(`extra_${subunidad}_PP`)?.value || "0", 10));
+  const inputs = document.querySelectorAll(`[id^="extra_${subunidad}_"]`);
 
-  const auxiliares =
-    (parseInt(document.getElementById(`extra_${subunidad}_AUX`)?.value || "0", 10));
+  inputs.forEach(input => {
+    const partes = input.id.split("_");
+    const grado = partes[partes.length - 1];
+    const valor = parseInt(input.value || "0", 10);
+
+    if (oficialesSet.has(grado)) oficiales += valor;
+    else if (ejecutivoSet.has(grado)) ejecutivo += valor;
+    else if (patrullerosSet.has(grado)) patrulleros += valor;
+    else if (auxiliaresSet.has(grado)) auxiliares += valor;
+  });
 
   const total = oficiales + ejecutivo + patrulleros + auxiliares;
 
@@ -2741,9 +2786,14 @@ function actualizarResumenSubunidadExtra(subunidad) {
     box.innerText = `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
   }
 }
-
+  
 function validarDistribucionExtra() {
   const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+
+  const oficialesSet = new Set(["CR","TC","MY","CT","TE","ST"]);
+  const ejecutivoSet = new Set(["CM","SC","IJ","IT","SI"]);
+  const patrullerosSet = new Set(["PT","PP"]);
+  const auxiliaresSet = new Set(["AUX"]);
 
   let oficiales = 0;
   let ejecutivo = 0;
@@ -2751,27 +2801,18 @@ function validarDistribucionExtra() {
   let auxiliares = 0;
 
   subunidades.forEach(subunidad => {
-    oficiales +=
-      (parseInt(document.getElementById(`extra_${subunidad}_CR`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_TC`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_MY`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_CT`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_TE`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_ST`)?.value || "0", 10));
+    const inputs = document.querySelectorAll(`[id^="extra_${subunidad}_"]`);
 
-    ejecutivo +=
-      (parseInt(document.getElementById(`extra_${subunidad}_CM`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_SC`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_IJ`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_IT`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_SI`)?.value || "0", 10));
+    inputs.forEach(input => {
+      const partes = input.id.split("_");
+      const grado = partes[partes.length - 1];
+      const valor = parseInt(input.value || "0", 10);
 
-    patrulleros +=
-      (parseInt(document.getElementById(`extra_${subunidad}_PT`)?.value || "0", 10)) +
-      (parseInt(document.getElementById(`extra_${subunidad}_PP`)?.value || "0", 10));
-
-    auxiliares +=
-      (parseInt(document.getElementById(`extra_${subunidad}_AUX`)?.value || "0", 10));
+      if (oficialesSet.has(grado)) oficiales += valor;
+      else if (ejecutivoSet.has(grado)) ejecutivo += valor;
+      else if (patrullerosSet.has(grado)) patrulleros += valor;
+      else if (auxiliaresSet.has(grado)) auxiliares += valor;
+    });
   });
 
   const reqOf = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
