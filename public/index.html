@@ -1605,12 +1605,16 @@ personas.forEach(p => {
     }
 
    function extraerDisponiblesConsulta() {
-  if (!ultimoResultadoConsulta.length) return [];
+  if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) return [];
 
   return ultimoResultadoConsulta.filter(p => {
-    const disponible = esDisponiblePersona(p);
+    const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
     const aptitud = String(p.aptitud || "").trim().toUpperCase();
-    return disponible && aptitud === "APTO";
+
+    return (
+      (novedad === "" || novedad === "DISPONIBLE") &&
+      aptitud === "APTO"
+    );
   });
 }
 
