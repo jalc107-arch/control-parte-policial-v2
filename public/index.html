@@ -1849,8 +1849,9 @@ if (!subunidades.length) {
         }
 
         ultimoResultadoConsulta = Array.isArray(data.personalCompleto) ? data.personalCompleto : [];
-        window.ultimoResultadoConsulta = ultimoResultadoConsulta;
-        renderizarConsultaDesdeRespuesta(data);
+window.ultimoResultadoConsulta = ultimoResultadoConsulta;
+renderizarConsultaDesdeRespuesta(data);
+cargarResponsablesServicioExtra();
       } catch (error) {
         console.error(error);
         alert("Error consultando novedades");
