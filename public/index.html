@@ -1643,6 +1643,19 @@ personas.forEach(p => {
     return;
   }
 
+      const supervisor = document.querySelector('input[name="supervisor_servicio"]:checked')?.value;
+const jefe = document.querySelector('input[name="jefe_servicio"]:checked')?.value;
+
+if (!supervisor || !jefe) {
+  alert("Debes seleccionar supervisor y jefe del servicio.");
+  return;
+}
+
+if (supervisor === jefe) {
+  alert("Supervisor y jefe del servicio no pueden ser la misma persona.");
+  return;
+}
+
   let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
 
 // 🔥 AUTOSELECCIÓN AUTOMÁTICA
@@ -2223,11 +2236,16 @@ function descargarServicioExtraordinario() {
   const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
   const subunidadesApoyo = obtenerValoresChecks("checks_subunidad_apoyo_extra").join(", ");
 
+  const supervisorTxt = document.querySelector('input[name="supervisor_servicio"]:checked')?.parentElement?.innerText || "";
+  const jefeTxt = document.querySelector('input[name="jefe_servicio"]:checked')?.parentElement?.innerText || "";
+
   const datosExcel = listaBase.map((p, i) => ({
     ITEM: i + 1,
     TITULO_SERVICIO: tituloServicio,
     FECHA_SERVICIO: fechaServicio,
     SUBUNIDADES_APOYO: subunidadesApoyo,
+    SUPERVISOR_SERVICIO: supervisorTxt,
+    JEFE_SERVICIO: jefeTxt,    
     SUBUNIDAD: p.subunidad || "",
     ESTACION: p.estacion || "",
     ORGANICO: p.organico || "",
@@ -2908,41 +2926,39 @@ function cargarResponsablesServicioExtra() {
   }
 
   const personal = ultimoResultadoConsulta.filter(p => {
-    const nov = String(p.tipo_novedad || "").toUpperCase();
-    const apt = String(p.aptitud || "").toUpperCase();
-
+    const nov = String(p.tipo_novedad || "").trim().toUpperCase();
+    const apt = String(p.aptitud || "").trim().toUpperCase();
     return (nov === "" || nov === "DISPONIBLE") && apt === "APTO";
   });
 
-  personal.forEach(p => {
-    const texto = `${p.grado} ${p.apellidos} ${p.nombres}`;
+  if (!personal.length) {
+    boxSupervisor.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
+    boxJefe.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
+    return;
+  }
 
-    const labelSup = document.createElement("label");
-    labelSup.className = "check-item";
+  const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
 
-    const inputSup = document.createElement("input");
-    inputSup.type = "radio";
-    inputSup.name = "supervisor_servicio";
-    inputSup.value = p.cedula;
+  const ordenado = [...personal].sort((a, b) => {
+    const ia = orden.indexOf((a.grado || "").toUpperCase());
+    const ib = orden.indexOf((b.grado || "").toUpperCase());
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+  });
 
-    labelSup.appendChild(inputSup);
-    labelSup.appendChild(document.createTextNode(texto));
-    boxSupervisor.appendChild(labelSup);
+  ordenado.forEach(p => {
+    const texto = `${p.grado} ${p.apellidos} ${p.nombres} - CC ${p.cedula}`;
 
-    const labelJefe = document.createElement("label");
-    labelJefe.className = "check-item";
+    const sup = document.createElement("label");
+    sup.className = "check-item";
+    sup.innerHTML = `<input type="radio" name="supervisor_servicio" value="${p.cedula}"> ${texto}`;
+    boxSupervisor.appendChild(sup);
 
-    const inputJefe = document.createElement("input");
-    inputJefe.type = "radio";
-    inputJefe.name = "jefe_servicio";
-    inputJefe.value = p.cedula;
-
-    labelJefe.appendChild(inputJefe);
-    labelJefe.appendChild(document.createTextNode(texto));
-    boxJefe.appendChild(labelJefe);
+    const jefe = document.createElement("label");
+    jefe.className = "check-item";
+    jefe.innerHTML = `<input type="radio" name="jefe_servicio" value="${p.cedula}"> ${texto}`;
+    boxJefe.appendChild(jefe);
   });
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
