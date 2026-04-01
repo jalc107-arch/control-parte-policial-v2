@@ -545,94 +545,106 @@
       </div>
     </div>
 
-    <div class="seccion" id="bloqueExtraordinario" style="display:none;">
-      <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
-        7. Apoyo automático a servicio extraordinario
-      </button>
-
-      <div id="panelExtraordinario" class="panel-contenido">
-        <div class="extra-simple-box">
-          <h3>7.1 Modo simple</h3>
-          <div class="campo-corto">
-            <input id="cantidad_extra" type="number" min="1" placeholder="Cantidad total de disponibles a tomar" />
-          </div>
-          <div class="campo-corto">
-            <input id="porcentaje_extra" type="number" min="1" max="100" placeholder="Porcentaje total de disponibles a tomar" />
-          </div>
-          <div class="acciones-inline">
-            <button onclick="aplicarServicioExtraordinarioSimple()">Aplicar modo simple</button>
-          </div>
-        </div>
-
-        <div class="grupo-extra">
-          <div class="grupo-titulo">7.2 Distribución por grupos</div>
-          <div class="ayuda">Este bloque toma el resultado de la consulta general filtrada y solo usa personal en DISPONIBLE.</div>
-
-          <div class="grid-extra">
-            <div class="grupo-extra">
-              <div class="grupo-titulo">Oficiales</div>
-              <input id="cant_oficiales_extra" type="number" min="0" placeholder="Cantidad de oficiales" />
-              <div class="subtitulo-extra">Grados oficiales</div>
-              <div class="filtro-botones">
-                <button type="button" onclick="seleccionarTodasChecks('checks_extra_oficiales')">Seleccionar todas</button>
-                <button type="button" onclick="limpiarChecks('checks_extra_oficiales')">Limpiar</button>
-              </div>
-              <div id="checks_extra_oficiales" class="checks-contenedor"></div>
-            </div>
-
-            <div class="grupo-extra">
-              <div class="grupo-titulo">Nivel ejecutivo</div>
-              <input id="cant_ejecutivo_extra" type="number" min="0" placeholder="Cantidad de nivel ejecutivo" />
-              <div class="subtitulo-extra">Grados nivel ejecutivo</div>
-              <div class="filtro-botones">
-                <button type="button" onclick="seleccionarTodasChecks('checks_extra_ejecutivo')">Seleccionar todas</button>
-                <button type="button" onclick="limpiarChecks('checks_extra_ejecutivo')">Limpiar</button>
-              </div>
-              <div id="checks_extra_ejecutivo" class="checks-contenedor"></div>
-            </div>
-
-            <div class="grupo-extra">
-              <div class="grupo-titulo">Patrulleros</div>
-              <input id="cant_patrulleros_extra" type="number" min="0" placeholder="Cantidad de patrulleros" />
-              <div class="subtitulo-extra">Grados patrulleros</div>
-              <div class="filtro-botones">
-                <button type="button" onclick="seleccionarTodasChecks('checks_extra_patrulleros')">Seleccionar todas</button>
-                <button type="button" onclick="limpiarChecks('checks_extra_patrulleros')">Limpiar</button>
-              </div>
-              <div id="checks_extra_patrulleros" class="checks-contenedor"></div>
-            </div>
-
-            <div class="grupo-extra">
-              <div class="grupo-titulo">Auxiliares</div>
-              <input id="cant_auxiliares_extra" type="number" min="0" placeholder="Cantidad de auxiliares" />
-              <div class="subtitulo-extra">Grados auxiliares</div>
-              <div class="filtro-botones">
-                <button type="button" onclick="seleccionarTodasChecks('checks_extra_auxiliares')">Seleccionar todas</button>
-                <button type="button" onclick="limpiarChecks('checks_extra_auxiliares')">Limpiar</button>
-              </div>
-              <div id="checks_extra_auxiliares" class="checks-contenedor"></div>
-            </div>
-          </div>
-
-          <div class="acciones-inline">
-            <button onclick="aplicarServicioExtraordinarioPorGrupos()">Aplicar distribución por grupos</button>
-          </div>
-
-          <div id="lista_extraordinario"></div>
-          <pre id="resultado_extra"></pre>
-<div class="acciones-inline">
-  <button type="button" onclick="guardarServicioExtraordinarioFinal()">
-    Guardar servicio extraordinario
+<div class="seccion" id="bloqueExtraordinario" style="display:none;">
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
+    7. Planeación servicio extraordinario
   </button>
-</div>
-          
-          <div class="acciones-inline acciones-descarga">
-            <button onclick="descargarServicioExtraordinario()">Descargar extraordinario</button>
-          </div>
+
+  <div id="panelExtraordinario" class="panel-contenido">
+
+    <div class="sub-card">
+      <h3>7.1 Datos del servicio</h3>
+
+      <div class="campo-corto">
+        <input id="titulo_servicio_extra" type="text" placeholder="Título del servicio extraordinario" />
+      </div>
+
+      <div class="campo-corto">
+        <input id="fecha_servicio_extra" type="date" />
+      </div>
+
+      <div class="filtro-box">
+        <div class="filtro-titulo">Supervisor del servicio</div>
+        <div id="supervisor_servicio_box" class="checks-contenedor">
+          <div class="ayuda">Aquí irá la selección del supervisor.</div>
+        </div>
+      </div>
+
+      <div class="filtro-box">
+        <div class="filtro-titulo">Jefe del servicio</div>
+        <div id="jefe_servicio_box" class="checks-contenedor">
+          <div class="ayuda">Aquí irá la selección del jefe del servicio.</div>
         </div>
       </div>
     </div>
 
+    <div class="sub-card">
+      <h3>7.2 Totales requeridos</h3>
+
+      <div class="grid-extra">
+        <div>
+          <label>Oficiales</label>
+          <input id="total_oficiales_extra" type="number" min="0" value="0" oninput="actualizarResumenGlobalExtra()" />
+        </div>
+
+        <div>
+          <label>Nivel ejecutivo</label>
+          <input id="total_ejecutivo_extra" type="number" min="0" value="0" oninput="actualizarResumenGlobalExtra()" />
+        </div>
+
+        <div>
+          <label>Patrulleros</label>
+          <input id="total_patrulleros_extra" type="number" min="0" value="0" oninput="actualizarResumenGlobalExtra()" />
+        </div>
+
+        <div>
+          <label>Auxiliares</label>
+          <input id="total_auxiliares_extra" type="number" min="0" value="0" oninput="actualizarResumenGlobalExtra()" />
+        </div>
+      </div>
+
+      <pre id="resumen_global_extra">0-0-0-0 = 0</pre>
+    </div>
+
+    <div class="sub-card">
+      <h3>7.3 Subunidades que apoyan</h3>
+
+      <div class="filtro-botones">
+        <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_apoyo_extra')">Seleccionar todas</button>
+        <button type="button" onclick="limpiarChecks('checks_subunidad_apoyo_extra'); generarDistribucionExtraPorSubunidad();">Limpiar</button>
+      </div>
+
+      <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
+
+      <div class="acciones-inline">
+        <button type="button" onclick="generarDistribucionExtraPorSubunidad()">Generar distribución por subunidad</button>
+      </div>
+    </div>
+
+    <div class="sub-card">
+      <h3>7.4 Distribución por subunidad y grado</h3>
+      <div id="contenedor_distribucion_extra"></div>
+    </div>
+
+    <div class="sub-card">
+      <h3>7.5 Validación de distribución</h3>
+      <pre id="validacion_distribucion_extra">Sin validar</pre>
+    </div>
+
+    <div class="sub-card">
+      <h3>7.6 Resultado del personal seleccionado</h3>
+      <div id="lista_extraordinario"></div>
+      <pre id="resultado_extra"></pre>
+    </div>
+
+    <div class="acciones-inline">
+      <button type="button" onclick="aplicarServicioExtraordinarioPorGrupos()">Generar personal</button>
+      <button type="button" onclick="guardarServicioExtraordinarioFinal()">Guardar servicio extraordinario</button>
+      <button type="button" onclick="descargarServicioExtraordinario()">Descargar Excel</button>
+    </div>
+  </div>
+</div>
+    
     <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
       <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
         8. Historial de servicios extraordinarios
@@ -2549,6 +2561,177 @@ async function consultarControlCumplimientoDiario() {
   }
 }
 
+function actualizarResumenGlobalExtra() {
+  const oficiales = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
+  const ejecutivo = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
+  const patrulleros = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
+  const auxiliares = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
+
+  const total = oficiales + ejecutivo + patrulleros + auxiliares;
+
+  document.getElementById("resumen_global_extra").innerText =
+    `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
+}
+
+function cargarSubunidadesApoyoExtra() {
+  const subunidades = [...new Set(estructuraGlobal.map(x => x.subunidad).filter(Boolean))];
+  pintarChecks("checks_subunidad_apoyo_extra", subunidades);
+}
+
+function generarDistribucionExtraPorSubunidad() {
+  const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+  const contenedor = document.getElementById("contenedor_distribucion_extra");
+  const validacion = document.getElementById("validacion_distribucion_extra");
+
+  contenedor.innerHTML = "";
+  validacion.innerText = "Sin validar";
+
+  if (!subunidades.length) {
+    contenedor.innerHTML = `<div class="ayuda">Selecciona al menos una subunidad.</div>`;
+    return;
+  }
+
+  const grados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AUX"];
+
+  subunidades.forEach(subunidad => {
+    const bloque = document.createElement("div");
+    bloque.className = "tabla-wrap";
+
+    let html = `
+      <div class="bloque-titulo-tabla">${subunidad}</div>
+      <table class="tabla-app">
+        <thead>
+          <tr>
+    `;
+
+    grados.forEach(g => {
+      html += `<th>${g}</th>`;
+    });
+
+    html += `
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+    `;
+
+    grados.forEach(g => {
+      html += `
+        <td>
+          <input
+            type="number"
+            min="0"
+            value="0"
+            id="extra_${subunidad}_${g}"
+            oninput="actualizarResumenSubunidadExtra('${subunidad}'); validarDistribucionExtra();"
+          />
+        </td>
+      `;
+    });
+
+    html += `
+          </tr>
+        </tbody>
+      </table>
+      <pre id="resumen_${subunidad}">0-0-0-0 = 0</pre>
+    `;
+
+    bloque.innerHTML = html;
+    contenedor.appendChild(bloque);
+
+    actualizarResumenSubunidadExtra(subunidad);
+  });
+
+  validarDistribucionExtra();
+}
+
+function actualizarResumenSubunidadExtra(subunidad) {
+  const oficiales =
+    (parseInt(document.getElementById(`extra_${subunidad}_CR`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_TC`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_MY`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_CT`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_TE`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_ST`)?.value || "0", 10));
+
+  const ejecutivo =
+    (parseInt(document.getElementById(`extra_${subunidad}_CM`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_SC`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_IJ`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_IT`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_SI`)?.value || "0", 10));
+
+  const patrulleros =
+    (parseInt(document.getElementById(`extra_${subunidad}_PT`)?.value || "0", 10)) +
+    (parseInt(document.getElementById(`extra_${subunidad}_PP`)?.value || "0", 10));
+
+  const auxiliares =
+    (parseInt(document.getElementById(`extra_${subunidad}_AUX`)?.value || "0", 10));
+
+  const total = oficiales + ejecutivo + patrulleros + auxiliares;
+
+  const box = document.getElementById(`resumen_${subunidad}`);
+  if (box) {
+    box.innerText = `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
+  }
+}
+
+function validarDistribucionExtra() {
+  const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+
+  let oficiales = 0;
+  let ejecutivo = 0;
+  let patrulleros = 0;
+  let auxiliares = 0;
+
+  subunidades.forEach(subunidad => {
+    oficiales +=
+      (parseInt(document.getElementById(`extra_${subunidad}_CR`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_TC`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_MY`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_CT`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_TE`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_ST`)?.value || "0", 10));
+
+    ejecutivo +=
+      (parseInt(document.getElementById(`extra_${subunidad}_CM`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_SC`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_IJ`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_IT`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_SI`)?.value || "0", 10));
+
+    patrulleros +=
+      (parseInt(document.getElementById(`extra_${subunidad}_PT`)?.value || "0", 10)) +
+      (parseInt(document.getElementById(`extra_${subunidad}_PP`)?.value || "0", 10));
+
+    auxiliares +=
+      (parseInt(document.getElementById(`extra_${subunidad}_AUX`)?.value || "0", 10));
+  });
+
+  const reqOf = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
+  const reqEj = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
+  const reqPt = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
+  const reqAx = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
+
+  const estado =
+    oficiales === reqOf &&
+    ejecutivo === reqEj &&
+    patrulleros === reqPt &&
+    auxiliares === reqAx;
+
+  const box = document.getElementById("validacion_distribucion_extra");
+  if (!box) return;
+
+  if (estado) {
+    box.innerText =
+      `Distribución correcta\nSolicitado: ${reqOf}-${reqEj}-${reqPt}-${reqAx} = ${reqOf + reqEj + reqPt + reqAx}\nDistribuido: ${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${oficiales + ejecutivo + patrulleros + auxiliares}`;
+  } else {
+    box.innerText =
+      `Distribución no coincide\nSolicitado: ${reqOf}-${reqEj}-${reqPt}-${reqAx} = ${reqOf + reqEj + reqPt + reqAx}\nDistribuido: ${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${oficiales + ejecutivo + patrulleros + auxiliares}`;
+  }
+}
+  
+  
 document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
   if (inputFecha) {
@@ -2556,6 +2739,9 @@ document.addEventListener("DOMContentLoaded", () => {
     inputFecha.value = hoy;
   }
 
+  actualizarResumenGlobalExtra();
+cargarSubunidadesApoyoExtra();
+  
   const consultaUnidad = document.getElementById("consulta_unidad");
   if (consultaUnidad) {
     consultaUnidad.addEventListener("change", cargarConsultaDependencias);
