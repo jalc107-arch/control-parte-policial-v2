@@ -980,7 +980,7 @@ if (!data.autorizado) {
   }
 }
 
-  async function cargarEstructura() {
+async function cargarEstructura() {
   try {
     const res = await fetch("/estructura");
     const data = await res.json();
@@ -1002,14 +1002,18 @@ if (!data.autorizado) {
     document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
     document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
 
+    // 🔥 ORDEN CORRECTO
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
-    cargarSubunidadesApoyoExtra(); // 👈 ESTA LÍNEA ES LA CLAVE
+
+    // 🔥 ESTA ES LA LÍNEA MÁS IMPORTANTE
+    cargarSubunidadesApoyoExtra();
+
   } catch (error) {
     console.error(error);
   }
 }
-
+  
     function cargarSubunidades() {
       const unidad = document.getElementById("unidad_select").value;
       const subunidadSelect = document.getElementById("subunidad_select");
