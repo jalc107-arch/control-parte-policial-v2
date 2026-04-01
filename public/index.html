@@ -1651,106 +1651,110 @@ renderizarExtraordinario(window.listaExtra);
       renderizarConsultaDesdeMemoria();
       }
 
-    function aplicarServicioExtraordinarioPorGrupos() {
-      const resultadoExtra = document.getElementById("resultado_extra");
-      resultadoExtra.innerText = "";
+function aplicarServicioExtraordinarioPorGrupos() {
+  const resultadoExtra = document.getElementById("resultado_extra");
+  resultadoExtra.innerText = "";
 
-      const disponibles = extraerDisponiblesConsulta();
-      if (!disponibles.length) {
-        alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
-        return;
-      }
+  const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
 
-      const config = [
-        {
-          nombre: "OFICIALES",
-          cantidad: parseInt(document.getElementById("cant_oficiales_extra").value || "0", 10),
-          grados: obtenerValoresChecks("checks_extra_oficiales")
-        },
-        {
-          nombre: "EJECUTIVO",
-          cantidad: parseInt(document.getElementById("cant_ejecutivo_extra").value || "0", 10),
-          grados: obtenerValoresChecks("checks_extra_ejecutivo")
-        },
-        {
-          nombre: "PATRULLEROS",
-          cantidad: parseInt(document.getElementById("cant_patrulleros_extra").value || "0", 10),
-          grados: obtenerValoresChecks("checks_extra_patrulleros")
-        },
-        {
-          nombre: "AUXILIARES",
-          cantidad: parseInt(document.getElementById("cant_auxiliares_extra").value || "0", 10),
-          grados: obtenerValoresChecks("checks_extra_auxiliares")
-        }
-      ];
+  if (!subunidades.length) {
+    alert("Debes seleccionar al menos una subunidad de apoyo.");
+    return;
+  }
 
-      const totalSolicitado = config.reduce((acc, item) => acc + (item.cantidad > 0 ? item.cantidad : 0), 0);
-      if (totalSolicitado <= 0) {
-        alert("Debes ingresar al menos una cantidad en algún grupo.");
-        return;
-      }
+  const disponibles = extraerDisponiblesConsulta();
 
-      const seleccionadosFinales = [];
-      const usados = new Set();
+  if (!disponibles.length) {
+    alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
+    return;
+  }
 
-      config.forEach(cfg => {
-        if (!cfg.cantidad || cfg.cantidad <= 0) return;
+  const grados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AUX"];
+  const seleccionadosFinales = [];
+  const usados = new Set();
 
-        const candidatos = disponibles.filter(p => {
-          const grado = String(p.grado || "").toUpperCase().trim();
-          const grupo = obtenerGrupoPorGrado(grado);
+  subunidades.forEach(subunidad => {
+    grados.forEach(grado => {
+      const input = document.getElementById(`extra_${subunidad}_${grado}`);
+      const cantidad = parseInt(input?.value || "0", 10);
 
-          if (grupo !== cfg.nombre) return false;
-          if (usados.has(String(p.cedula))) return false;
-          if (cfg.grados.length === 0) return true;
-          return cfg.grados.includes(grado);
-        });
+      if (!cantidad || cantidad <= 0) return;
 
-        const elegidos = mezclarArray(candidatos).slice(0, cfg.cantidad);
+      const candidatos = disponibles.filter(p => {
+        const ced = String(p.cedula || "").trim();
+        const gradoPersona = String(p.grado || "").toUpperCase().trim();
+        const subunidadPersona = String(p.subunidad || "").trim();
 
-        elegidos.forEach(p => {
-          usados.add(String(p.cedula));
-          p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
-          seleccionadosFinales.push({ ...p, grupo_extra: cfg.nombre });
-        });
+        return (
+          !usados.has(ced) &&
+          subunidadPersona === subunidad &&
+          gradoPersona === grado
+        );
       });
 
-      if (!seleccionadosFinales.length) {
-        alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
-        return;
-      }
+      const elegidos = mezclarArray(candidatos).slice(0, cantidad);
 
-     ultimosSeleccionadosExtra = seleccionadosFinales.map(p => ({ ...p, estadoExtra: "SI" }));
-window.listaExtra = ordenarListaExtraPorGrado(
-  seleccionadosFinales.map(p => ({ ...p, estadoExtra: "SI" }))
-);
+      elegidos.forEach(p => {
+        usados.add(String(p.cedula || "").trim());
 
-      let texto = "";
-      texto += `SERVICIO EXTRAORDINARIO APLICADO - POR GRUPOS\n\n`;
-      texto += `DISPONIBLES ANTES: ${disponibles.length}\n`;
-      texto += `SOLICITADOS: ${totalSolicitado}\n`;
-      texto += `ASIGNADOS: ${seleccionadosFinales.length}\n\n`;
+        p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
 
-      const agrupados = {};
-      seleccionadosFinales.forEach(p => {
-        if (!agrupados[p.grupo_extra]) agrupados[p.grupo_extra] = [];
-        agrupados[p.grupo_extra].push(p);
-      });
-
-      Object.keys(agrupados).forEach(grupo => {
-        texto += `${grupo}\n`;
-        texto += `${"-".repeat(40)}\n`;
-        ordenarPorGrado(agrupados[grupo]).forEach((p, i) => {
-          texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+        seleccionadosFinales.push({
+          ...p,
+          subunidad_origen: subunidad,
+          grado_requerido: grado,
+          tipoAsignacion: "AUTOMATICO",
+          estadoExtra: "SI"
         });
-        texto += `\n`;
       });
+    });
+  });
 
-      resultadoExtra.innerText = texto;
-     window.listaExtra = seleccionadosFinales.map(p => ({ ...p, estadoExtra: "SI" }));
-renderizarExtraordinario(window.listaExtra);
-      renderizarConsultaDesdeMemoria();
-    }
+  if (!seleccionadosFinales.length) {
+    alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
+    return;
+  }
+
+  ultimosSeleccionadosExtra = seleccionadosFinales.map(p => ({
+    ...p,
+    estadoExtra: "SI"
+  }));
+
+  window.listaExtra = ordenarListaExtraPorGrado(
+    seleccionadosFinales.map(p => ({
+      ...p,
+      estadoExtra: "SI"
+    }))
+  );
+
+  let texto = "";
+  texto += `SERVICIO EXTRAORDINARIO GENERADO\n\n`;
+  texto += `SUBUNIDADES: ${subunidades.join(", ")}\n`;
+  texto += `ASIGNADOS: ${seleccionadosFinales.length}\n\n`;
+
+  const agrupados = {};
+  seleccionadosFinales.forEach(p => {
+    const clave = p.subunidad || "SIN SUBUNIDAD";
+    if (!agrupados[clave]) agrupados[clave] = [];
+    agrupados[clave].push(p);
+  });
+
+  Object.keys(agrupados).forEach(sub => {
+    texto += `${sub}\n`;
+    texto += `${"-".repeat(40)}\n`;
+
+    ordenarListaExtraPorGrado(agrupados[sub]).forEach((p, i) => {
+      texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+    });
+
+    texto += `\n`;
+  });
+
+  resultadoExtra.innerText = texto;
+
+  renderizarExtraordinario(window.listaExtra);
+  renderizarConsultaDesdeMemoria();
+}
 
     async function generarParte() {
       const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
