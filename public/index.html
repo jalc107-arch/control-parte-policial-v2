@@ -2194,7 +2194,7 @@ async function guardarServicioExtraordinarioFinal() {
       URL.revokeObjectURL(url);
     }
 
-    function descargarServicioExtraordinario() {
+   function descargarServicioExtraordinario() {
   const listaDescarga = (window.listaExtra && window.listaExtra.length)
     ? ordenarListaExtraPorGrado(window.listaExtra)
     : [];
@@ -2204,21 +2204,50 @@ async function guardarServicioExtraordinarioFinal() {
     return;
   }
 
-  let texto = "SERVICIO EXTRAORDINARIO\n\n";
+  const tituloServicio = document.getElementById("titulo_servicio_extra")?.value || "";
+  const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
+  const subunidadesApoyo = obtenerValoresChecks("checks_subunidad_apoyo_extra").join(", ");
 
-  listaDescarga.forEach((p, i) => {
-    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} | CC ${p.cedula || ""} | ${p.estacion || ""}\n`;
-  });
+  const datosExcel = listaDescarga.map((p, i) => ({
+    ITEM: i + 1,
+    TITULO_SERVICIO: tituloServicio,
+    FECHA_SERVICIO: fechaServicio,
+    SUBUNIDADES_APOYO: subunidadesApoyo,
+    SUBUNIDAD: p.subunidad || "",
+    ESTACION: p.estacion || "",
+    ORGANICO: p.organico || "",
+    GRADO: p.grado || "",
+    APELLIDOS: p.apellidos || "",
+    NOMBRES: p.nombres || "",
+    CEDULA: p.cedula || "",
+    TELEFONO: p.telefono || "",
+    CORREO: p.correo || "",
+    TIPO_ASIGNACION: p.tipoAsignacion || "AUTOMATICO"
+  }));
 
-  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "servicio_extraordinario.txt";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(datosExcel);
+
+  const widths = [
+    { wch: 8 },   // ITEM
+    { wch: 28 },  // TITULO_SERVICIO
+    { wch: 14 },  // FECHA
+    { wch: 24 },  // SUBUNIDADES_APOYO
+    { wch: 16 },  // SUBUNIDAD
+    { wch: 18 },  // ESTACION
+    { wch: 18 },  // ORGANICO
+    { wch: 10 },  // GRADO
+    { wch: 22 },  // APELLIDOS
+    { wch: 22 },  // NOMBRES
+    { wch: 16 },  // CEDULA
+    { wch: 18 },  // TELEFONO
+    { wch: 28 },  // CORREO
+    { wch: 18 }   // TIPO_ASIGNACION
+  ];
+  ws["!cols"] = widths;
+
+  XLSX.utils.book_append_sheet(wb, ws, "Servicio Extra");
+  XLSX.writeFile(wb, `servicio_extraordinario_${fechaServicio || "sin_fecha"}.xlsx`);
 }
 
 function ordenarListaExtraPorGrado(lista) {
