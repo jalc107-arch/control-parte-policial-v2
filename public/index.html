@@ -2199,12 +2199,17 @@ async function guardarServicioExtraordinarioFinal() {
       URL.revokeObjectURL(url);
     }
 
-   function descargarServicioExtraordinario() {
-  const listaDescarga = (window.listaExtra && window.listaExtra.length)
-    ? ordenarListaExtraPorGrado(window.listaExtra)
+function descargarServicioExtraordinario() {
+  if (typeof XLSX === "undefined") {
+    alert("La librería de Excel no está cargada. Agrega xlsx.full.min.js en el index.");
+    return;
+  }
+
+  const listaBase = (window.listaExtra && window.listaExtra.length)
+    ? ordenarListaExtraPorGrado(window.listaExtra.filter(p => p.estadoExtra !== "NO"))
     : [];
 
-  if (!listaDescarga.length) {
+  if (!listaBase.length) {
     alert("No hay personal seleccionado en servicio extraordinario.");
     return;
   }
@@ -2213,7 +2218,7 @@ async function guardarServicioExtraordinarioFinal() {
   const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
   const subunidadesApoyo = obtenerValoresChecks("checks_subunidad_apoyo_extra").join(", ");
 
-  const datosExcel = listaDescarga.map((p, i) => ({
+  const datosExcel = listaBase.map((p, i) => ({
     ITEM: i + 1,
     TITULO_SERVICIO: tituloServicio,
     FECHA_SERVICIO: fechaServicio,
@@ -2227,34 +2232,37 @@ async function guardarServicioExtraordinarioFinal() {
     CEDULA: p.cedula || "",
     TELEFONO: p.telefono || "",
     CORREO: p.correo || "",
+    APTITUD: p.aptitud || "",
+    NOVEDAD: p.tipo_novedad || "DISPONIBLE",
     TIPO_ASIGNACION: p.tipoAsignacion || "AUTOMATICO"
   }));
 
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.json_to_sheet(datosExcel);
 
-  const widths = [
-    { wch: 8 },   // ITEM
-    { wch: 28 },  // TITULO_SERVICIO
-    { wch: 14 },  // FECHA
-    { wch: 24 },  // SUBUNIDADES_APOYO
-    { wch: 16 },  // SUBUNIDAD
-    { wch: 18 },  // ESTACION
-    { wch: 18 },  // ORGANICO
-    { wch: 10 },  // GRADO
-    { wch: 22 },  // APELLIDOS
-    { wch: 22 },  // NOMBRES
-    { wch: 16 },  // CEDULA
-    { wch: 18 },  // TELEFONO
-    { wch: 28 },  // CORREO
-    { wch: 18 }   // TIPO_ASIGNACION
+  ws["!cols"] = [
+    { wch: 8 },
+    { wch: 28 },
+    { wch: 14 },
+    { wch: 24 },
+    { wch: 16 },
+    { wch: 18 },
+    { wch: 18 },
+    { wch: 10 },
+    { wch: 22 },
+    { wch: 22 },
+    { wch: 16 },
+    { wch: 18 },
+    { wch: 28 },
+    { wch: 12 },
+    { wch: 20 },
+    { wch: 18 }
   ];
-  ws["!cols"] = widths;
 
   XLSX.utils.book_append_sheet(wb, ws, "Servicio Extra");
   XLSX.writeFile(wb, `servicio_extraordinario_${fechaServicio || "sin_fecha"}.xlsx`);
 }
-
+  
 function ordenarListaExtraPorGrado(lista) {
   const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
 
