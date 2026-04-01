@@ -2613,16 +2613,17 @@ function generarDistribucionExtraPorSubunidad() {
 
     grados.forEach(g => {
       html += `
-        <td>
-          <input
-            type="number"
-            min="0"
-            value="0"
-            id="extra_${subunidad}_${g}"
-            oninput="actualizarResumenSubunidadExtra('${subunidad}'); validarDistribucionExtra();"
-          />
-        </td>
-      `;
+  <td>
+    <input
+      type="number"
+      min="0"
+      value="0"
+      id="extra_${subunidad}_${g}"
+      class="input-cantidad-extra"
+      oninput="actualizarResumenSubunidadExtra('${subunidad}'); validarDistribucionExtra();"
+    />
+  </td>
+`;
     });
 
     html += `
