@@ -2890,8 +2890,59 @@ function validarDistribucionExtra() {
       `Distribución no coincide\nSolicitado: ${reqOf}-${reqEj}-${reqPt}-${reqAx} = ${reqOf + reqEj + reqPt + reqAx}\nDistribuido: ${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${oficiales + ejecutivo + patrulleros + auxiliares}`;
   }
 }
-  
-  
+  // 👇 PEGA AQUÍ LA FUNCIÓN
+function cargarResponsablesServicioExtra() {
+  const boxSupervisor = document.getElementById("supervisor_servicio_box");
+  const boxJefe = document.getElementById("jefe_servicio_box");
+
+  if (!boxSupervisor || !boxJefe) return;
+
+  boxSupervisor.innerHTML = "";
+  boxJefe.innerHTML = "";
+
+  if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) {
+    boxSupervisor.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
+    boxJefe.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
+    return;
+  }
+
+  const personal = ultimoResultadoConsulta.filter(p => {
+    const nov = String(p.tipo_novedad || "").toUpperCase();
+    const apt = String(p.aptitud || "").toUpperCase();
+
+    return (nov === "" || nov === "DISPONIBLE") && apt === "APTO";
+  });
+
+  personal.forEach(p => {
+    const texto = `${p.grado} ${p.apellidos} ${p.nombres}`;
+
+    const labelSup = document.createElement("label");
+    labelSup.className = "check-item";
+
+    const inputSup = document.createElement("input");
+    inputSup.type = "radio";
+    inputSup.name = "supervisor_servicio";
+    inputSup.value = p.cedula;
+
+    labelSup.appendChild(inputSup);
+    labelSup.appendChild(document.createTextNode(texto));
+    boxSupervisor.appendChild(labelSup);
+
+    const labelJefe = document.createElement("label");
+    labelJefe.className = "check-item";
+
+    const inputJefe = document.createElement("input");
+    inputJefe.type = "radio";
+    inputJefe.name = "jefe_servicio";
+    inputJefe.value = p.cedula;
+
+    labelJefe.appendChild(inputJefe);
+    labelJefe.appendChild(document.createTextNode(texto));
+    boxJefe.appendChild(labelJefe);
+  });
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
   if (inputFecha) {
