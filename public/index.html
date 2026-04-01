@@ -979,34 +979,36 @@ if (!data.autorizado) {
     alert("Error validando responsable");
   }
 }
-    async function cargarEstructura() {
-      try {
-        const res = await fetch("/estructura");
-        const data = await res.json();
 
-        estructuraGlobal = data;
+  async function cargarEstructura() {
+  try {
+    const res = await fetch("/estructura");
+    const data = await res.json();
 
-        const unidadSelect = document.getElementById("unidad_select");
-        unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
+    estructuraGlobal = data;
 
-        const unidades = [...new Set(data.map(x => x.unidad).filter(Boolean))];
-        unidades.forEach(unidad => {
-          const option = document.createElement("option");
-          option.value = unidad;
-          option.textContent = unidad;
-          unidadSelect.appendChild(option);
-        });
+    const unidadSelect = document.getElementById("unidad_select");
+    unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
 
-        document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-        document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-        document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+    const unidades = [...new Set(data.map(x => x.unidad).filter(Boolean))];
+    unidades.forEach(unidad => {
+      const option = document.createElement("option");
+      option.value = unidad;
+      option.textContent = unidad;
+      unidadSelect.appendChild(option);
+    });
 
-        cargarFiltrosConsulta();
-        cargarChecksGruposExtra();
-      } catch (error) {
-        console.error(error);
-      }
-    }
+    document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+    document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+    document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+
+    cargarFiltrosConsulta();
+    cargarChecksGruposExtra();
+    cargarSubunidadesApoyoExtra(); // 👈 ESTA LÍNEA ES LA CLAVE
+  } catch (error) {
+    console.error(error);
+  }
+}
 
     function cargarSubunidades() {
       const unidad = document.getElementById("unidad_select").value;
@@ -2729,9 +2731,6 @@ document.addEventListener("DOMContentLoaded", () => {
     inputFecha.value = hoy;
   }
 
-  actualizarResumenGlobalExtra();
-cargarSubunidadesApoyoExtra();
-  
   const consultaUnidad = document.getElementById("consulta_unidad");
   if (consultaUnidad) {
     consultaUnidad.addEventListener("change", cargarConsultaDependencias);
@@ -2748,6 +2747,8 @@ cargarSubunidadesApoyoExtra();
   document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
 
   cargarChecksGruposExtra();
+
+  // 🔥 SOLO esta función
   cargarEstructura();
 });
 </script>
