@@ -2760,18 +2760,32 @@ async function generarDistribucionExtraPorSubunidad() {
     `;
 
     grados.forEach(g => {
-      html += `
-        <td>
-          <input
-            type="number"
-            min="0"
-            value="0"
-            id="extra_${subunidad}_${g}"
-            class="input-cantidad-extra"
-            oninput="actualizarResumenSubunidadExtra('${subunidad}'); validarDistribucionExtra();"
-          />
-        </td>
-      `;
+      const cantidadDisponible = disponiblesSubunidad.filter(p =>
+  String(p.grado || "").trim().toUpperCase() === g
+).length;
+
+html += `
+  <td>
+    <input
+      type="number"
+      min="0"
+      max="${cantidadDisponible}"
+      value="0"
+      id="extra_${subunidad}_${g}"
+      class="input-cantidad-extra"
+      oninput="
+        if (parseInt(this.value) > ${cantidadDisponible}) {
+          this.value = ${cantidadDisponible};
+        }
+        if (parseInt(this.value) < 0) {
+          this.value = 0;
+        }
+        actualizarResumenSubunidadExtra('${subunidad}');
+        validarDistribucionExtra();
+      "
+    />
+  </td>
+`;
     });
 
     html += `
