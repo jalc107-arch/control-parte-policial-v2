@@ -2642,7 +2642,7 @@ function cargarSubunidadesApoyoExtra() {
   pintarChecks("checks_subunidad_apoyo_extra", subunidades);
 }
 
-function generarDistribucionExtraPorSubunidad() {
+async function generarDistribucionExtraPorSubunidad() {
   let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
@@ -2662,10 +2662,29 @@ function generarDistribucionExtraPorSubunidad() {
     return;
   }
 
-  const disponibles = extraerDisponiblesConsulta();
+  const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
+  if (!fechaServicio) {
+    contenedor.innerHTML = `<div class="ayuda">Debes seleccionar la fecha del servicio.</div>`;
+    return;
+  }
+
+  const disponiblesBase = extraerDisponiblesConsulta();
+
+  if (!disponiblesBase.length) {
+    contenedor.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
+    return;
+  }
+
+  const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
+  const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x).trim()));
+
+  const disponibles = disponiblesBase.filter(p => {
+    const ced = String(p.cedula || "").trim();
+    return !ocupadosSet.has(ced);
+  });
 
   if (!disponibles.length) {
-    contenedor.innerHTML = `<div class="ayuda">No hay personal disponible. Primero consulta novedades y verifica que exista personal APTO y DISPONIBLE.</div>`;
+    contenedor.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre de otro servicio para esa fecha.</div>`;
     return;
   }
 
@@ -2682,7 +2701,7 @@ function generarDistribucionExtraPorSubunidad() {
       bloqueVacio.className = "tabla-wrap";
       bloqueVacio.innerHTML = `
         <div class="bloque-titulo-tabla">${subunidad}</div>
-        <div class="ayuda">No hay personal disponible en esta subunidad.</div>
+        <div class="ayuda">No hay personal disponible en esta subunidad para esa fecha.</div>
         <pre id="resumen_${subunidad}">0-0-0-0 = 0</pre>
       `;
       contenedor.appendChild(bloqueVacio);
@@ -2769,7 +2788,7 @@ function generarDistribucionExtraPorSubunidad() {
   });
 
   if (!seGeneroAlMenosUno) {
-    validacion.innerText = "No se generó distribución. Revisa si el resultado de consulta de novedades trae la subunidad en cada funcionario.";
+    validacion.innerText = "No se generó distribución. Revisa si el resultado de consulta trae subunidad en cada funcionario.";
   } else {
     validarDistribucionExtra();
   }
