@@ -2629,7 +2629,7 @@ function generarDistribucionExtraPorSubunidad() {
 
   if (!contenedor || !validacion) return;
 
-  // Si no seleccionó ninguna, marca todas automáticamente
+  // 🔥 AUTOSELECCIÓN
   if (!subunidades.length) {
     seleccionarTodasChecks("checks_subunidad_apoyo_extra");
     subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
@@ -2645,16 +2645,25 @@ function generarDistribucionExtraPorSubunidad() {
 
   const disponibles = extraerDisponiblesConsulta();
 
-const grados = [
-  ...new Set(
-    disponibles
-      .filter(p => p.subunidad === subunidad)
-      .map(p => p.grado)
-      .filter(Boolean)
-  )
-];
+  if (!disponibles.length) {
+    contenedor.innerHTML = `<div class="ayuda">No hay personal disponible.</div>`;
+    return;
+  }
 
   subunidades.forEach(subunidad => {
+
+    // 🔥 GRADOS DINÁMICOS POR SUBUNIDAD
+    const grados = [
+      ...new Set(
+        disponibles
+          .filter(p => String(p.subunidad || "").trim() === subunidad)
+          .map(p => String(p.grado || "").toUpperCase().trim())
+          .filter(Boolean)
+      )
+    ];
+
+    if (!grados.length) return;
+
     const bloque = document.createElement("div");
     bloque.className = "tabla-wrap";
 
@@ -2669,26 +2678,21 @@ const grados = [
       html += `<th>${g}</th>`;
     });
 
-    html += `
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-    `;
+    html += `</tr></thead><tbody><tr>`;
 
     grados.forEach(g => {
       html += `
-  <td>
-    <input
-      type="number"
-      min="0"
-      value="0"
-      id="extra_${subunidad}_${g}"
-      class="input-cantidad-extra"
-      oninput="actualizarResumenSubunidadExtra('${subunidad}'); validarDistribucionExtra();"
-    />
-  </td>
-`;
+        <td>
+          <input
+            type="number"
+            min="0"
+            value="0"
+            id="extra_${subunidad}_${g}"
+            class="input-cantidad-extra"
+            oninput="actualizarResumenSubunidadExtra('${subunidad}'); validarDistribucionExtra();"
+          />
+        </td>
+      `;
     });
 
     html += `
