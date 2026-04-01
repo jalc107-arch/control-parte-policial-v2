@@ -1624,6 +1624,11 @@ personas.forEach(p => {
     }
 
     async function aplicarServicioExtraordinarioPorGrupos() {
+
+      if (window.listaExtra && window.listaExtra.length) {
+  alert("El servicio ya tiene personal asignado. Si deseas cambiarlo, primero debes limpiar o crear uno nuevo.");
+  return;
+}
   const resultadoExtra = document.getElementById("resultado_extra");
   resultadoExtra.innerText = "";
 
@@ -1690,7 +1695,7 @@ if (!subunidades.length) {
           grado_requerido: grado,
           tipoAsignacion: "AUTOMATICO",
           estadoExtra: "SI"
-        });
+                  });
       });
     });
   });
@@ -2638,7 +2643,16 @@ function generarDistribucionExtraPorSubunidad() {
     return;
   }
 
-  const grados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AUX"];
+  const disponibles = extraerDisponiblesConsulta();
+
+const grados = [
+  ...new Set(
+    disponibles
+      .filter(p => p.subunidad === subunidad)
+      .map(p => p.grado)
+      .filter(Boolean)
+  )
+];
 
   subunidades.forEach(subunidad => {
     const bloque = document.createElement("div");
