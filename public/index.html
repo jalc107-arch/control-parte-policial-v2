@@ -2316,14 +2316,16 @@ function renderizarExtraordinario(lista) {
   const resultadoExtra = document.getElementById("resultado_extra");
   if (!resultadoExtra || !window.listaExtra || !window.listaExtra.length) return;
 
-  const seleccionados = ordenarPorGrado(window.listaExtra);
+  const seleccionados = ordenarPorGrado(
+    window.listaExtra.filter(p => p.estadoExtra !== "NO")
+  );
 
   let texto = "";
   texto += "SERVICIO EXTRAORDINARIO ACTUALIZADO\n\n";
   texto += `ASIGNADOS: ${seleccionados.length}\n\n`;
 
   seleccionados.forEach((p, i) => {
-    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""} - ${p.subunidad || ""}\n`;
   });
 
   resultadoExtra.innerText = texto;
@@ -2337,17 +2339,20 @@ function actualizarResumenExtra() {
     return;
   }
 
+  const activos = ordenarListaExtraPorGrado(
+    window.listaExtra.filter(p => p.estadoExtra !== "NO")
+  );
+
   let texto = "";
   texto += `SERVICIO EXTRAORDINARIO AJUSTADO\n\n`;
-  texto += `ASIGNADOS: ${window.listaExtra.length}\n\n`;
+  texto += `ASIGNADOS: ${activos.length}\n\n`;
 
-  ordenarListaExtraPorGrado(window.listaExtra).forEach((p, i) => {
+  activos.forEach((p, i) => {
     texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
   });
 
   resultadoExtra.innerText = texto;
 }
-
     
 function cambiarExtraEstado(index, valor) {
   if (!window.listaExtra || !window.listaExtra[index]) return;
