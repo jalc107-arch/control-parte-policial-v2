@@ -3090,49 +3090,45 @@ async function cargarResponsablesServicioExtra() {
   }
 
   function pintar(box, lista, name) {
-    const supSel = String(seleccionadoActual("supervisor_servicio")).trim();
-    const jefeSel = String(seleccionadoActual("jefe_servicio")).trim();
-    const pmuSel = String(seleccionadoActual("jefe_pmu")).trim();
+  if (!lista.length) {
+    box.innerHTML = `<div class="ayuda">No hay personal que cumpla ese grado.</div>`;
+    return;
+  }
 
-    const excluidos = new Set(
-      [supSel, jefeSel, pmuSel]
-        .filter(Boolean)
-        .filter(ced => ced !== String(seleccionadoActual(name)).trim())
-    );
+  box.innerHTML = "";
 
-    const listaFinal = lista.filter(p => !excluidos.has(String(p.cedula || "").trim()));
+  lista.forEach(p => {
+    const label = document.createElement("label");
+    label.className = "check-item";
+    label.style.cursor = "pointer";
 
-    if (!listaFinal.length) {
-      box.innerHTML = `<div class="ayuda">No hay personal que cumpla ese grado o ya fue usado en otro cargo.</div>`;
-      return;
-    }
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = name;
+    input.value = p.cedula;
+    input.style.marginRight = "6px";
 
-    listaFinal.forEach(p => {
-      const label = document.createElement("label");
-      label.className = "check-item";
+    const texto = `${p.grado} ${p.apellidos} ${p.nombres} - ${p.subunidad}`;
 
-      const input = document.createElement("input");
-      input.type = "radio";
-      input.name = name;
-      input.value = p.cedula;
-
-      const actual = seleccionadoActual(name);
-      if (String(actual).trim() === String(p.cedula).trim()) {
-        input.checked = true;
+    input.addEventListener("change", () => {
+      if (name === "supervisor_servicio") {
+        window.seleccionServicio.supervisor = input.value;
+      }
+      if (name === "jefe_servicio") {
+        window.seleccionServicio.jefe = input.value;
+      }
+      if (name === "jefe_pmu") {
+        window.seleccionServicio.pmu = input.value;
       }
 
-      input.addEventListener("change", () => {
-  // Solo actualiza distribución, NO recargues responsables
-  generarDistribucionExtraPorSubunidad();
-});
-
-      const texto = `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - ${p.subunidad || ""}`;
-
-      label.appendChild(input);
-      label.appendChild(document.createTextNode(texto));
-      box.appendChild(label);
+      generarDistribucionExtraPorSubunidad();
     });
-  }
+
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(texto));
+    box.appendChild(label);
+  });
+}
 
   pintar(boxSupervisor, filtrar(personal, gradoSup), "supervisor_servicio");
   pintar(boxJefe, filtrar(personal, gradoJefe), "jefe_servicio");
