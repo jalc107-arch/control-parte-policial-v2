@@ -1690,12 +1690,14 @@ if (!subunidades.length) {
         const gradoPersona = String(p.grado || "").toUpperCase().trim();
         const subunidadPersona = String(p.subunidad || "").trim();
 
-        return (
-          !usados.has(ced) &&
-          !ocupadosSet.has(ced) &&
-          subunidadPersona === subunidad &&
-          gradoPersona === grado
-        );
+       return (
+  !usados.has(ced) &&
+  !ocupadosSet.has(ced) &&
+  ced !== supervisorCedula &&
+  ced !== jefeCedula &&
+  subunidadPersona === subunidad &&
+  gradoPersona === grado
+);
       });
 
       const elegidos = mezclarArray(candidatos).slice(0, cantidad);
@@ -1717,6 +1719,27 @@ if (!subunidades.length) {
     });
   });
 
+const base = [...ultimoResultadoConsulta];
+
+const sup = base.find(p => String(p.cedula) === supervisorCedula);
+const jefeObj = base.find(p => String(p.cedula) === jefeCedula);
+
+if (sup) {
+  seleccionadosFinales.unshift({
+    ...sup,
+    cargoServicio: "SUPERVISOR",
+    tipoAsignacion: "FIJO"
+  });
+}
+
+if (jefeObj) {
+  seleccionadosFinales.unshift({
+    ...jefeObj,
+    cargoServicio: "JEFE DE SERVICIO",
+    tipoAsignacion: "FIJO"
+  });
+}
+      
   if (!seleccionadosFinales.length) {
     alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
     return;
@@ -2687,7 +2710,17 @@ async function generarDistribucionExtraPorSubunidad() {
     return;
   }
 
-  const disponiblesBase = extraerDisponiblesConsulta();
+  const supervisorCedula = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
+const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
+
+const disponibles = extraerDisponiblesConsulta().filter(p => {
+  const ced = String(p.cedula || "").trim();
+
+  return (
+    ced !== supervisorCedula &&
+    ced !== jefeCedula
+  );
+});
 
   if (!disponiblesBase.length) {
     contenedor.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
@@ -2947,6 +2980,7 @@ function cargarResponsablesServicioExtra() {
 
   ordenado.forEach(p => {
     const texto = `${p.grado} ${p.apellidos} ${p.nombres} - CC ${p.cedula}`;
+    ${p.cargoServicio ? `<div style="color:#B54708;font-size:12px;">${p.cargoServicio}</div>` : ""}
 
     const sup = document.createElement("label");
     sup.className = "check-item";
