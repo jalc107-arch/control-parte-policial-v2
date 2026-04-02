@@ -1700,16 +1700,36 @@ personas.forEach(p => {
     return;
   }
 
-      const supervisor = document.querySelector('input[name="supervisor_servicio"]:checked')?.value;
+     const supervisor = document.querySelector('input[name="supervisor_servicio"]:checked')?.value;
 const jefe = document.querySelector('input[name="jefe_servicio"]:checked')?.value;
+const jefePmu = document.querySelector('input[name="jefe_pmu"]:checked')?.value;
 
-if (!supervisor || !jefe) {
-  alert("Debes seleccionar supervisor y jefe del servicio.");
+if (!supervisor || !jefe || !jefePmu) {
+  alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
   return;
 }
 
-if (supervisor === jefe) {
-  alert("Supervisor y jefe del servicio no pueden ser la misma persona.");
+if (supervisor === jefe || supervisor === jefePmu || jefe === jefePmu) {
+  alert("No puedes asignar la misma persona a múltiples cargos.");
+  return;
+}
+
+const supervisorCedula = String(supervisor).trim();
+const jefeCedula = String(jefe).trim();
+const jefePmuCedula = String(jefePmu).trim();
+
+      const ocupadosHoy = new Set(
+  (window.serviciosExistentes || [])
+    .filter(s => s.fecha === fechaServicio)
+    .map(s => String(s.cedula))
+);
+
+if (
+  ocupadosHoy.has(supervisorCedula) ||
+  ocupadosHoy.has(jefeCedula) ||
+  ocupadosHoy.has(jefePmuCedula)
+) {
+  alert("Uno de los responsables ya está asignado a otro servicio ese día.");
   return;
 }
 
@@ -1752,6 +1772,7 @@ if (!subunidades.length) {
   !ocupadosSet.has(ced) &&
   ced !== supervisorCedula &&
   ced !== jefeCedula &&
+  ced !== jefePmuCedula &&
   subunidadPersona === subunidad &&
   gradoPersona === grado
 );
@@ -1796,6 +1817,36 @@ if (jefeObj) {
     tipoAsignacion: "FIJO"
   });
 }
+const base = [...ultimoResultadoConsulta];
+
+const sup = base.find(p => String(p.cedula) === supervisorCedula);
+const jefeObj = base.find(p => String(p.cedula) === jefeCedula);
+const pmuObj = base.find(p => String(p.cedula) === jefePmuCedula);
+
+if (sup) {
+  seleccionadosFinales.unshift({
+    ...sup,
+    cargoServicio: "SUPERVISOR",
+    tipoAsignacion: "FIJO"
+  });
+}
+
+if (jefeObj) {
+  seleccionadosFinales.unshift({
+    ...jefeObj,
+    cargoServicio: "JEFE DE SERVICIO",
+    tipoAsignacion: "FIJO"
+  });
+}
+
+if (pmuObj) {
+  seleccionadosFinales.unshift({
+    ...pmuObj,
+    cargoServicio: "JEFE DE PMU",
+    tipoAsignacion: "FIJO"
+  });
+}
+      
       
   if (!seleccionadosFinales.length) {
     alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
@@ -2401,6 +2452,8 @@ function renderizarExtraordinario(lista) {
         ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
         <span class="persona-cc">CC ${p.cedula || ""}</span>
       </b>
+
+      ${p.cargoServicio ? `<div style="color:#B54708;font-size:12px;">${p.cargoServicio}</div>` : ""}
 
       <div class="acciones-inline" style="justify-content:flex-start;">
         <select onchange="cambiarExtraEstado(${i}, this.value)">
