@@ -1705,9 +1705,9 @@ personas.forEach(p => {
     return;
   }
 
-  const supervisor = document.querySelector('input[name="supervisor_servicio"]:checked')?.value;
-  const jefe = document.querySelector('input[name="jefe_servicio"]:checked')?.value;
-  const jefePmu = document.querySelector('input[name="jefe_pmu"]:checked')?.value;
+  const supervisor = window.seleccionServicio.supervisor;
+const jefe = window.seleccionServicio.jefe;
+const jefePmu = window.seleccionServicio.pmu;
 
   if (!supervisor || !jefe || !jefePmu) {
     alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
