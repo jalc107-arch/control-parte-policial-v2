@@ -3011,34 +3011,49 @@ function cargarResponsablesServicioExtra() {
   boxJefe.innerHTML = "";
   boxPmu.innerHTML = "";
 
-  if (!ultimoResultadoConsulta.length) {
-    boxSupervisor.innerHTML = "<div class='ayuda'>Primero consulta novedades</div>";
-    boxJefe.innerHTML = "<div class='ayuda'>Primero consulta novedades</div>";
-    boxPmu.innerHTML = "<div class='ayuda'>Primero consulta novedades</div>";
+  if (!window.ultimoResultadoConsulta || !window.ultimoResultadoConsulta.length) {
+    boxSupervisor.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
+    boxJefe.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
+    boxPmu.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
     return;
   }
 
-  const necesidadSup = document.getElementById("grado_supervisor_servicio").value;
-  const necesidadJefe = document.getElementById("grado_jefe_servicio").value;
-  const necesidadPmu = document.getElementById("grado_jefe_pmu").value;
+  const gradoSup = document.getElementById("grado_supervisor_servicio")?.value || "";
+  const gradoJefe = document.getElementById("grado_jefe_servicio")?.value || "";
+  const gradoPmu = document.getElementById("grado_jefe_pmu")?.value || "";
 
-  const disponibles = ultimoResultadoConsulta.filter(p => {
-    const nov = (p.tipo_novedad || "").toUpperCase();
-    const apt = (p.aptitud || "").toUpperCase();
+  const personal = window.ultimoResultadoConsulta.filter(p => {
+    const nov = String(p.tipo_novedad || "").toUpperCase().trim();
+    const apt = String(p.aptitud || "").toUpperCase().trim();
 
     return (nov === "" || nov === "DISPONIBLE") && apt === "APTO";
   });
 
-  function pintar(box, name, necesidad) {
-    const lista = disponibles.filter(p => cumpleGradoNecesario(p, necesidad));
+  if (!personal.length) {
+    boxSupervisor.innerHTML = `<div class="ayuda">No hay personal disponible.</div>`;
+    boxJefe.innerHTML = `<div class="ayuda">No hay personal disponible.</div>`;
+    boxPmu.innerHTML = `<div class="ayuda">No hay personal disponible.</div>`;
+    return;
+  }
 
-    if (!necesidad) {
-      box.innerHTML = "<div class='ayuda'>Selecciona el grado requerido</div>";
-      return;
-    }
+  function grupo(grado) {
+    const g = String(grado || "").toUpperCase().trim();
 
+    if (["CR","TC","MY","CT","TE","ST"].includes(g)) return "OFICIALES";
+    if (["CM","SC","IJ","IT","SI"].includes(g)) return "EJECUTIVO";
+    if (["PT","PP"].includes(g)) return "PATRULLEROS";
+    if (["AUX"].includes(g)) return "AUXILIARES";
+    return "OTROS";
+  }
+
+  function filtrar(lista, necesidad) {
+    if (!necesidad || necesidad === "TODOS") return lista;
+    return lista.filter(p => grupo(p.grado) === necesidad);
+  }
+
+  function pintar(box, lista, name) {
     if (!lista.length) {
-      box.innerHTML = "<div class='ayuda'>No hay personal para ese grado</div>";
+      box.innerHTML = `<div class="ayuda">No hay personal que cumpla ese grado.</div>`;
       return;
     }
 
@@ -3051,18 +3066,17 @@ function cargarResponsablesServicioExtra() {
       input.name = name;
       input.value = p.cedula;
 
-      label.appendChild(input);
-      label.appendChild(document.createTextNode(
-        `${p.grado} ${p.apellidos} ${p.nombres} - ${p.subunidad}`
-      ));
+      const texto = `${p.grado} ${p.apellidos} ${p.nombres} - ${p.subunidad}`;
 
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(texto));
       box.appendChild(label);
     });
   }
 
-  pintar(boxSupervisor, "supervisor_servicio", necesidadSup);
-  pintar(boxJefe, "jefe_servicio", necesidadJefe);
-  pintar(boxPmu, "jefe_pmu", necesidadPmu);
+  pintar(boxSupervisor, filtrar(personal, gradoSup), "supervisor_servicio");
+  pintar(boxJefe, filtrar(personal, gradoJefe), "jefe_servicio");
+  pintar(boxPmu, filtrar(personal, gradoPmu), "jefe_pmu");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
