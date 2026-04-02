@@ -1699,6 +1699,7 @@ personas.forEach(p => {
     alert("Debes seleccionar la fecha del servicio.");
     return;
   }
+      
 
      const supervisor = document.querySelector('input[name="supervisor_servicio"]:checked')?.value;
 const jefe = document.querySelector('input[name="jefe_servicio"]:checked')?.value;
@@ -1817,8 +1818,6 @@ if (jefeObj) {
     tipoAsignacion: "FIJO"
   });
 }
-const base = [...ultimoResultadoConsulta];
-
 const sup = base.find(p => String(p.cedula) === supervisorCedula);
 const jefeObj = base.find(p => String(p.cedula) === jefeCedula);
 const pmuObj = base.find(p => String(p.cedula) === jefePmuCedula);
@@ -2832,7 +2831,7 @@ const disponibles = extraerDisponiblesConsulta().filter(p => {
   );
 });
 
-  if (!disponiblesBase.length) {
+  if (!disponibles.length) {
     contenedor.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
     return;
   }
