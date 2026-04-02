@@ -773,6 +773,11 @@
     
 <script>
 
+  function limpiarSubunidades() {
+  document.querySelectorAll('#contenedorSubunidades input[type="checkbox"]')
+    .forEach(cb => cb.checked = false);
+}
+
   function grupoGrado(grado = "") {
   const g = String(grado).toUpperCase().trim();
 
