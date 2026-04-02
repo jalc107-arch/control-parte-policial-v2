@@ -3122,9 +3122,8 @@ async function cargarResponsablesServicioExtra() {
       }
 
       input.addEventListener("change", () => {
-  setTimeout(() => {
-    cargarResponsablesServicioExtra();
-  }, 50);
+  // Solo actualiza distribución, NO recargues responsables
+  generarDistribucionExtraPorSubunidad();
 });
 
       const texto = `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - ${p.subunidad || ""}`;
