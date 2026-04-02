@@ -575,31 +575,71 @@
   <div id="panelExtraordinario" class="panel-contenido">
 
     <div class="sub-card">
-      <h3>7.1 Datos del servicio</h3>
+  <h3>7.1 Datos del servicio</h3>
 
-      <div class="campo-corto">
-        <input id="titulo_servicio_extra" type="text" placeholder="Título del servicio extraordinario" />
-      </div>
+  <div class="campo-corto">
+    <input id="titulo_servicio_extra" type="text" placeholder="Título del servicio extraordinario" />
+  </div>
 
-      <div class="campo-corto">
-        <input id="fecha_servicio_extra" type="date" />
-      </div>
+  <div class="campo-corto">
+    <input id="fecha_servicio_extra" type="date" />
+  </div>
 
-      <div class="filtro-box">
-        <div class="filtro-titulo">Supervisor del servicio</div>
-        <div id="supervisor_servicio_box" class="checks-contenedor">
-          <div class="ayuda">Aquí irá la selección del supervisor.</div>
-        </div>
-      </div>
+  <div class="filtro-box">
+    <div class="filtro-titulo">Necesidad de grado para cargos</div>
 
-      <div class="filtro-box">
-        <div class="filtro-titulo">Jefe del servicio</div>
-        <div id="jefe_servicio_box" class="checks-contenedor">
-          <div class="ayuda">Aquí irá la selección del jefe del servicio.</div>
-        </div>
-      </div>
+    <label>Supervisor</label>
+    <select id="grado_supervisor_servicio" onchange="cargarResponsablesServicioExtra()">
+      <option value="">Grado supervisor</option>
+      <option value="OFICIALES">OFICIALES</option>
+      <option value="EJECUTIVO">EJECUTIVO</option>
+      <option value="PATRULLEROS">PATRULLEROS</option>
+      <option value="AUXILIARES">AUXILIARES</option>
+      <option value="TODOS">TODOS</option>
+    </select>
+
+    <label>Jefe de servicio</label>
+    <select id="grado_jefe_servicio" onchange="cargarResponsablesServicioExtra()">
+      <option value="">Grado jefe</option>
+      <option value="OFICIALES">OFICIALES</option>
+      <option value="EJECUTIVO">EJECUTIVO</option>
+      <option value="PATRULLEROS">PATRULLEROS</option>
+      <option value="AUXILIARES">AUXILIARES</option>
+      <option value="TODOS">TODOS</option>
+    </select>
+
+    <label>Jefe PMU</label>
+    <select id="grado_jefe_pmu" onchange="cargarResponsablesServicioExtra()">
+      <option value="">Grado PMU</option>
+      <option value="OFICIALES">OFICIALES</option>
+      <option value="EJECUTIVO">EJECUTIVO</option>
+      <option value="PATRULLEROS">PATRULLEROS</option>
+      <option value="AUXILIARES">AUXILIARES</option>
+      <option value="TODOS">TODOS</option>
+    </select>
+  </div>
+
+  <div class="filtro-box">
+    <div class="filtro-titulo">Supervisor del servicio</div>
+    <div id="supervisor_servicio_box" class="checks-contenedor">
+      <div class="ayuda">Aquí irá la selección del supervisor.</div>
     </div>
+  </div>
 
+  <div class="filtro-box">
+    <div class="filtro-titulo">Jefe del servicio</div>
+    <div id="jefe_servicio_box" class="checks-contenedor">
+      <div class="ayuda">Aquí irá la selección del jefe del servicio.</div>
+    </div>
+  </div>
+
+  <div class="filtro-box">
+    <div class="filtro-titulo">Jefe de PMU</div>
+    <div id="jefe_pmu_box" class="checks-contenedor">
+      <div class="ayuda">Aquí irá la selección del jefe de PMU.</div>
+    </div>
+  </div>
+</div>
     <div class="sub-card">
       <h3>7.2 Totales requeridos</h3>
 
@@ -732,6 +772,23 @@
 </div>
     
 <script>
+
+  function grupoGrado(grado = "") {
+  const g = String(grado).toUpperCase().trim();
+
+  if (["CR","TC","MY","CT","TE","ST"].includes(g)) return "OFICIALES";
+  if (["CM","SC","IJ","IT","SI"].includes(g)) return "EJECUTIVO";
+  if (["PT","PP"].includes(g)) return "PATRULLEROS";
+  if (["AUX"].includes(g)) return "AUXILIARES";
+
+  return "OTROS";
+}
+
+  function cumpleGradoNecesario(persona, necesidad) {
+  if (!necesidad || necesidad === "TODOS") return true;
+
+  return grupoGrado(persona.grado) === necesidad;
+}
   
 let estructuraGlobal = [];
 let ultimoResultadoConsulta = [];
@@ -2946,52 +3003,66 @@ function validarDistribucionExtra() {
 function cargarResponsablesServicioExtra() {
   const boxSupervisor = document.getElementById("supervisor_servicio_box");
   const boxJefe = document.getElementById("jefe_servicio_box");
+  const boxPmu = document.getElementById("jefe_pmu_box");
 
-  if (!boxSupervisor || !boxJefe) return;
+  if (!boxSupervisor || !boxJefe || !boxPmu) return;
 
   boxSupervisor.innerHTML = "";
   boxJefe.innerHTML = "";
+  boxPmu.innerHTML = "";
 
-  if (!ultimoResultadoConsulta || !ultimoResultadoConsulta.length) {
-    boxSupervisor.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
-    boxJefe.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
+  if (!ultimoResultadoConsulta.length) {
+    boxSupervisor.innerHTML = "<div class='ayuda'>Primero consulta novedades</div>";
+    boxJefe.innerHTML = "<div class='ayuda'>Primero consulta novedades</div>";
+    boxPmu.innerHTML = "<div class='ayuda'>Primero consulta novedades</div>";
     return;
   }
 
-  const personal = ultimoResultadoConsulta.filter(p => {
-    const nov = String(p.tipo_novedad || "").trim().toUpperCase();
-    const apt = String(p.aptitud || "").trim().toUpperCase();
+  const necesidadSup = document.getElementById("grado_supervisor_servicio").value;
+  const necesidadJefe = document.getElementById("grado_jefe_servicio").value;
+  const necesidadPmu = document.getElementById("grado_jefe_pmu").value;
+
+  const disponibles = ultimoResultadoConsulta.filter(p => {
+    const nov = (p.tipo_novedad || "").toUpperCase();
+    const apt = (p.aptitud || "").toUpperCase();
+
     return (nov === "" || nov === "DISPONIBLE") && apt === "APTO";
   });
 
-  if (!personal.length) {
-    boxSupervisor.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
-    boxJefe.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
-    return;
+  function pintar(box, name, necesidad) {
+    const lista = disponibles.filter(p => cumpleGradoNecesario(p, necesidad));
+
+    if (!necesidad) {
+      box.innerHTML = "<div class='ayuda'>Selecciona el grado requerido</div>";
+      return;
+    }
+
+    if (!lista.length) {
+      box.innerHTML = "<div class='ayuda'>No hay personal para ese grado</div>";
+      return;
+    }
+
+    lista.forEach(p => {
+      const label = document.createElement("label");
+      label.className = "check-item";
+
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = name;
+      input.value = p.cedula;
+
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(
+        `${p.grado} ${p.apellidos} ${p.nombres} - ${p.subunidad}`
+      ));
+
+      box.appendChild(label);
+    });
   }
 
-  const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
-
-  const ordenado = [...personal].sort((a, b) => {
-    const ia = orden.indexOf((a.grado || "").toUpperCase());
-    const ib = orden.indexOf((b.grado || "").toUpperCase());
-    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-  });
-
-  ordenado.forEach(p => {
-    const texto = `${p.grado} ${p.apellidos} ${p.nombres} - CC ${p.cedula}`;
-    ${p.cargoServicio ? `<div style="color:#B54708;font-size:12px;">${p.cargoServicio}</div>` : ""}
-
-    const sup = document.createElement("label");
-    sup.className = "check-item";
-    sup.innerHTML = `<input type="radio" name="supervisor_servicio" value="${p.cedula}"> ${texto}`;
-    boxSupervisor.appendChild(sup);
-
-    const jefe = document.createElement("label");
-    jefe.className = "check-item";
-    jefe.innerHTML = `<input type="radio" name="jefe_servicio" value="${p.cedula}"> ${texto}`;
-    boxJefe.appendChild(jefe);
-  });
+  pintar(boxSupervisor, "supervisor_servicio", necesidadSup);
+  pintar(boxJefe, "jefe_servicio", necesidadJefe);
+  pintar(boxPmu, "jefe_pmu", necesidadPmu);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
