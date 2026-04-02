@@ -3122,8 +3122,10 @@ async function cargarResponsablesServicioExtra() {
       }
 
       input.addEventListener("change", () => {
-        cargarResponsablesServicioExtra();
-      });
+  setTimeout(() => {
+    cargarResponsablesServicioExtra();
+  }, 50);
+});
 
       const texto = `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - ${p.subunidad || ""}`;
 
