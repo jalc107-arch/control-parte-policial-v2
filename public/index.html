@@ -1685,72 +1685,61 @@ personas.forEach(p => {
     }
 
     async function aplicarServicioExtraordinarioPorGrupos() {
+  if (window.listaExtra && window.listaExtra.length) {
+    alert("El servicio ya tiene personal asignado. Si deseas cambiarlo, primero debes limpiar o crear uno nuevo.");
+    return;
+  }
 
-      if (window.listaExtra && window.listaExtra.length) {
-  alert("El servicio ya tiene personal asignado. Si deseas cambiarlo, primero debes limpiar o crear uno nuevo.");
-  return;
-}
   const resultadoExtra = document.getElementById("resultado_extra");
   resultadoExtra.innerText = "";
 
   const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
-      
   if (!fechaServicio) {
     alert("Debes seleccionar la fecha del servicio.");
     return;
   }
-      
 
-     const supervisor = document.querySelector('input[name="supervisor_servicio"]:checked')?.value;
-const jefe = document.querySelector('input[name="jefe_servicio"]:checked')?.value;
-const jefePmu = document.querySelector('input[name="jefe_pmu"]:checked')?.value;
+  const supervisor = document.querySelector('input[name="supervisor_servicio"]:checked')?.value;
+  const jefe = document.querySelector('input[name="jefe_servicio"]:checked')?.value;
+  const jefePmu = document.querySelector('input[name="jefe_pmu"]:checked')?.value;
 
-if (!supervisor || !jefe || !jefePmu) {
-  alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
-  return;
-}
+  if (!supervisor || !jefe || !jefePmu) {
+    alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
+    return;
+  }
 
-if (supervisor === jefe || supervisor === jefePmu || jefe === jefePmu) {
-  alert("No puedes asignar la misma persona a múltiples cargos.");
-  return;
-}
+  if (supervisor === jefe || supervisor === jefePmu || jefe === jefePmu) {
+    alert("No puedes asignar la misma persona a múltiples cargos.");
+    return;
+  }
 
-const supervisorCedula = String(supervisor).trim();
-const jefeCedula = String(jefe).trim();
-const jefePmuCedula = String(jefePmu).trim();
-
-      const ocupadosHoy = new Set(
-  (window.serviciosExistentes || [])
-    .filter(s => s.fecha === fechaServicio)
-    .map(s => String(s.cedula))
-);
-
-if (
-  ocupadosHoy.has(supervisorCedula) ||
-  ocupadosHoy.has(jefeCedula) ||
-  ocupadosHoy.has(jefePmuCedula)
-) {
-  alert("Uno de los responsables ya está asignado a otro servicio ese día.");
-  return;
-}
+  const supervisorCedula = String(supervisor).trim();
+  const jefeCedula = String(jefe).trim();
+  const jefePmuCedula = String(jefePmu).trim();
 
   let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
-
-// 🔥 AUTOSELECCIÓN AUTOMÁTICA
-if (!subunidades.length) {
-  seleccionarTodasChecks("checks_subunidad_apoyo_extra");
-  subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
-}
+  if (!subunidades.length) {
+    seleccionarTodasChecks("checks_subunidad_apoyo_extra");
+    subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+  }
 
   const disponibles = extraerDisponiblesConsulta();
-
   if (!disponibles.length) {
     alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
     return;
   }
 
   const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
-  const ocupadosSet = new Set(cedulasOcupadas);
+  const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x).trim()));
+
+  if (
+    ocupadosSet.has(supervisorCedula) ||
+    ocupadosSet.has(jefeCedula) ||
+    ocupadosSet.has(jefePmuCedula)
+  ) {
+    alert("Uno de los responsables ya está asignado a otro servicio ese día.");
+    return;
+  }
 
   const grados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AUX"];
   const seleccionadosFinales = [];
@@ -1768,90 +1757,68 @@ if (!subunidades.length) {
         const gradoPersona = String(p.grado || "").toUpperCase().trim();
         const subunidadPersona = String(p.subunidad || "").trim();
 
-       return (
-  !usados.has(ced) &&
-  !ocupadosSet.has(ced) &&
-  ced !== supervisorCedula &&
-  ced !== jefeCedula &&
-  ced !== jefePmuCedula &&
-  subunidadPersona === subunidad &&
-  gradoPersona === grado
-);
+        return (
+          !usados.has(ced) &&
+          !ocupadosSet.has(ced) &&
+          ced !== supervisorCedula &&
+          ced !== jefeCedula &&
+          ced !== jefePmuCedula &&
+          subunidadPersona === subunidad &&
+          gradoPersona === grado
+        );
       });
 
       const elegidos = mezclarArray(candidatos).slice(0, cantidad);
 
       elegidos.forEach(p => {
         const ced = String(p.cedula || "").trim();
-
         usados.add(ced);
-        p.tipo_novedad = "SERVICIO EXTRAORDINARIO";
 
         seleccionadosFinales.push({
           ...p,
+          tipo_novedad: "SERVICIO EXTRAORDINARIO",
           subunidad_origen: subunidad,
           grado_requerido: grado,
           tipoAsignacion: "AUTOMATICO",
           estadoExtra: "SI"
-                  });
+        });
       });
     });
   });
 
-const base = [...ultimoResultadoConsulta];
+  const base = [...ultimoResultadoConsulta];
 
-const sup = base.find(p => String(p.cedula) === supervisorCedula);
-const jefeObj = base.find(p => String(p.cedula) === jefeCedula);
-const pmuObj = base.find(p => String(p.cedula) === jefePmuCedula);
+  const sup = base.find(p => String(p.cedula || "").trim() === supervisorCedula);
+  const jefeObj = base.find(p => String(p.cedula || "").trim() === jefeCedula);
+  const pmuObj = base.find(p => String(p.cedula || "").trim() === jefePmuCedula);
 
-if (sup) {
-  seleccionadosFinales.unshift({
-    ...sup,
-    cargoServicio: "SUPERVISOR",
-    tipoAsignacion: "FIJO"
-  });
-}
+  if (sup) {
+    seleccionadosFinales.unshift({
+      ...sup,
+      cargoServicio: "SUPERVISOR",
+      tipoAsignacion: "FIJO",
+      estadoExtra: "SI"
+    });
+  }
 
-if (jefeObj) {
-  seleccionadosFinales.unshift({
-    ...jefeObj,
-    cargoServicio: "JEFE DE SERVICIO",
-    tipoAsignacion: "FIJO"
-  });
-}
+  if (jefeObj) {
+    seleccionadosFinales.unshift({
+      ...jefeObj,
+      cargoServicio: "JEFE DE SERVICIO",
+      tipoAsignacion: "FIJO",
+      estadoExtra: "SI"
+    });
+  }
 
-if (pmuObj) {
-  seleccionadosFinales.unshift({
-    ...pmuObj,
-    cargoServicio: "JEFE DE PMU",
-    tipoAsignacion: "FIJO"
-  });
-}
-if (sup) {
-  seleccionadosFinales.unshift({
-    ...sup,
-    cargoServicio: "SUPERVISOR",
-    tipoAsignacion: "FIJO"
-  });
-}
+  if (pmuObj) {
+    seleccionadosFinales.unshift({
+      ...pmuObj,
+      cargoServicio: "JEFE DE PMU",
+      tipoAsignacion: "FIJO",
+      estadoExtra: "SI"
+    });
+  }
 
-if (jefeObj) {
-  seleccionadosFinales.unshift({
-    ...jefeObj,
-    cargoServicio: "JEFE DE SERVICIO",
-    tipoAsignacion: "FIJO"
-  });
-}
-
-if (pmuObj) {
-  seleccionadosFinales.unshift({
-    ...pmuObj,
-    cargoServicio: "JEFE DE PMU",
-    tipoAsignacion: "FIJO"
-  });
-}
-      
-      
   if (!seleccionadosFinales.length) {
     alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
     return;
@@ -1888,7 +1855,7 @@ if (pmuObj) {
     texto += `${"-".repeat(40)}\n`;
 
     ordenarListaExtraPorGrado(agrupados[sub]).forEach((p, i) => {
-      texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}\n`;
+      texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}${p.cargoServicio ? " - " + p.cargoServicio : ""}\n`;
     });
 
     texto += `\n`;
@@ -1899,7 +1866,6 @@ if (pmuObj) {
   renderizarExtraordinario(window.listaExtra);
   renderizarConsultaDesdeMemoria();
 }
-
     async function generarParte() {
       const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
       const unidad = document.getElementById("unidad_select").value;
@@ -2824,19 +2790,9 @@ async function generarDistribucionExtraPorSubunidad() {
     return;
   }
 
-  const supervisorCedula = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
-const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
+  const disponiblesBase = extraerDisponiblesConsulta();
 
-const disponibles = extraerDisponiblesConsulta().filter(p => {
-  const ced = String(p.cedula || "").trim();
-
-  return (
-    ced !== supervisorCedula &&
-    ced !== jefeCedula
-  );
-});
-
-  if (!disponibles.length) {
+  if (!disponiblesBase.length) {
     contenedor.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
     return;
   }
@@ -2844,9 +2800,19 @@ const disponibles = extraerDisponiblesConsulta().filter(p => {
   const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
   const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x).trim()));
 
+  const supervisorCedula = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
+  const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
+  const jefePmuCedula = document.querySelector('input[name="jefe_pmu"]:checked')?.value || "";
+
   const disponibles = disponiblesBase.filter(p => {
     const ced = String(p.cedula || "").trim();
-    return !ocupadosSet.has(ced);
+
+    return (
+      !ocupadosSet.has(ced) &&
+      ced !== supervisorCedula &&
+      ced !== jefeCedula &&
+      ced !== jefePmuCedula
+    );
   });
 
   if (!disponibles.length) {
@@ -2927,31 +2893,27 @@ const disponibles = extraerDisponiblesConsulta().filter(p => {
 
     grados.forEach(g => {
       const cantidadDisponible = disponiblesSubunidad.filter(p =>
-  String(p.grado || "").trim().toUpperCase() === g
-).length;
+        String(p.grado || "").trim().toUpperCase() === g
+      ).length;
 
-html += `
-  <td>
-    <input
-      type="number"
-      min="0"
-      max="${cantidadDisponible}"
-      value="0"
-      id="extra_${subunidad}_${g}"
-      class="input-cantidad-extra"
-      oninput="
-        if (parseInt(this.value) > ${cantidadDisponible}) {
-          this.value = ${cantidadDisponible};
-        }
-        if (parseInt(this.value) < 0) {
-          this.value = 0;
-        }
-        actualizarResumenSubunidadExtra('${subunidad}');
-        validarDistribucionExtra();
-      "
-    />
-  </td>
-`;
+      html += `
+        <td>
+          <input
+            type="number"
+            min="0"
+            max="${cantidadDisponible}"
+            value="0"
+            id="extra_${subunidad}_${g}"
+            class="input-cantidad-extra"
+            oninput="
+              if (parseInt(this.value || '0', 10) > ${cantidadDisponible}) this.value = ${cantidadDisponible};
+              if (parseInt(this.value || '0', 10) < 0) this.value = 0;
+              actualizarResumenSubunidadExtra('${subunidad}');
+              validarDistribucionExtra();
+            "
+          />
+        </td>
+      `;
     });
 
     html += `
@@ -3057,7 +3019,7 @@ function validarDistribucionExtra() {
   }
 }
   // 👇 PEGA AQUÍ LA FUNCIÓN
-function cargarResponsablesServicioExtra() {
+async function cargarResponsablesServicioExtra() {
   const boxSupervisor = document.getElementById("supervisor_servicio_box");
   const boxJefe = document.getElementById("jefe_servicio_box");
   const boxPmu = document.getElementById("jefe_pmu_box");
@@ -3075,27 +3037,42 @@ function cargarResponsablesServicioExtra() {
     return;
   }
 
+  const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
+  if (!fechaServicio) {
+    boxSupervisor.innerHTML = `<div class="ayuda">Primero selecciona la fecha del servicio.</div>`;
+    boxJefe.innerHTML = `<div class="ayuda">Primero selecciona la fecha del servicio.</div>`;
+    boxPmu.innerHTML = `<div class="ayuda">Primero selecciona la fecha del servicio.</div>`;
+    return;
+  }
+
   const gradoSup = document.getElementById("grado_supervisor_servicio")?.value || "";
   const gradoJefe = document.getElementById("grado_jefe_servicio")?.value || "";
   const gradoPmu = document.getElementById("grado_jefe_pmu")?.value || "";
 
+  const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
+  const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x).trim()));
+
   const personal = window.ultimoResultadoConsulta.filter(p => {
     const nov = String(p.tipo_novedad || "").toUpperCase().trim();
     const apt = String(p.aptitud || "").toUpperCase().trim();
+    const ced = String(p.cedula || "").trim();
 
-    return (nov === "" || nov === "DISPONIBLE") && apt === "APTO";
+    return (
+      (nov === "" || nov === "DISPONIBLE") &&
+      apt === "APTO" &&
+      !ocupadosSet.has(ced)
+    );
   });
 
   if (!personal.length) {
-    boxSupervisor.innerHTML = `<div class="ayuda">No hay personal disponible.</div>`;
-    boxJefe.innerHTML = `<div class="ayuda">No hay personal disponible.</div>`;
-    boxPmu.innerHTML = `<div class="ayuda">No hay personal disponible.</div>`;
+    boxSupervisor.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre para esa fecha.</div>`;
+    boxJefe.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre para esa fecha.</div>`;
+    boxPmu.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre para esa fecha.</div>`;
     return;
   }
 
   function grupo(grado) {
     const g = String(grado || "").toUpperCase().trim();
-
     if (["CR","TC","MY","CT","TE","ST"].includes(g)) return "OFICIALES";
     if (["CM","SC","IJ","IT","SI"].includes(g)) return "EJECUTIVO";
     if (["PT","PP"].includes(g)) return "PATRULLEROS";
@@ -3108,13 +3085,29 @@ function cargarResponsablesServicioExtra() {
     return lista.filter(p => grupo(p.grado) === necesidad);
   }
 
+  function seleccionadoActual(name) {
+    return document.querySelector(`input[name="${name}"]:checked`)?.value || "";
+  }
+
   function pintar(box, lista, name) {
-    if (!lista.length) {
-      box.innerHTML = `<div class="ayuda">No hay personal que cumpla ese grado.</div>`;
+    const supSel = String(seleccionadoActual("supervisor_servicio")).trim();
+    const jefeSel = String(seleccionadoActual("jefe_servicio")).trim();
+    const pmuSel = String(seleccionadoActual("jefe_pmu")).trim();
+
+    const excluidos = new Set(
+      [supSel, jefeSel, pmuSel]
+        .filter(Boolean)
+        .filter(ced => ced !== String(seleccionadoActual(name)).trim())
+    );
+
+    const listaFinal = lista.filter(p => !excluidos.has(String(p.cedula || "").trim()));
+
+    if (!listaFinal.length) {
+      box.innerHTML = `<div class="ayuda">No hay personal que cumpla ese grado o ya fue usado en otro cargo.</div>`;
       return;
     }
 
-    lista.forEach(p => {
+    listaFinal.forEach(p => {
       const label = document.createElement("label");
       label.className = "check-item";
 
@@ -3123,7 +3116,16 @@ function cargarResponsablesServicioExtra() {
       input.name = name;
       input.value = p.cedula;
 
-      const texto = `${p.grado} ${p.apellidos} ${p.nombres} - ${p.subunidad}`;
+      const actual = seleccionadoActual(name);
+      if (String(actual).trim() === String(p.cedula).trim()) {
+        input.checked = true;
+      }
+
+      input.addEventListener("change", () => {
+        cargarResponsablesServicioExtra();
+      });
+
+      const texto = `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - ${p.subunidad || ""}`;
 
       label.appendChild(input);
       label.appendChild(document.createTextNode(texto));
