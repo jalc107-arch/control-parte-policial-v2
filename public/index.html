@@ -1710,9 +1710,13 @@ const jefe = window.seleccionServicio.jefe;
 const jefePmu = window.seleccionServicio.pmu;
 
   if (!supervisor || !jefe || !jefePmu) {
-    alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
-    return;
-  }
+  console.log("Supervisor:", supervisor);
+  console.log("Jefe:", jefe);
+  console.log("PMU:", jefePmu);
+
+  alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
+  return;
+}
 
   if (supervisor === jefe || supervisor === jefePmu || jefe === jefePmu) {
     alert("No puedes asignar la misma persona a múltiples cargos.");
