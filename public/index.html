@@ -1802,6 +1802,7 @@ const base = [...ultimoResultadoConsulta];
 
 const sup = base.find(p => String(p.cedula) === supervisorCedula);
 const jefeObj = base.find(p => String(p.cedula) === jefeCedula);
+const pmuObj = base.find(p => String(p.cedula) === jefePmuCedula);
 
 if (sup) {
   seleccionadosFinales.unshift({
@@ -1819,9 +1820,13 @@ if (jefeObj) {
   });
 }
 
-const jefeObj = base.find(p => String(p.cedula) === jefeCedula);
-const pmuObj = base.find(p => String(p.cedula) === jefePmuCedula);
-
+if (pmuObj) {
+  seleccionadosFinales.unshift({
+    ...pmuObj,
+    cargoServicio: "JEFE DE PMU",
+    tipoAsignacion: "FIJO"
+  });
+}
 if (sup) {
   seleccionadosFinales.unshift({
     ...sup,
