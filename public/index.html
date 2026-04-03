@@ -2916,7 +2916,19 @@ async function generarDistribucionExtraPorSubunidad() {
             id="extra_${subunidad}_${g}"
             class="input-cantidad-extra"
             oninput="
-              if (parseInt(this.value || '0', 10) > ${cantidadDisponible}) this.value = ${cantidadDisponible};
+              let valor = parseInt(this.value || '0', 10);
+
+if (valor > ${cantidadDisponible}) {
+  this.value = ${cantidadDisponible};
+  valor = ${cantidadDisponible};
+}
+
+if (valor < 0) {
+  this.value = 0;
+  valor = 0;
+}
+
+validarDistribucionExtra();
               if (parseInt(this.value || '0', 10) < 0) this.value = 0;
               actualizarResumenSubunidadExtra('${subunidad}');
               validarDistribucionExtra();
