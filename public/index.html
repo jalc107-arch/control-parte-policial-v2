@@ -2775,10 +2775,24 @@ function cargarSubunidadesApoyoExtra() {
       .filter(Boolean)
   )].sort();
 
-  console.log("SUBUNIDADES EN ESTRUCTURA:", subunidades);
-  console.log("TOTAL SUBUNIDADES:", subunidades.length);
-  console.log("MUESTRA ESTRUCTURA:", estructuraGlobal.slice(
+  const contenedor = document.getElementById("checks_subunidad_apoyo_extra");
+  if (!contenedor) return;
 
+  contenedor.innerHTML = "";
+
+  subunidades.forEach(subunidad => {
+    const label = document.createElement("label");
+    label.className = "check-item";
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = subunidad;
+
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(subunidad));
+    contenedor.appendChild(label);
+  });
+}
   
 async function generarDistribucionExtraPorSubunidad() {
   let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
