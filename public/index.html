@@ -3019,6 +3019,39 @@ validarDistribucionExtra();
     validarDistribucionExtra();
   }
 }
+
+function actualizarResumenSubunidadExtra(subunidad) {
+  const oficialesSet = new Set(["CR","TC","MY","CT","TE","ST"]);
+  const ejecutivoSet = new Set(["CM","SC","IJ","IT","SI"]);
+  const patrullerosSet = new Set(["PT","PP"]);
+  const auxiliaresSet = new Set(["AUX"]);
+
+  let oficiales = 0;
+  let ejecutivo = 0;
+  let patrulleros = 0;
+  let auxiliares = 0;
+
+  const inputs = document.querySelectorAll(`[id^="extra_${subunidad}_"]`);
+
+  inputs.forEach(input => {
+    const partes = input.id.split("_");
+    const grado = partes[partes.length - 1];
+    const valor = parseInt(input.value || "0", 10);
+
+    if (oficialesSet.has(grado)) oficiales += valor;
+    else if (ejecutivoSet.has(grado)) ejecutivo += valor;
+    else if (patrullerosSet.has(grado)) patrulleros += valor;
+    else if (auxiliaresSet.has(grado)) auxiliares += valor;
+  });
+
+  const total = oficiales + ejecutivo + patrulleros + auxiliares;
+
+  const resumen = document.getElementById(`resumen_${subunidad}`);
+  if (resumen) {
+    resumen.innerText = `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
+  }
+}
+  
   
 function actualizarResumenGlobalExtra() {
   const oficialesInput = document.getElementById("total_oficiales_extra");
