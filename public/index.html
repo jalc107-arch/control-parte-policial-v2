@@ -519,8 +519,9 @@
           <div class="filtro-titulo">Subunidad</div>
           <div class="filtro-botones">
             <button type="button" onclick="seleccionarTodasChecks('checks_subunidad')">Seleccionar todas</button>
-            <button type="button" onclick="limpiarChecks('checks_subunidad')">Limpiar</button>
+            <button type="button" onclick="limpiarChecks('checks_subunidad')">Limpiar</button> 
           </div>
+          <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
           <div id="checks_subunidad" class="checks-contenedor"></div>
           <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
         </div>
@@ -1091,6 +1092,8 @@ async function cargarEstructura() {
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
 
+    cargarChecksSubunidadApoyoExtra();
+
     // 🔥 ESTA ES LA LÍNEA MÁS IMPORTANTE
     cargarSubunidadesApoyoExtra();
 
@@ -1644,6 +1647,31 @@ personas.forEach(p => {
       pintarChecks("checks_extra_patrulleros", ["PT", "PP"]);
       pintarChecks("checks_extra_auxiliares", ["AUX"]);
     }
+
+  function cargarChecksSubunidadApoyoExtra() {
+  const contenedor = document.getElementById("checks_subunidad_apoyo_extra");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+
+  const subunidades = [
+    ...new Set(
+      estructuraGlobal.map(x => (x.subunidad || "").trim()).filter(Boolean)
+    )
+  ];
+
+  subunidades.forEach(sub => {
+    const label = document.createElement("label");
+    label.className = "check-item";
+
+    label.innerHTML = `
+      <input type="checkbox" value="${sub}">
+      ${sub}
+    `;
+
+    contenedor.appendChild(label);
+  });
+}
 
     function mezclarArray(array) {
       const copia = [...array];
@@ -2795,7 +2823,9 @@ function cargarSubunidadesApoyoExtra() {
 }
   
 async function generarDistribucionExtraPorSubunidad() {
-  let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+  let subunidades = Array.from(
+  document.querySelectorAll("#checks_subunidad_apoyo_extra input:checked")
+).map(c => c.value);
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
 
