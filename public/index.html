@@ -2825,8 +2825,19 @@ function cargarSubunidadesApoyoExtra() {
   
 async function generarDistribucionExtraPorSubunidad() {
   let subunidades = Array.from(
-  document.querySelectorAll("#checks_subunidad_apoyo_extra input:checked")
+  document.querySelectorAll("#checks_subunidad_apoyo_extra input")
 ).map(c => c.value);
+
+// si el usuario no desmarca nada → usar todas
+if (!subunidades.length) {
+  subunidades = [
+    ...new Set(
+      estructuraGlobal.map(x => (x.subunidad || "").trim()).filter(Boolean)
+    )
+  ];
+}
+  console.log("SUBUNIDADES USADAS:", subunidades);
+  
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
 
