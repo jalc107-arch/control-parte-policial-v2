@@ -1562,7 +1562,8 @@ personas.forEach(p => {
     }
 
   function limpiarSubunidadesApoyoExtra() {
-  limpiarChecks("checks_subunidad_apoyo_extra");
+  document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]')
+    .forEach(cb => cb.checked = false);
 
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
