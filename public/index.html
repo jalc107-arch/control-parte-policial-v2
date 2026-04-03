@@ -3195,6 +3195,12 @@ if (name === "jefe_pmu" && window.seleccionServicio.pmu === p.cedula) {
   pintar(boxJefe, filtrar(personal, gradoJefe), "jefe_servicio");
   pintar(boxPmu, filtrar(personal, gradoPmu), "jefe_pmu");
 
+window.seleccionServicio = window.seleccionServicio || {
+  supervisor: "",
+  jefe: "",
+  pmu: ""
+};
+  
   actualizarResumenGlobalExtra();
 }
 document.addEventListener("DOMContentLoaded", () => {
