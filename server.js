@@ -925,10 +925,12 @@ app.get("/control-cumplimiento-diario", async (req, res) => {
     });
   }
 });
-
+// =========================
+// SERVICIO EXTRA OCUPADOS
+// =========================
 app.get("/servicio-extra-ocupados", async (req, res) => {
   try {
-    const { fecha } = req.query;
+    const fecha = String(req.query.fecha || "").trim();
 
     if (!fecha) {
       return res.status(400).json({
@@ -948,7 +950,9 @@ app.get("/servicio-extra-ocupados", async (req, res) => {
 
     res.json({
       ok: true,
-      ocupados: result.rows.map(r => String(r.cedula || "").trim()).filter(Boolean)
+      ocupados: result.rows
+        .map(r => String(r.cedula || "").trim())
+        .filter(Boolean)
     });
   } catch (error) {
     res.status(500).json({
@@ -957,7 +961,6 @@ app.get("/servicio-extra-ocupados", async (req, res) => {
     });
   }
 });
-
 // =========================
 // GENERAR TEXTO DEL PARTE
 // =========================
@@ -1519,13 +1522,24 @@ return res.json({
 // =========================
 app.post("/guardar-servicio-extraordinario", async (req, res) => {
   try {
-    const { personal, responsable_cedula, responsable_nombre } = req.body;
+    const {
+      personal,
+      responsable_cedula,
+      responsable_nombre,
+      fecha_servicio,
+      titulo_servicio
+    } = req.body;
 
     if (!personal || !personal.length) {
       return res.json({ ok: false, mensaje: "Sin personal" });
     }
 
-    const ahora = new Date();
+    if (!fecha_servicio) {
+      return res.json({ ok: false, mensaje: "La fecha del servicio es obligatoria" });
+    }
+
+    const fechaServicio = String(fecha_servicio).trim();
+    const tituloServicio = String(titulo_servicio || "").trim();
 
     const registros = personal.map(p => ({
       cedula: (p.cedula || "").toString().trim(),
@@ -1541,43 +1555,60 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
     }));
 
     for (const r of registros) {
-  await pool.query(
-    `
-    INSERT INTO servicios_extraordinarios (
-      cedula,
-      fecha,
-      unidad,
-      subunidad,
-      estacion,
-      organico,
-      grado,
-      apellidos,
-      nombres,
-      asignado_por_cedula,
-      asignado_por_nombre
-    )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-    `,
-    [
-      r.cedula || null,
-      obtenerFechaBogotaSQL(),
-      r.unidad || null,
-      r.subunidad || null,
-      r.estacion || null,
-      r.organico || null,
-      r.grado || null,
-      r.apellidos || null,
-      r.nombres || null,
-      r.responsable_cedula || null,
-      r.responsable_nombre || null
-    ]
-  );
-}
+      const existe = await pool.query(
+        `
+        SELECT id
+        FROM servicios_extraordinarios
+        WHERE cedula = $1
+          AND fecha = $2
+        LIMIT 1
+        `,
+        [r.cedula || null, fechaServicio]
+      );
 
-res.json({
-  ok: true,
-  mensaje: "Servicio extraordinario guardado correctamente"
-});
+      if (existe.rows.length > 0) {
+        continue;
+      }
+
+      await pool.query(
+        `
+        INSERT INTO servicios_extraordinarios (
+          cedula,
+          fecha,
+          titulo_servicio,
+          unidad,
+          subunidad,
+          estacion,
+          organico,
+          grado,
+          apellidos,
+          nombres,
+          asignado_por_cedula,
+          asignado_por_nombre
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        `,
+        [
+          r.cedula || null,
+          fechaServicio,
+          tituloServicio || null,
+          r.unidad || null,
+          r.subunidad || null,
+          r.estacion || null,
+          r.organico || null,
+          r.grado || null,
+          r.apellidos || null,
+          r.nombres || null,
+          r.responsable_cedula || null,
+          r.responsable_nombre || null
+        ]
+      );
+    }
+
+    res.json({
+      ok: true,
+      mensaje: "Servicio extraordinario guardado correctamente"
+    });
 
   } catch (err) {
     console.error(err);
