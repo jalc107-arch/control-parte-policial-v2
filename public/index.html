@@ -796,6 +796,7 @@ let estructuraGlobal = [];
 let ultimoResultadoConsulta = [];
 let ultimosSeleccionadosExtra = [];
 let otpValidado = false;
+window.serviciosExtraTemporales = {};
 
   window.seleccionServicio = {
   supervisor: "",
@@ -1794,6 +1795,7 @@ const jefePmu = window.seleccionServicio.pmu;
   const grados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AUX"];
   const seleccionadosFinales = [];
   const usados = new Set();
+  const historial = await obtenerHistorialServicios();
 
   subunidades.forEach(subunidad => {
     grados.forEach(grado => {
@@ -1818,7 +1820,16 @@ const jefePmu = window.seleccionServicio.pmu;
         );
       });
 
-      const elegidos = mezclarArray(candidatos).slice(0, cantidad);
+      const candidatosOrdenados = [...candidatos].sort((a, b) => {
+        const vecesA = historial[String(a.cedula || "").trim()] || 0;
+        const vecesB = historial[String(b.cedula || "").trim()] || 0;
+
+        if (vecesA !== vecesB) return vecesA - vecesB;
+
+        return Math.random() - 0.5;
+      });
+
+      const elegidos = candidatosOrdenados.slice(0, cantidad);
 
       elegidos.forEach(p => {
         const ced = String(p.cedula || "").trim();
@@ -2228,6 +2239,14 @@ async function guardarServicioExtraordinarioFinal() {
     return;
   }
 
+  const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
+  const tituloServicio = document.getElementById("titulo_servicio_extra")?.value || "";
+
+  if (!fechaServicio) {
+    alert("Debes seleccionar la fecha del servicio");
+    return;
+  }
+
   const listaFinal = window.listaExtra.filter(p => p.estadoExtra !== "NO");
 
   if (!listaFinal.length) {
@@ -2236,13 +2255,21 @@ async function guardarServicioExtraordinarioFinal() {
   }
 
   try {
+    const personalConMeta = listaFinal.map(p => ({
+      ...p,
+      fecha_servicio: fechaServicio,
+      titulo_servicio: tituloServicio
+    }));
+
     const res = await fetch("/guardar-servicio-extraordinario", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        personal: listaFinal,
+        fecha_servicio: fechaServicio,
+        titulo_servicio: tituloServicio,
+        personal: personalConMeta,
         responsable_cedula: window.responsable.cedula,
         responsable_nombre: window.responsable.nombre
       })
@@ -2251,9 +2278,15 @@ async function guardarServicioExtraordinarioFinal() {
     const data = await res.json();
 
     if (data.ok) {
+      window.serviciosExtraTemporales = window.serviciosExtraTemporales || {};
+      window.serviciosExtraTemporales[fechaServicio] = [
+        ...(window.serviciosExtraTemporales[fechaServicio] || []),
+        ...listaFinal.map(p => String(p.cedula || "").trim())
+      ];
+
       alert("Servicio extraordinario guardado correctamente ✅");
     } else {
-      alert("Error: " + data.error);
+      alert("Error: " + (data.error || data.mensaje || "No se pudo guardar"));
     }
 
   } catch (error) {
@@ -2261,7 +2294,6 @@ async function guardarServicioExtraordinarioFinal() {
     alert("Error en servidor");
   }
 }
-    
     async function obtenerHistorialServicios() {
       try {
         const grado = document.getElementById("grado").value.trim();
@@ -2645,9 +2677,14 @@ async function obtenerCedulasOcupadasServicioExtra() {
     const res = await fetch(`/servicio-extra-ocupados?fecha=${encodeURIComponent(fecha)}`);
     const data = await res.json();
 
-    if (!data.ok || !Array.isArray(data.ocupados)) return [];
+    const ocupadosBD = (data.ok && Array.isArray(data.ocupados))
+      ? data.ocupados.map(x => String(x || "").trim())
+      : [];
 
-    return data.ocupados.map(x => String(x || "").trim());
+    const ocupadosTemporales = (window.serviciosExtraTemporales?.[fecha] || [])
+      .map(x => String(x).trim());
+
+    return [...new Set([...ocupadosBD, ...ocupadosTemporales])];
   } catch (error) {
     console.error("Error consultando ocupados del servicio extraordinario:", error);
     return [];
@@ -2825,8 +2862,8 @@ function cargarSubunidadesApoyoExtra() {
   
 async function generarDistribucionExtraPorSubunidad() {
   let subunidades = Array.from(
-  document.querySelectorAll("#checks_subunidad_apoyo_extra input")
-).map(c => c.value);
+    document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => c.value);
 
 // si el usuario no desmarca nada → usar todas
 if (!subunidades.length) {
