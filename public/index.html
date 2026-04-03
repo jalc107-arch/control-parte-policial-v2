@@ -2943,14 +2943,6 @@ if (!subunidades.length) {
     );
 
     if (!disponiblesSubunidad.length) {
-      const bloqueVacio = document.createElement("div");
-      bloqueVacio.className = "tabla-wrap";
-      bloqueVacio.innerHTML = `
-        <div class="bloque-titulo-tabla">${subunidad}</div>
-        <div class="ayuda">No hay personal disponible en esta subunidad para esa fecha.</div>
-        <pre id="resumen_${subunidad}">0-0-0-0 = 0</pre>
-      `;
-      contenedor.appendChild(bloqueVacio);
       return;
     }
 
@@ -2967,14 +2959,6 @@ if (!subunidades.length) {
     });
 
     if (!grados.length) {
-      const bloqueVacio = document.createElement("div");
-      bloqueVacio.className = "tabla-wrap";
-      bloqueVacio.innerHTML = `
-        <div class="bloque-titulo-tabla">${subunidad}</div>
-        <div class="ayuda">La subunidad tiene disponibles, pero no tienen grado cargado.</div>
-        <pre id="resumen_${subunidad}">0-0-0-0 = 0</pre>
-      `;
-      contenedor.appendChild(bloqueVacio);
       return;
     }
 
@@ -3022,18 +3006,17 @@ if (!subunidades.length) {
             oninput="
               let valor = parseInt(this.value || '0', 10);
 
-if (valor > ${cantidadDisponible}) {
-  this.value = ${cantidadDisponible};
-  valor = ${cantidadDisponible};
-}
+              if (valor > ${cantidadDisponible}) {
+                this.value = ${cantidadDisponible};
+                valor = ${cantidadDisponible};
+              }
 
-if (valor < 0) {
-  this.value = 0;
-  valor = 0;
-}
+              if (valor < 0) {
+                this.value = 0;
+                valor = 0;
+              }
 
-validarDistribucionExtra();
-              if (parseInt(this.value || '0', 10) < 0) this.value = 0;
+              validarDistribucionExtra();
               actualizarResumenSubunidadExtra('${subunidad}');
               validarDistribucionExtra();
             "
