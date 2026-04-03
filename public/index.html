@@ -673,7 +673,7 @@
 
       <div class="filtro-botones">
         <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_apoyo_extra')">Seleccionar todas</button>
-        <button type="button" onclick="limpiarChecks('checks_subunidad_apoyo_extra'); generarDistribucionExtraPorSubunidad();">Limpiar</button>
+        <button type="button" onclick="limpiarSubunidadesApoyoExtra()">Limpiar</button>
       </div>
 
       <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
@@ -1561,6 +1561,16 @@ personas.forEach(p => {
       contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => { ch.checked = true; });
     }
 
+  function limpiarSubunidadesApoyoExtra() {
+  limpiarChecks("checks_subunidad_apoyo_extra");
+
+  const contenedor = document.getElementById("contenedor_distribucion_extra");
+  const validacion = document.getElementById("validacion_distribucion_extra");
+
+  if (contenedor) contenedor.innerHTML = "";
+  if (validacion) validacion.innerText = "Sin validar";
+}
+  
     function limpiarChecks(idContenedor) {
       const contenedor = document.getElementById(idContenedor);
       if (!contenedor) return;
