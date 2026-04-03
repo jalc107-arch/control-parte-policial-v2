@@ -2961,35 +2961,74 @@ async function generarDistribucionExtraPorSubunidad() {
   }
 }
   
-function actualizarResumenSubunidadExtra(subunidad) {
-  const oficialesSet = new Set(["CR","TC","MY","CT","TE","ST"]);
-  const ejecutivoSet = new Set(["CM","SC","IJ","IT","SI"]);
-  const patrullerosSet = new Set(["PT","PP"]);
-  const auxiliaresSet = new Set(["AUX"]);
+function actualizarResumenGlobalExtra() {
+  const oficialesInput = document.getElementById("total_oficiales_extra");
+  const ejecutivoInput = document.getElementById("total_ejecutivo_extra");
+  const patrullerosInput = document.getElementById("total_patrulleros_extra");
+  const auxiliaresInput = document.getElementById("total_auxiliares_extra");
 
-  let oficiales = 0;
-  let ejecutivo = 0;
-  let patrulleros = 0;
-  let auxiliares = 0;
+  if (!oficialesInput || !ejecutivoInput || !patrullerosInput || !auxiliaresInput) return;
 
-  const inputs = document.querySelectorAll(`[id^="extra_${subunidad}_"]`);
+  const disponibles = extraerDisponiblesConsulta();
 
-  inputs.forEach(input => {
-    const partes = input.id.split("_");
-    const grado = partes[partes.length - 1];
-    const valor = parseInt(input.value || "0", 10);
+  const supervisorCedula = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
+  const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
+  const jefePmuCedula = document.querySelector('input[name="jefe_pmu"]:checked')?.value || "";
 
-    if (oficialesSet.has(grado)) oficiales += valor;
-    else if (ejecutivoSet.has(grado)) ejecutivo += valor;
-    else if (patrullerosSet.has(grado)) patrulleros += valor;
-    else if (auxiliaresSet.has(grado)) auxiliares += valor;
+  // 🔥 FILTRAR (NO CONTAR supervisor, jefe, pmu)
+  const filtrados = disponibles.filter(p => {
+    const ced = String(p.cedula || "").trim();
+    return ced !== supervisorCedula &&
+           ced !== jefeCedula &&
+           ced !== jefePmuCedula;
   });
+
+  // 🔥 CONTAR POR GRADO
+  const disponiblesOficiales = filtrados.filter(p => ["CR","TC","MY","CT","TE","ST"].includes((p.grado || "").toUpperCase().trim())).length;
+  const disponiblesEjecutivo = filtrados.filter(p => ["CM","SC","IJ","IT","SI"].includes((p.grado || "").toUpperCase().trim())).length;
+  const disponiblesPatrulleros = filtrados.filter(p => ["PT","PP"].includes((p.grado || "").toUpperCase().trim())).length;
+  const disponiblesAuxiliares = filtrados.filter(p => ["AUX"].includes((p.grado || "").toUpperCase().trim())).length;
+
+  // 🔥 LIMITAR MAX
+  oficialesInput.max = disponiblesOficiales;
+  ejecutivoInput.max = disponiblesEjecutivo;
+  patrullerosInput.max = disponiblesPatrulleros;
+  auxiliaresInput.max = disponiblesAuxiliares;
+
+  // 🔥 AJUSTAR VALORES SI SE PASAN
+  if (parseInt(oficialesInput.value || "0", 10) > disponiblesOficiales) {
+    oficialesInput.value = disponiblesOficiales;
+  }
+
+  if (parseInt(ejecutivoInput.value || "0", 10) > disponiblesEjecutivo) {
+    ejecutivoInput.value = disponiblesEjecutivo;
+  }
+
+  if (parseInt(patrullerosInput.value || "0", 10) > disponiblesPatrulleros) {
+    patrullerosInput.value = disponiblesPatrulleros;
+  }
+
+  if (parseInt(auxiliaresInput.value || "0", 10) > disponiblesAuxiliares) {
+    auxiliaresInput.value = disponiblesAuxiliares;
+  }
+
+  // 🔥 BLOQUEAR SI NO HAY PERSONAL
+  oficialesInput.disabled = disponiblesOficiales === 0;
+  ejecutivoInput.disabled = disponiblesEjecutivo === 0;
+  patrullerosInput.disabled = disponiblesPatrulleros === 0;
+  auxiliaresInput.disabled = disponiblesAuxiliares === 0;
+
+  // 🔥 CALCULAR TOTAL
+  const oficiales = parseInt(oficialesInput.value || "0", 10);
+  const ejecutivo = parseInt(ejecutivoInput.value || "0", 10);
+  const patrulleros = parseInt(patrullerosInput.value || "0", 10);
+  const auxiliares = parseInt(auxiliaresInput.value || "0", 10);
 
   const total = oficiales + ejecutivo + patrulleros + auxiliares;
 
-  const box = document.getElementById(`resumen_${subunidad}`);
-  if (box) {
-    box.innerText = `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
+  const resumen = document.getElementById("resumen_global_extra");
+  if (resumen) {
+    resumen.innerText = `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
   }
 }
   
@@ -3171,6 +3210,7 @@ if (name === "jefe_pmu" && window.seleccionServicio.pmu === p.cedula) {
   pintar(boxJefe, filtrar(personal, gradoJefe), "jefe_servicio");
   pintar(boxPmu, filtrar(personal, gradoPmu), "jefe_pmu");
 }
+  actualizarResumenGlobalExtra();
 
 document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
