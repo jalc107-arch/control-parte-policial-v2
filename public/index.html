@@ -2773,17 +2773,6 @@ async function consultarControlCumplimientoDiario() {
   }
 }
 
-function actualizarResumenGlobalExtra() {
-  const oficiales = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
-  const ejecutivo = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
-  const patrulleros = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
-  const auxiliares = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
-
-  const total = oficiales + ejecutivo + patrulleros + auxiliares;
-
-  document.getElementById("resumen_global_extra").innerText =
-    `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
-}
 
 function cargarSubunidadesApoyoExtra() {
   const subunidades = [...new Set(estructuraGlobal.map(x => x.subunidad).filter(Boolean))];
