@@ -2768,12 +2768,18 @@ async function consultarControlCumplimientoDiario() {
   }
 }
 
-
 function cargarSubunidadesApoyoExtra() {
-  const subunidades = [...new Set(estructuraGlobal.map(x => x.subunidad).filter(Boolean))];
-  pintarChecks("checks_subunidad_apoyo_extra", subunidades);
-}
+  const subunidades = [...new Set(
+    estructuraGlobal
+      .map(x => String(x.subunidad || "").trim().toUpperCase())
+      .filter(Boolean)
+  )].sort();
 
+  console.log("SUBUNIDADES EN ESTRUCTURA:", subunidades);
+  console.log("TOTAL SUBUNIDADES:", subunidades.length);
+  console.log("MUESTRA ESTRUCTURA:", estructuraGlobal.slice(
+
+  
 async function generarDistribucionExtraPorSubunidad() {
   let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
   const contenedor = document.getElementById("contenedor_distribucion_extra");
