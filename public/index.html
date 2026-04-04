@@ -3997,39 +3997,3 @@ function descargarPDFTotalModulo11() {
 
 </body>
 </html>
-  
-document.addEventListener("DOMContentLoaded", () => {
-  const inputFecha = document.getElementById("fecha_control");
-  if (inputFecha) {
-    const hoy = new Date().toISOString().split("T")[0];
-    inputFecha.value = hoy;
-  }
-
-  const consultaUnidad = document.getElementById("consulta_unidad");
-  if (consultaUnidad) {
-    consultaUnidad.addEventListener("change", cargarConsultaDependencias);
-  }
-
-  document.getElementById("bloqueExcel").style.display = "none";
-  document.getElementById("bloqueUbicacion").style.display = "none";
-  document.getElementById("bloqueNovedades").style.display = "none";
-  document.getElementById("bloqueParte").style.display = "none";
-  document.getElementById("bloqueConsultaGeneral").style.display = "none";
-  document.getElementById("bloqueExtraordinario").style.display = "none";
-  document.getElementById("bloqueHistorialExtra").style.display = "none";
-  document.getElementById("bloqueControlCumplimiento").style.display = "none";
-  document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
-  document.getElementById("bloqueModulo11").style.display = "none";
-
-  cargarChecksGruposExtra();
-
-  // 🔥 SOLO esta función
-  cargarEstructura();
-});
-</script>
-
-<!-- LIBRERÍA PARA EXCEL -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
-</body>
-</html>
