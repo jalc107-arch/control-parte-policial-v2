@@ -804,8 +804,7 @@
 
     <div id="m11_responsable" class="sub-card" style="display:none;"></div>
 
-    <div id="m11_tablero"></div>
-
+   
     <div id="m11_detalle" style="display:none; margin-top:18px;">
       <div class="sub-card">
         <h3 id="m11_detalle_titulo">Detalle</h3>
@@ -3991,59 +3990,6 @@ function descargarPDFTotalModulo11() {
     </html>
   `);
   win.document.close();
-}
-
-  async function consultarModulo11() {
-  const fecha = document.getElementById("m11_fecha").value;
-  const unidad = document.getElementById("m11_unidad").value;
-
-  if (!fecha || !unidad) {
-    alert("Selecciona fecha y unidad");
-    return;
-  }
-
-  const res = await fetch(`/modulo11/tablero?fecha=${fecha}&unidad=${unidad}`);
-  const data = await res.json();
-
-  const contenedor = document.getElementById("m11_tablero");
-  contenedor.innerHTML = "";
-
-  data.forEach(sub => {
-    contenedor.innerHTML += `
-      <div class="tarjeta">
-        <h3>${sub.subunidad}</h3>
-        <p>FE: ${sub.fe}</p>
-        <p>FD: ${sub.fd}</p>
-        <p>NOV: ${sub.novedades}</p>
-        <button onclick="verDetalle('${sub.subunidad}')">Ver detalle</button>
-      </div>
-    `;
-  });
-}
-
-  async function verDetalle(subunidad) {
-  const fecha = document.getElementById("m11_fecha").value;
-
-  const res = await fetch(`/modulo11/detalle?fecha=${fecha}&subunidad=${subunidad}`);
-  const data = await res.json();
-
-  let html = `<h3>Detalle ${subunidad}</h3>`;
-
-  data.forEach(p => {
-    html += `
-      <div>
-        ${p.nombre} - ${p.grado}
-        <select>
-          <option>ASISTIÓ</option>
-          <option>NO ASISTIÓ</option>
-          <option>LLEGÓ TARDE</option>
-          <option>EXCUSADO</option>
-        </select>
-      </div>
-    `;
-  });
-
-  document.getElementById("m11_tablero").innerHTML = html;
 }
 
   function descargarPDFTotal() {
