@@ -1574,35 +1574,37 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
       await pool.query(
         `
         INSERT INTO servicios_extraordinarios (
-          cedula,
-          fecha,
-          titulo_servicio,
-          unidad,
-          subunidad,
-          estacion,
-          organico,
-          grado,
-          apellidos,
-          nombres,
-          asignado_por_cedula,
-          asignado_por_nombre
-        )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+  cedula,
+  fecha,
+  titulo_servicio,
+  unidad,
+  subunidad,
+  estacion,
+  organico,
+  grado,
+  apellidos,
+  nombres,
+  asignado_por_cedula,
+  asignado_por_nombre,
+  cerrado
+)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
         `,
         [
-          r.cedula || null,
-          fechaServicio,
-          tituloServicio || null,
-          r.unidad || null,
-          r.subunidad || null,
-          r.estacion || null,
-          r.organico || null,
-          r.grado || null,
-          r.apellidos || null,
-          r.nombres || null,
-          r.responsable_cedula || null,
-          r.responsable_nombre || null
-        ]
+  r.cedula || null,
+  fechaServicio,
+  tituloServicio || null,
+  r.unidad || null,
+  r.subunidad || null,
+  r.estacion || null,
+  r.organico || null,
+  r.grado || null,
+  r.apellidos || null,
+  r.nombres || null,
+  r.responsable_cedula || null,
+  r.responsable_nombre || null,
+  false
+]
       );
     }
 
