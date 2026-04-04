@@ -1947,7 +1947,313 @@ app.post("/validar-codigo", async (req, res) => {
     });
   }
 });
+app.get("/modulo11-parte-extra", async (req, res) => {
+  try {
+    const fecha = String(req.query.fecha || "").trim();
+    const unidad = String(req.query.unidad || "").trim();
 
+    if (!fecha || !unidad) {
+      return res.json({ ok: false, error: "Fecha y unidad son obligatorias" });
+    }
+
+    const servicios = await pool.query(
+      `
+      SELECT
+        s.cedula,
+        s.grado,
+        s.apellidos,
+        s.nombres,
+        p.telefono,
+        s.unidad,
+        s.subunidad,
+        s.estacion,
+        s.organico
+      FROM servicios_extraordinarios s
+      LEFT JOIN personal p ON s.cedula = p.cedula
+      WHERE s.fecha = $1
+        AND s.unidad = $2
+      ORDER BY s.subunidad, ${construirOrdenGradoSQL("s")}, s.apellidos, s.nombres
+      `,
+      [fecha, unidad]
+    );
+
+    const controles = await pool.query(
+      `
+      SELECT
+        cedula,
+        estado_control,
+        observacion
+      FROM modulo11_control_servicio
+      WHERE fecha = $1
+        AND unidad = $2
+      `,
+      [fecha, unidad]
+    );
+
+    const responsables = await pool.query(
+      `
+      SELECT
+        responsable_nombre,
+        responsable_cedula,
+        responsable_telefono
+      FROM modulo11_control_servicio
+      WHERE fecha = $1
+        AND unidad = $2
+        AND responsable_cedula IS NOT NULL
+      ORDER BY id DESC
+      LIMIT 1
+      `,
+      [fecha, unidad]
+    );
+
+    const mapaControl = {};
+    controles.rows.forEach(r => {
+      mapaControl[String(r.cedula || "").trim()] = {
+        estado_control: String(r.estado_control || "DISPONIBLE").trim().toUpperCase(),
+        observacion: r.observacion || ""
+      };
+    });
+
+    const agrupado = {};
+
+    servicios.rows.forEach(p => {
+      const sub = String(p.subunidad || "SIN SUBUNIDAD").trim();
+      if (!agrupado[sub]) agrupado[sub] = [];
+
+      const control = mapaControl[String(p.cedula || "").trim()] || {};
+
+      agrupado[sub].push({
+        ...p,
+        estado_control: control.estado_control || "DISPONIBLE",
+        observacion: control.observacion || ""
+      });
+    });
+
+    const resumen = Object.keys(agrupado).sort().map(subunidad => ({
+      subunidad,
+      resumen: construirResumenModulo11DesdeLista(agrupado[subunidad])
+    }));
+
+    return res.json({
+      ok: true,
+      resumen,
+      responsable: responsables.rows.length ? {
+        nombre: responsables.rows[0].responsable_nombre || "",
+        cedula: responsables.rows[0].responsable_cedula || "",
+        telefono: responsables.rows[0].responsable_telefono || ""
+      } : null
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/modulo11-detalle", async (req, res) => {
+  try {
+    const fecha = String(req.query.fecha || "").trim();
+    const unidad = String(req.query.unidad || "").trim();
+    const subunidad = String(req.query.subunidad || "").trim();
+
+    if (!fecha || !unidad || !subunidad) {
+      return res.json({ ok: false, error: "Fecha, unidad y subunidad son obligatorias" });
+    }
+
+    const servicios = await pool.query(
+      `
+      SELECT
+        s.cedula,
+        s.grado,
+        s.apellidos,
+        s.nombres,
+        p.telefono,
+        s.unidad,
+        s.subunidad,
+        s.estacion,
+        s.organico
+      FROM servicios_extraordinarios s
+      LEFT JOIN personal p ON s.cedula = p.cedula
+      WHERE s.fecha = $1
+        AND s.unidad = $2
+        AND s.subunidad = $3
+      ORDER BY ${construirOrdenGradoSQL("s")}, s.apellidos, s.nombres
+      `,
+      [fecha, unidad, subunidad]
+    );
+
+    const controles = await pool.query(
+      `
+      SELECT
+        cedula,
+        estado_control,
+        observacion,
+        es_reemplazo_manual,
+        reemplaza_a_cedula,
+        grado,
+        apellidos,
+        nombres,
+        telefono
+      FROM modulo11_control_servicio
+      WHERE fecha = $1
+        AND unidad = $2
+        AND subunidad = $3
+      `,
+      [fecha, unidad, subunidad]
+    );
+
+    const mapaControl = {};
+    controles.rows.forEach(r => {
+      mapaControl[String(r.cedula || "").trim()] = r;
+    });
+
+    const detalle = servicios.rows.map(p => {
+      const control = mapaControl[String(p.cedula || "").trim()] || {};
+      return {
+        ...p,
+        estado_control: String(control.estado_control || "DISPONIBLE").trim().toUpperCase(),
+        observacion: control.observacion || "",
+        es_reemplazo_manual: !!control.es_reemplazo_manual,
+        reemplaza_a_cedula: control.reemplaza_a_cedula || ""
+      };
+    });
+
+    controles.rows
+      .filter(r => r.es_reemplazo_manual)
+      .forEach(r => {
+        detalle.push({
+          grado: r.grado || "",
+          apellidos: r.apellidos || "",
+          nombres: r.nombres || "",
+          cedula: r.cedula || "",
+          telefono: r.telefono || "",
+          unidad,
+          subunidad,
+          estado_control: String(r.estado_control || "REEMPLAZO").trim().toUpperCase(),
+          observacion: r.observacion || "",
+          es_reemplazo_manual: true,
+          reemplaza_a_cedula: r.reemplaza_a_cedula || ""
+        });
+      });
+
+    return res.json({ ok: true, detalle });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/modulo11-guardar-control", async (req, res) => {
+  try {
+    const { fecha, unidad, subunidad, responsable = {}, detalle = [] } = req.body;
+
+    if (!fecha || !unidad || !subunidad) {
+      return res.json({ ok: false, error: "Fecha, unidad y subunidad son obligatorias" });
+    }
+
+    await pool.query(
+      `
+      DELETE FROM modulo11_control_servicio
+      WHERE fecha = $1
+        AND unidad = $2
+        AND subunidad = $3
+      `,
+      [fecha, unidad, subunidad]
+    );
+
+    for (const p of detalle) {
+      await pool.query(
+        `
+        INSERT INTO modulo11_control_servicio (
+          fecha,
+          unidad,
+          subunidad,
+          cedula,
+          grado,
+          apellidos,
+          nombres,
+          telefono,
+          estado_control,
+          observacion,
+          es_reemplazo_manual,
+          reemplaza_a_cedula,
+          responsable_nombre,
+          responsable_cedula,
+          responsable_telefono
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        `,
+        [
+          fecha,
+          unidad,
+          subunidad,
+          p.cedula || null,
+          p.grado || null,
+          p.apellidos || null,
+          p.nombres || null,
+          p.telefono || null,
+          String(p.estado_control || "DISPONIBLE").trim().toUpperCase(),
+          p.observacion || null,
+          !!p.es_reemplazo_manual,
+          p.reemplaza_a_cedula || null,
+          responsable.nombre || null,
+          responsable.cedula || null,
+          responsable.telefono || null
+        ]
+      );
+    }
+
+    return res.json({ ok: true });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/modulo11-cerrar-servicio", async (req, res) => {
+  try {
+    const {
+      fecha,
+      unidad,
+      subunidad,
+      responsable_cedula,
+      responsable_nombre
+    } = req.body;
+
+    if (!fecha || !unidad || !subunidad) {
+      return res.json({ ok: false, error: "Fecha, unidad y subunidad son obligatorias" });
+    }
+
+    await pool.query(
+      `
+      UPDATE servicios_extraordinarios
+      SET
+        cerrado = true,
+        fecha_cierre = NOW(),
+        cerrado_por_cedula = $4,
+        cerrado_por_nombre = $5
+      WHERE fecha = $1
+        AND unidad = $2
+        AND subunidad = $3
+      `,
+      [
+        fecha,
+        unidad,
+        subunidad,
+        responsable_cedula || null,
+        responsable_nombre || null
+      ]
+    );
+
+    return res.json({ ok: true });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
