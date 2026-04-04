@@ -1141,6 +1141,7 @@ if (!data.autorizado) {
       document.getElementById("bloqueHistorialExtra").style.display = "none";
       document.getElementById("bloqueControlCumplimiento").style.display = "none";
       document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
+      document.getElementById("bloqueModulo11").style.display = "none";
     }
 
     cargarFiltrosConsulta();
@@ -2293,63 +2294,7 @@ cargarResponsablesServicioExtra();
 
       renderizarConsultaDesdeRespuesta({ general, detalleAgrupado });
     }
-function grupo4Servidor(grado = "") {
-  const g = String(grado || "").toUpperCase().trim();
 
-  if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
-  if (["CM","SC","IJ","IT","SI"].includes(g)) return [0,1,0,0];
-  if (["PT","PP"].includes(g)) return [0,0,1,0];
-  if (["AUX"].includes(g)) return [0,0,0,1];
-
-  return [0,0,0,0];
-}
-
-function sumar4Servidor(a = [0,0,0,0], b = [0,0,0,0]) {
-  return [
-    (a[0] || 0) + (b[0] || 0),
-    (a[1] || 0) + (b[1] || 0),
-    (a[2] || 0) + (b[2] || 0),
-    (a[3] || 0) + (b[3] || 0)
-  ];
-}
-
-function construirResumenModulo11DesdeLista(lista = []) {
-  const base = {
-    fuerza_efectiva: [0,0,0,0],
-    fuerza_disponible: [0,0,0,0],
-    novedades: [0,0,0,0],
-    excusado: [0,0,0,0],
-    no_asiste: [0,0,0,0],
-    retardado: [0,0,0,0],
-    reemplazo: [0,0,0,0],
-    incapacidad: [0,0,0,0],
-    hospitalizado: [0,0,0,0]
-  };
-
-  lista.forEach(p => {
-    const g = grupo4Servidor(p.grado || "");
-    const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
-
-    base.fuerza_efectiva = sumar4Servidor(base.fuerza_efectiva, g);
-
-    if (estado === "DISPONIBLE" || estado === "REEMPLAZO") {
-      base.fuerza_disponible = sumar4Servidor(base.fuerza_disponible, g);
-    }
-
-    if (["EXCUSADO","NO ASISTE","RETARDADO","INCAPACIDAD","HOSPITALIZADO"].includes(estado)) {
-      base.novedades = sumar4Servidor(base.novedades, g);
-    }
-
-    if (estado === "EXCUSADO") base.excusado = sumar4Servidor(base.excusado, g);
-    if (estado === "NO ASISTE") base.no_asiste = sumar4Servidor(base.no_asiste, g);
-    if (estado === "RETARDADO") base.retardado = sumar4Servidor(base.retardado, g);
-    if (estado === "REEMPLAZO") base.reemplazo = sumar4Servidor(base.reemplazo, g);
-    if (estado === "INCAPACIDAD") base.incapacidad = sumar4Servidor(base.incapacidad, g);
-    if (estado === "HOSPITALIZADO") base.hospitalizado = sumar4Servidor(base.hospitalizado, g);
-  });
-
-  return base;
-}
     async function guardarServicioExtraordinario() {
       try {
         if (!ultimosSeleccionadosExtra.length) return;
@@ -3479,6 +3424,580 @@ window.seleccionServicio = window.seleccionServicio || {
   
   actualizarResumenGlobalExtra();
 }
+function cargarUnidadModulo11() {
+  const select = document.getElementById("m11_unidad");
+  if (!select) return;
+
+  const unidades = [...new Set(
+    estructuraGlobal.map(x => String(x.unidad || "").trim()).filter(Boolean)
+  )].sort();
+
+  select.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
+
+  unidades.forEach(u => {
+    const op = document.createElement("option");
+    op.value = u;
+    op.textContent = u;
+    select.appendChild(op);
+  });
+
+  if (window.responsable?.unidad) {
+    select.value = window.responsable.unidad;
+  }
+
+  const fechaInput = document.getElementById("m11_fecha");
+  if (fechaInput && !fechaInput.value) {
+    fechaInput.value = new Date().toISOString().split("T")[0];
+  }
+}
+
+function grupo4(grado = "") {
+  const g = String(grado || "").toUpperCase().trim();
+  if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
+  if (["CM","SC","IJ","IT","SI"].includes(g)) return [0,1,0,0];
+  if (["PT","PP"].includes(g)) return [0,0,1,0];
+  if (["AUX"].includes(g)) return [0,0,0,1];
+  return [0,0,0,0];
+}
+
+function sumar4(a, b) {
+  return [
+    (a[0] || 0) + (b[0] || 0),
+    (a[1] || 0) + (b[1] || 0),
+    (a[2] || 0) + (b[2] || 0),
+    (a[3] || 0) + (b[3] || 0)
+  ];
+}
+
+function texto4(arr = [0,0,0,0]) {
+  return `${arr[0] || 0}-${arr[1] || 0}-${arr[2] || 0}-${arr[3] || 0}`;
+}
+
+async function consultarModulo11() {
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+
+  if (!fecha) {
+    alert("Debes seleccionar la fecha");
+    return;
+  }
+
+  if (!unidad) {
+    alert("Debes seleccionar la unidad");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/modulo11-parte-extra?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo consultar");
+      return;
+    }
+
+    window.m11Resumen = data.resumen || [];
+    window.m11ResponsableParte = data.responsable || null;
+
+    renderizarTableroModulo11();
+  } catch (error) {
+    console.error(error);
+    alert("Error consultando módulo 11");
+  }
+}
+
+function renderizarTableroModulo11() {
+  const boxResp = document.getElementById("m11_responsable");
+  const box = document.getElementById("m11_tablero");
+  const detalle = document.getElementById("m11_detalle");
+
+  if (detalle) detalle.style.display = "none";
+  if (box) box.innerHTML = "";
+
+  const responsable = window.m11ResponsableParte;
+
+  if (boxResp && responsable) {
+    boxResp.style.display = "block";
+    boxResp.innerHTML = `
+      <b>Responsable del parte:</b><br>
+      ${responsable.nombre || ""}<br>
+      Cédula: ${responsable.cedula || ""}<br>
+      Teléfono: ${responsable.telefono || ""}
+    `;
+  }
+
+  const resumen = Array.isArray(window.m11Resumen) ? window.m11Resumen : [];
+  if (!resumen.length) {
+    box.innerHTML = `<div class="sub-card">No hay información para esa fecha/unidad.</div>`;
+    return;
+  }
+
+  let total = {
+    fuerza_efectiva: [0,0,0,0],
+    fuerza_disponible: [0,0,0,0],
+    novedades: [0,0,0,0],
+    excusado: [0,0,0,0],
+    no_asiste: [0,0,0,0],
+    retardado: [0,0,0,0],
+    reemplazo: [0,0,0,0],
+    incapacidad: [0,0,0,0],
+    hospitalizado: [0,0,0,0]
+  };
+
+  let html = "";
+
+  resumen.forEach(item => {
+    const r = item.resumen || {};
+
+    total.fuerza_efectiva = sumar4(total.fuerza_efectiva, r.fuerza_efectiva || [0,0,0,0]);
+    total.fuerza_disponible = sumar4(total.fuerza_disponible, r.fuerza_disponible || [0,0,0,0]);
+    total.novedades = sumar4(total.novedades, r.novedades || [0,0,0,0]);
+    total.excusado = sumar4(total.excusado, r.excusado || [0,0,0,0]);
+    total.no_asiste = sumar4(total.no_asiste, r.no_asiste || [0,0,0,0]);
+    total.retardado = sumar4(total.retardado, r.retardado || [0,0,0,0]);
+    total.reemplazo = sumar4(total.reemplazo, r.reemplazo || [0,0,0,0]);
+    total.incapacidad = sumar4(total.incapacidad, r.incapacidad || [0,0,0,0]);
+    total.hospitalizado = sumar4(total.hospitalizado, r.hospitalizado || [0,0,0,0]);
+
+    html += `
+      <div class="sub-card" style="text-align:left; margin-top:12px;">
+        <h3>${item.subunidad || "SIN SUBUNIDAD"}</h3>
+        <pre style="margin-top:10px;">
+FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}
+FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}
+NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}
+EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}
+NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}
+RETARDADO            ${texto4(r.retardado || [0,0,0,0])}
+REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}
+INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}
+HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}
+        </pre>
+
+        <div class="acciones-inline">
+          <button type="button" onclick="verDetalleModulo11('${String(item.subunidad || "").replace(/'/g, "\\'")}')">Ver detalle</button>
+          <button type="button" onclick="descargarPDFUnidadModulo11('${String(item.subunidad || "").replace(/'/g, "\\'")}')">Descargar PDF unidad</button>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+    <div class="sub-card" style="text-align:left; margin-top:12px; border:2px solid #0B1F3A;">
+      <h3>TOTAL GENERAL</h3>
+      <pre style="margin-top:10px;">
+TOTAL FUERZA EFECTIVA      ${texto4(total.fuerza_efectiva)}
+TOTAL FUERZA DISPONIBLE    ${texto4(total.fuerza_disponible)}
+TOTAL NOVEDADES            ${texto4(total.novedades)}
+EXCUSADO                  ${texto4(total.excusado)}
+NO ASISTE                 ${texto4(total.no_asiste)}
+RETARDADO                 ${texto4(total.retardado)}
+REEMPLAZO                 ${texto4(total.reemplazo)}
+INCAPACIDAD               ${texto4(total.incapacidad)}
+HOSPITALIZADO             ${texto4(total.hospitalizado)}
+      </pre>
+    </div>
+  `;
+
+  box.innerHTML = html;
+}
+
+async function verDetalleModulo11(subunidad) {
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+
+  if (!fecha || !unidad || !subunidad) return;
+
+  try {
+    const res = await fetch(`/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&subunidad=${encodeURIComponent(subunidad)}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo cargar el detalle");
+      return;
+    }
+
+    window.m11DetalleActual = data.detalle || [];
+    window.m11SubunidadActual = subunidad;
+
+    renderizarDetalleModulo11();
+  } catch (error) {
+    console.error(error);
+    alert("Error cargando detalle");
+  }
+}
+
+function renderizarDetalleModulo11() {
+  const detalle = document.getElementById("m11_detalle");
+  const tabla = document.getElementById("m11_detalle_tabla");
+  const titulo = document.getElementById("m11_detalle_titulo");
+  const selectReemplaza = document.getElementById("m11_reemplaza_a");
+
+  if (!detalle || !tabla || !titulo || !selectReemplaza) return;
+
+  detalle.style.display = "block";
+  titulo.innerText = `Detalle ${window.m11SubunidadActual || ""}`;
+
+  selectReemplaza.innerHTML = '<option value="">Seleccionar a quién reemplaza</option>';
+
+  let html = `
+    <div class="tabla-wrap">
+      <table class="tabla-app">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Grado</th>
+            <th>Apellidos</th>
+            <th>Nombres</th>
+            <th>Cédula</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Observación</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  window.m11DetalleActual.forEach((p, i) => {
+    const ced = String(p.cedula || "").trim();
+    const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
+
+    if (["NO ASISTE","EXCUSADO","INCAPACIDAD","HOSPITALIZADO"].includes(estado)) {
+      const op = document.createElement("option");
+      op.value = ced;
+      op.textContent = `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - ${ced}`;
+      selectReemplaza.appendChild(op);
+    }
+
+    html += `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${p.grado || ""}</td>
+        <td>${p.apellidos || ""}</td>
+        <td>${p.nombres || ""}</td>
+        <td>${ced}</td>
+        <td>${p.telefono || ""}</td>
+        <td>
+          <select id="m11_estado_${ced}">
+            <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
+            <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
+            <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
+            <option value="EXCUSADO" ${estado === "EXCUSADO" ? "selected" : ""}>EXCUSADO</option>
+            <option value="INCAPACIDAD" ${estado === "INCAPACIDAD" ? "selected" : ""}>INCAPACIDAD</option>
+            <option value="HOSPITALIZADO" ${estado === "HOSPITALIZADO" ? "selected" : ""}>HOSPITALIZADO</option>
+            <option value="NO ASISTE" ${estado === "NO ASISTE" ? "selected" : ""}>NO ASISTE</option>
+          </select>
+        </td>
+        <td>
+          <input id="m11_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación" />
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  tabla.innerHTML = html;
+}
+
+function volverTableroModulo11() {
+  const detalle = document.getElementById("m11_detalle");
+  if (detalle) detalle.style.display = "none";
+}
+
+function agregarReemplazoModulo11() {
+  const reemplazaA = document.getElementById("m11_reemplaza_a")?.value || "";
+  const grado = document.getElementById("m11_rep_grado")?.value || "";
+  const apellidos = document.getElementById("m11_rep_apellidos")?.value || "";
+  const nombres = document.getElementById("m11_rep_nombres")?.value || "";
+  const cedula = document.getElementById("m11_rep_cedula")?.value || "";
+  const telefono = document.getElementById("m11_rep_telefono")?.value || "";
+  const unidad = document.getElementById("m11_rep_unidad")?.value || "";
+  const subunidad = document.getElementById("m11_rep_subunidad")?.value || "";
+
+  if (!reemplazaA || !grado || !apellidos || !nombres || !cedula || !telefono || !unidad || !subunidad) {
+    alert("Debes diligenciar todos los campos del reemplazo");
+    return;
+  }
+
+  const reemplazado = window.m11DetalleActual.find(p => String(p.cedula || "").trim() === String(reemplazaA).trim());
+
+  window.m11DetalleActual.push({
+    grado,
+    apellidos,
+    nombres,
+    cedula,
+    telefono,
+    unidad,
+    subunidad,
+    estado_control: "REEMPLAZO",
+    observacion: reemplazado ? `REEMPLAZA A ${reemplazado.grado || ""} ${reemplazado.apellidos || ""} ${reemplazado.nombres || ""}` : "REEMPLAZO",
+    es_reemplazo_manual: true,
+    reemplaza_a_cedula: reemplazaA
+  });
+
+  renderizarDetalleModulo11();
+}
+
+async function guardarControlModulo11() {
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+  const subunidad = window.m11SubunidadActual || "";
+
+  if (!fecha || !unidad || !subunidad) {
+    alert("Falta fecha, unidad o subunidad");
+    return;
+  }
+
+  const detalle = window.m11DetalleActual.map(p => {
+    const ced = String(p.cedula || "").trim();
+
+    return {
+      ...p,
+      estado_control: document.getElementById(`m11_estado_${ced}`)?.value || p.estado_control || "DISPONIBLE",
+      observacion: document.getElementById(`m11_obs_${ced}`)?.value || p.observacion || ""
+    };
+  });
+
+  try {
+    const res = await fetch("/modulo11-guardar-control", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        subunidad,
+        responsable: window.responsable || {},
+        detalle
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo guardar");
+      return;
+    }
+
+    alert("Parte guardado correctamente ✅");
+    consultarModulo11();
+  } catch (error) {
+    console.error(error);
+    alert("Error guardando módulo 11");
+  }
+}
+
+async function cerrarServicioModulo11() {
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+  const subunidad = window.m11SubunidadActual || "";
+
+  if (!fecha || !unidad || !subunidad) {
+    alert("Falta fecha, unidad o subunidad");
+    return;
+  }
+
+  if (!window.responsable) {
+    alert("No se identificó el responsable");
+    return;
+  }
+
+  try {
+    const res = await fetch("/modulo11-cerrar-servicio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        subunidad,
+        responsable_cedula: window.responsable.cedula || "",
+        responsable_nombre: window.responsable.nombre || ""
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo cerrar el servicio");
+      return;
+    }
+
+    alert("Servicio cerrado correctamente ✅");
+    consultarModulo11();
+    volverTableroModulo11();
+  } catch (error) {
+    console.error(error);
+    alert("Error cerrando servicio");
+  }
+}
+
+function construirTextoPDFUnidadModulo11(subunidad) {
+  const responsable = window.m11ResponsableParte || {};
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+
+  const item = (window.m11Resumen || []).find(x => String(x.subunidad || "") === String(subunidad || ""));
+  if (!item) return "";
+
+  const r = item.resumen || {};
+
+  let texto = "";
+  texto += `UNIDAD: ${unidad}\n`;
+  texto += `SUBUNIDAD: ${subunidad}\n`;
+  texto += `FECHA: ${fecha}\n`;
+  texto += `RESPONSABLE: ${responsable.nombre || ""}\n`;
+  texto += `CEDULA: ${responsable.cedula || ""}\n`;
+  texto += `TELEFONO: ${responsable.telefono || ""}\n\n`;
+
+  texto += `FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}\n`;
+  texto += `FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}\n`;
+  texto += `NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}\n`;
+  texto += `EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}\n`;
+  texto += `NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}\n`;
+  texto += `RETARDADO            ${texto4(r.retardado || [0,0,0,0])}\n`;
+  texto += `REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}\n`;
+  texto += `INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}\n`;
+  texto += `HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}\n`;
+
+  return texto;
+}
+
+function descargarPDFUnidadModulo11(subunidadParametro = "") {
+  const subunidad = subunidadParametro || window.m11SubunidadActual || "";
+  const texto = construirTextoPDFUnidadModulo11(subunidad);
+
+  if (!texto) {
+    alert("No hay información para generar PDF");
+    return;
+  }
+
+  const win = window.open("", "_blank");
+  if (!win) {
+    alert("El navegador bloqueó la ventana");
+    return;
+  }
+
+  win.document.write(`
+    <html>
+      <head>
+        <title>Parte ${subunidad}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          pre { white-space: pre-wrap; font-family: "Courier New", monospace; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <h2>PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO</h2>
+        <pre>${texto.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+        <script>window.print();<\/script>
+      </body>
+    </html>
+  `);
+  win.document.close();
+}
+
+function descargarPDFTotalModulo11() {
+  const responsable = window.m11ResponsableParte || {};
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+
+  const resumen = Array.isArray(window.m11Resumen) ? window.m11Resumen : [];
+  if (!resumen.length) {
+    alert("Primero consulta el tablero");
+    return;
+  }
+
+  let total = {
+    fuerza_efectiva: [0,0,0,0],
+    fuerza_disponible: [0,0,0,0],
+    novedades: [0,0,0,0],
+    excusado: [0,0,0,0],
+    no_asiste: [0,0,0,0],
+    retardado: [0,0,0,0],
+    reemplazo: [0,0,0,0],
+    incapacidad: [0,0,0,0],
+    hospitalizado: [0,0,0,0]
+  };
+
+  let texto = "";
+  texto += `UNIDAD: ${unidad}\n`;
+  texto += `FECHA: ${fecha}\n`;
+  texto += `RESPONSABLE: ${responsable.nombre || ""}\n`;
+  texto += `CEDULA: ${responsable.cedula || ""}\n`;
+  texto += `TELEFONO: ${responsable.telefono || ""}\n\n`;
+
+  resumen.forEach(item => {
+    const r = item.resumen || {};
+
+    total.fuerza_efectiva = sumar4(total.fuerza_efectiva, r.fuerza_efectiva || [0,0,0,0]);
+    total.fuerza_disponible = sumar4(total.fuerza_disponible, r.fuerza_disponible || [0,0,0,0]);
+    total.novedades = sumar4(total.novedades, r.novedades || [0,0,0,0]);
+    total.excusado = sumar4(total.excusado, r.excusado || [0,0,0,0]);
+    total.no_asiste = sumar4(total.no_asiste, r.no_asiste || [0,0,0,0]);
+    total.retardado = sumar4(total.retardado, r.retardado || [0,0,0,0]);
+    total.reemplazo = sumar4(total.reemplazo, r.reemplazo || [0,0,0,0]);
+    total.incapacidad = sumar4(total.incapacidad, r.incapacidad || [0,0,0,0]);
+    total.hospitalizado = sumar4(total.hospitalizado, r.hospitalizado || [0,0,0,0]);
+
+    texto += `${item.subunidad || "SIN SUBUNIDAD"}\n`;
+    texto += `FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}\n`;
+    texto += `FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}\n`;
+    texto += `NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}\n`;
+    texto += `EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}\n`;
+    texto += `NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}\n`;
+    texto += `RETARDADO            ${texto4(r.retardado || [0,0,0,0])}\n`;
+    texto += `REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}\n`;
+    texto += `INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}\n`;
+    texto += `HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}\n\n`;
+  });
+
+  texto += `TOTAL GENERAL\n`;
+  texto += `TOTAL FUERZA EFECTIVA      ${texto4(total.fuerza_efectiva)}\n`;
+  texto += `TOTAL FUERZA DISPONIBLE    ${texto4(total.fuerza_disponible)}\n`;
+  texto += `TOTAL NOVEDADES            ${texto4(total.novedades)}\n`;
+  texto += `EXCUSADO                  ${texto4(total.excusado)}\n`;
+  texto += `NO ASISTE                 ${texto4(total.no_asiste)}\n`;
+  texto += `RETARDADO                 ${texto4(total.retardado)}\n`;
+  texto += `REEMPLAZO                 ${texto4(total.reemplazo)}\n`;
+  texto += `INCAPACIDAD               ${texto4(total.incapacidad)}\n`;
+  texto += `HOSPITALIZADO             ${texto4(total.hospitalizado)}\n`;
+
+  const win = window.open("", "_blank");
+  if (!win) {
+    alert("El navegador bloqueó la ventana");
+    return;
+  }
+
+  win.document.write(`
+    <html>
+      <head>
+        <title>Parte total</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          pre { white-space: pre-wrap; font-family: "Courier New", monospace; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <h2>PARTE TOTAL CONSOLIDADO SERVICIO EXTRAORDINARIO</h2>
+        <pre>${texto.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+        <script>window.print();<\/script>
+      </body>
+    </html>
+  `);
+  win.document.close();
+}
+</script>
+
+<!-- LIBRERÍA PARA EXCEL -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+</body>
+</html>
+  
 document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
   if (inputFecha) {
@@ -3500,6 +4019,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("bloqueHistorialExtra").style.display = "none";
   document.getElementById("bloqueControlCumplimiento").style.display = "none";
   document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
+  document.getElementById("bloqueModulo11").style.display = "none";
 
   cargarChecksGruposExtra();
 
