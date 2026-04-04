@@ -777,6 +777,87 @@
     </div>
   </div>
 </div>
+
+    <div class="seccion" id="bloqueModulo11" style="display:none;">
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelModulo11')">
+    11. Parte consolidado servicio extraordinario
+  </button>
+
+  <div id="panelModulo11" class="panel-contenido">
+
+    <div class="campo-corto">
+      <input type="date" id="m11_fecha" />
+    </div>
+
+    <div class="campo-corto">
+      <select id="m11_unidad">
+        <option value="">Seleccionar UNIDAD</option>
+      </select>
+    </div>
+
+    <div class="acciones-inline">
+      <button type="button" onclick="consultarModulo11()">Consultar tablero</button>
+      <button type="button" onclick="descargarPDFTotalModulo11()">Descargar PDF total</button>
+    </div>
+
+    <div id="m11_responsable" class="sub-card" style="display:none;"></div>
+
+    <div id="m11_tablero"></div>
+
+    <div id="m11_detalle" style="display:none; margin-top:18px;">
+      <div class="sub-card">
+        <h3 id="m11_detalle_titulo">Detalle</h3>
+
+        <div class="acciones-inline">
+          <button type="button" onclick="volverTableroModulo11()">Volver al tablero</button>
+          <button type="button" onclick="descargarPDFUnidadModulo11()">Descargar PDF unidad</button>
+          <button type="button" onclick="guardarControlModulo11()">Guardar parte</button>
+          <button type="button" onclick="cerrarServicioModulo11()">Cerrar servicio</button>
+        </div>
+
+        <div id="m11_form_reemplazo" class="sub-card" style="margin-top:12px;">
+          <h3>Agregar reemplazo en terreno</h3>
+
+          <select id="m11_reemplaza_a">
+            <option value="">Seleccionar a quién reemplaza</option>
+          </select>
+
+          <select id="m11_rep_grado">
+            <option value="">Grado</option>
+            <option value="CR">CR</option>
+            <option value="TC">TC</option>
+            <option value="MY">MY</option>
+            <option value="CT">CT</option>
+            <option value="TE">TE</option>
+            <option value="ST">ST</option>
+            <option value="CM">CM</option>
+            <option value="SC">SC</option>
+            <option value="IJ">IJ</option>
+            <option value="IT">IT</option>
+            <option value="SI">SI</option>
+            <option value="PT">PT</option>
+            <option value="PP">PP</option>
+            <option value="AUX">AUX</option>
+          </select>
+
+          <input id="m11_rep_apellidos" placeholder="Apellidos" />
+          <input id="m11_rep_nombres" placeholder="Nombres" />
+          <input id="m11_rep_cedula" placeholder="Cédula" />
+          <input id="m11_rep_telefono" placeholder="Teléfono" />
+          <input id="m11_rep_unidad" placeholder="Unidad" />
+          <input id="m11_rep_subunidad" placeholder="Subunidad" />
+
+          <div class="acciones-inline">
+            <button type="button" onclick="agregarReemplazoModulo11()">Agregar reemplazo</button>
+          </div>
+        </div>
+
+        <div id="m11_detalle_tabla"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
     
 <script>
 
@@ -802,6 +883,11 @@ let ultimoResultadoConsulta = [];
 let ultimosSeleccionadosExtra = [];
 let otpValidado = false;
 window.serviciosExtraTemporales = {};
+
+window.m11Resumen = [];
+window.m11DetalleActual = [];
+window.m11SubunidadActual = "";
+window.m11ResponsableParte = null;
 
   window.seleccionServicio = {
   supervisor: "",
@@ -1046,6 +1132,8 @@ if (!data.autorizado) {
       document.getElementById("bloqueControlCumplimiento").style.display = "block";
       document.getElementById("bloqueConfigExtraGlobal").style.display = "block";
       consultarParteExtraGlobal();
+      document.getElementById("bloqueModulo11").style.display = "block";
+      cargarUnidadModulo11();
     } else {
       document.getElementById("bloqueOrganico").style.display = "none";
       document.getElementById("bloqueConsultaGeneral").style.display = "none";
