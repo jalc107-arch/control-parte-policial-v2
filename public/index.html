@@ -3574,10 +3574,30 @@ function renderizarTableroModulo11() {
     total.incapacidad = sumar4(total.incapacidad, r.incapacidad || [0,0,0,0]);
     total.hospitalizado = sumar4(total.hospitalizado, r.hospitalizado || [0,0,0,0]);
 
-    html += `
-      <div class="sub-card" style="text-align:left; margin-top:12px;">
-        <h3>${item.subunidad || "SIN SUBUNIDAD"}</h3>
-        <pre style="margin-top:10px;">
+   const estadoParte = item.estado_parte || "NO HAN DADO PARTE";
+const responsableTexto = item.responsable_parte
+  ? `${item.responsable_parte.hora || ""} ${item.responsable_parte.grado || ""} ${item.responsable_parte.apellidos || ""} ${item.responsable_parte.nombres || ""} CC ${item.responsable_parte.cedula || ""} TEL ${item.responsable_parte.telefono || ""}`
+  : "";
+
+html += `
+  <div class="sub-card" style="text-align:left; margin-top:12px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+      <h3 style="margin:0;">${item.subunidad || "SIN SUBUNIDAD"}</h3>
+      <div style="font-size:12px; font-weight:700; color:${
+        estadoParte === "NO HAN DADO PARTE" ? "#B42318" :
+        estadoParte === "SACANDO PARTE" ? "#B54708" : "#067647"
+      };">
+        ${estadoParte}
+      </div>
+    </div>
+
+    ${
+      responsableTexto
+        ? `<div style="font-size:11px; color:#52606D; margin-top:4px;">${responsableTexto}</div>`
+        : ""
+    }
+
+    <pre style="margin-top:10px;">
 FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}
 FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}
 NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}
@@ -3587,14 +3607,14 @@ RETARDADO            ${texto4(r.retardado || [0,0,0,0])}
 REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}
 INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}
 HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}
-        </pre>
+    </pre>
 
-        <div class="acciones-inline">
-          <button type="button" onclick="verDetalleModulo11('${String(item.subunidad || "").replace(/'/g, "\\'")}')">Ver detalle</button>
-          <button type="button" onclick="descargarPDFUnidadModulo11('${String(item.subunidad || "").replace(/'/g, "\\'")}')">Descargar PDF unidad</button>
-        </div>
-      </div>
-    `;
+    <div class="acciones-inline">
+      <button type="button" onclick="verDetalleModulo11('${String(item.subunidad || "").replace(/'/g, "\\'")}')">Ver detalle</button>
+      <button type="button" onclick="descargarPDFUnidadModulo11('${String(item.subunidad || "").replace(/'/g, "\\'")}')">Descargar PDF unidad</button>
+    </div>
+  </div>
+`;
   });
 
   html += `
