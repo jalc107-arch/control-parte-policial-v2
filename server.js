@@ -1535,12 +1535,8 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
       return res.json({ ok: false, mensaje: "Sin personal" });
     }
 
-    if (!fecha_servicio) {
-      return res.json({ ok: false, mensaje: "La fecha del servicio es obligatoria" });
-    }
-
-    const fechaServicio = String(fecha_servicio).trim();
-    const tituloServicio = String(titulo_servicio || "").trim();
+    const fechaFinal = fecha_servicio || obtenerFechaBogotaSQL();
+    const tituloFinal = String(titulo_servicio || "SERVICIO EXTRAORDINARIO").trim();
 
     const registros = personal.map(p => ({
       cedula: (p.cedula || "").toString().trim(),
@@ -1551,60 +1547,46 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
       subunidad: p.subunidad || "",
       estacion: p.estacion || "",
       organico: p.organico || "",
+      cargo_servicio: p.cargoServicio || "",
       responsable_cedula,
       responsable_nombre
     }));
 
     for (const r of registros) {
-      const existe = await pool.query(
-        `
-        SELECT id
-        FROM servicios_extraordinarios
-        WHERE cedula = $1
-          AND fecha = $2
-        LIMIT 1
-        `,
-        [r.cedula || null, fechaServicio]
-      );
-
-      if (existe.rows.length > 0) {
-        continue;
-      }
-
       await pool.query(
         `
         INSERT INTO servicios_extraordinarios (
-  cedula,
-  fecha,
-  titulo_servicio,
-  unidad,
-  subunidad,
-  estacion,
-  organico,
-  grado,
-  apellidos,
-  nombres,
-  asignado_por_cedula,
-  asignado_por_nombre,
-  cerrado
-)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+          cedula,
+          fecha,
+          unidad,
+          subunidad,
+          estacion,
+          organico,
+          grado,
+          apellidos,
+          nombres,
+          asignado_por_cedula,
+          asignado_por_nombre,
+          titulo_servicio,
+          cargo_servicio
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
         `,
         [
-  r.cedula || null,
-  fechaServicio,
-  tituloServicio || null,
-  r.unidad || null,
-  r.subunidad || null,
-  r.estacion || null,
-  r.organico || null,
-  r.grado || null,
-  r.apellidos || null,
-  r.nombres || null,
-  r.responsable_cedula || null,
-  r.responsable_nombre || null,
-  false
-]
+          r.cedula || null,
+          fechaFinal,
+          r.unidad || null,
+          r.subunidad || null,
+          r.estacion || null,
+          r.organico || null,
+          r.grado || null,
+          r.apellidos || null,
+          r.nombres || null,
+          r.responsable_cedula || null,
+          r.responsable_nombre || null,
+          tituloFinal || null,
+          r.cargo_servicio || null
+        ]
       );
     }
 
@@ -1616,6 +1598,298 @@ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
   } catch (err) {
     console.error(err);
     res.json({ ok: false, error: err.message });
+  }
+});
+// =========================
+app.get("/modulo11-servicios", async (req, res) => {
+  try {
+    const { fecha, unidad } = req.query;
+
+    if (!fecha || !unidad) {
+      return res.json({ ok: false, error: "Fecha y unidad obligatorias" });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT DISTINCT
+        COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') AS titulo_servicio
+      FROM servicios_extraordinarios
+      WHERE fecha = $1
+        AND unidad = $2
+      ORDER BY titulo_servicio
+      `,
+      [fecha, unidad]
+    );
+
+    res.json({
+      ok: true,
+      data: result.rows.map(r => ({
+        id: r.titulo_servicio,
+        titulo_servicio: r.titulo_servicio
+      }))
+    });
+  } catch (error) {
+    res.json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/modulo11-parte-extra", async (req, res) => {
+  try {
+    const { fecha, unidad, servicio } = req.query;
+
+    if (!fecha || !unidad || !servicio) {
+      return res.json({ ok: false, error: "Fecha, unidad y servicio obligatorios" });
+    }
+
+    const personalResult = await pool.query(
+      `
+      SELECT
+        se.cedula,
+        se.grado,
+        se.apellidos,
+        se.nombres,
+        se.unidad,
+        se.subunidad,
+        se.estacion,
+        se.organico,
+        se.titulo_servicio,
+        se.cargo_servicio,
+        COALESCE(mc.estado_control, 'DISPONIBLE') AS estado_control,
+        COALESCE(mc.observacion, '') AS observacion,
+        COALESCE(mc.telefono, '') AS telefono
+      FROM servicios_extraordinarios se
+      LEFT JOIN modulo11_control mc
+        ON mc.fecha = se.fecha
+       AND mc.unidad = se.unidad
+       AND mc.subunidad = se.subunidad
+       AND mc.titulo_servicio = se.titulo_servicio
+       AND mc.cedula = se.cedula
+      WHERE se.fecha = $1
+        AND se.unidad = $2
+        AND COALESCE(se.titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
+      ORDER BY se.subunidad, ${construirOrdenGradoSQL("se")}, se.apellidos, se.nombres
+      `,
+      [fecha, unidad, servicio]
+    );
+
+    const responsableResult = await pool.query(
+      `
+      SELECT
+        asignado_por_nombre AS nombre,
+        asignado_por_cedula AS cedula
+      FROM servicios_extraordinarios
+      WHERE fecha = $1
+        AND unidad = $2
+        AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
+      ORDER BY id DESC
+      LIMIT 1
+      `,
+      [fecha, unidad, servicio]
+    );
+
+    const filas = personalResult.rows;
+
+    const mapa = {};
+
+    filas.forEach(p => {
+      const sub = p.subunidad || "SIN SUBUNIDAD";
+
+      if (!mapa[sub]) {
+        mapa[sub] = [];
+      }
+
+      mapa[sub].push(p);
+    });
+
+    function resumenLista(lista = []) {
+      const base = {
+        fuerza_efectiva: [0,0,0,0],
+        fuerza_disponible: [0,0,0,0],
+        novedades: [0,0,0,0],
+        excusado: [0,0,0,0],
+        no_asiste: [0,0,0,0],
+        retardado: [0,0,0,0],
+        reemplazo: [0,0,0,0],
+        incapacidad: [0,0,0,0],
+        hospitalizado: [0,0,0,0]
+      };
+
+      lista.forEach(p => {
+        const g = grupo4Servidor(p.grado || "");
+        const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
+
+        base.fuerza_efectiva = sumar4Servidor(base.fuerza_efectiva, g);
+
+        if (estado === "DISPONIBLE" || estado === "REEMPLAZO") {
+          base.fuerza_disponible = sumar4Servidor(base.fuerza_disponible, g);
+        }
+
+        if (["EXCUSADO","NO ASISTE","RETARDADO","INCAPACIDAD","HOSPITALIZADO"].includes(estado)) {
+          base.novedades = sumar4Servidor(base.novedades, g);
+        }
+
+        if (estado === "EXCUSADO") base.excusado = sumar4Servidor(base.excusado, g);
+        if (estado === "NO ASISTE") base.no_asiste = sumar4Servidor(base.no_asiste, g);
+        if (estado === "RETARDADO") base.retardado = sumar4Servidor(base.retardado, g);
+        if (estado === "REEMPLAZO") base.reemplazo = sumar4Servidor(base.reemplazo, g);
+        if (estado === "INCAPACIDAD") base.incapacidad = sumar4Servidor(base.incapacidad, g);
+        if (estado === "HOSPITALIZADO") base.hospitalizado = sumar4Servidor(base.hospitalizado, g);
+      });
+
+      return base;
+    }
+
+    const resumen = Object.keys(mapa).map(subunidad => ({
+      subunidad,
+      resumen: resumenLista(mapa[subunidad])
+    }));
+
+    res.json({
+      ok: true,
+      responsable: responsableResult.rows[0] || null,
+      resumen
+    });
+  } catch (error) {
+    res.json({ ok: false, error: error.message });
+  }
+});
+
+app.get("/modulo11-detalle", async (req, res) => {
+  try {
+    const { fecha, unidad, servicio, subunidad } = req.query;
+
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      return res.json({ ok: false, error: "Faltan datos" });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        se.cedula,
+        se.grado,
+        se.apellidos,
+        se.nombres,
+        se.unidad,
+        se.subunidad,
+        se.estacion,
+        se.organico,
+        se.cargo_servicio,
+        COALESCE(mc.estado_control, 'DISPONIBLE') AS estado_control,
+        COALESCE(mc.observacion, '') AS observacion,
+        COALESCE(mc.telefono, '') AS telefono
+      FROM servicios_extraordinarios se
+      LEFT JOIN modulo11_control mc
+        ON mc.fecha = se.fecha
+       AND mc.unidad = se.unidad
+       AND mc.subunidad = se.subunidad
+       AND mc.titulo_servicio = se.titulo_servicio
+       AND mc.cedula = se.cedula
+      WHERE se.fecha = $1
+        AND se.unidad = $2
+        AND COALESCE(se.titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
+        AND se.subunidad = $4
+      ORDER BY ${construirOrdenGradoSQL("se")}, se.apellidos, se.nombres
+      `,
+      [fecha, unidad, servicio, subunidad]
+    );
+
+    res.json({
+      ok: true,
+      detalle: result.rows
+    });
+  } catch (error) {
+    res.json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/modulo11-guardar-control", async (req, res) => {
+  try {
+    const { fecha, unidad, subunidad, servicio, responsable, detalle } = req.body;
+
+    if (!fecha || !unidad || !subunidad || !servicio || !detalle || !Array.isArray(detalle)) {
+      return res.json({ ok: false, error: "Datos incompletos" });
+    }
+
+    for (const p of detalle) {
+      await pool.query(
+        `
+        INSERT INTO modulo11_control (
+          fecha,
+          unidad,
+          subunidad,
+          titulo_servicio,
+          cedula,
+          grado,
+          apellidos,
+          nombres,
+          telefono,
+          estado_control,
+          observacion,
+          responsable_cedula,
+          responsable_nombre
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+        ON CONFLICT (fecha, unidad, subunidad, titulo_servicio, cedula)
+        DO UPDATE SET
+          grado = EXCLUDED.grado,
+          apellidos = EXCLUDED.apellidos,
+          nombres = EXCLUDED.nombres,
+          telefono = EXCLUDED.telefono,
+          estado_control = EXCLUDED.estado_control,
+          observacion = EXCLUDED.observacion,
+          responsable_cedula = EXCLUDED.responsable_cedula,
+          responsable_nombre = EXCLUDED.responsable_nombre
+        `,
+        [
+          fecha,
+          unidad,
+          subunidad,
+          servicio,
+          p.cedula || null,
+          p.grado || null,
+          p.apellidos || null,
+          p.nombres || null,
+          p.telefono || null,
+          p.estado_control || "DISPONIBLE",
+          p.observacion || null,
+          responsable?.cedula || null,
+          responsable?.nombre || null
+        ]
+      );
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    res.json({ ok: false, error: error.message });
+  }
+});
+
+app.post("/modulo11-cerrar-servicio", async (req, res) => {
+  try {
+    const { fecha, unidad, subunidad, servicio, responsable_cedula, responsable_nombre } = req.body;
+
+    if (!fecha || !unidad || !subunidad || !servicio) {
+      return res.json({ ok: false, error: "Faltan datos para cerrar" });
+    }
+
+    await pool.query(
+      `
+      UPDATE servicios_extraordinarios
+      SET cerrado = true,
+          cerrado_por_cedula = $5,
+          cerrado_por_nombre = $6,
+          fecha_cierre = CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'
+      WHERE fecha = $1
+        AND unidad = $2
+        AND subunidad = $3
+        AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $4
+      `,
+      [fecha, unidad, subunidad, servicio, responsable_cedula || null, responsable_nombre || null]
+    );
+
+    res.json({ ok: true });
+  } catch (error) {
+    res.json({ ok: false, error: error.message });
   }
 });
 
@@ -2254,6 +2528,29 @@ app.post("/modulo11-cerrar-servicio", async (req, res) => {
     return res.status(500).json({ ok: false, error: error.message });
   }
 });
+// =========================
+// FUNCIONES AUXILIARES
+// =========================
+function grupo4Servidor(grado = "") {
+  const g = String(grado || "").toUpperCase().trim();
+
+  if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
+  if (["CM","SC","IJ","IT","SI"].includes(g)) return [0,1,0,0];
+  if (["PT","PP"].includes(g)) return [0,0,1,0];
+  if (["AUX"].includes(g)) return [0,0,0,1];
+
+  return [0,0,0,0];
+}
+
+function sumar4Servidor(a = [0,0,0,0], b = [0,0,0,0]) {
+  return [
+    (a[0] || 0) + (b[0] || 0),
+    (a[1] || 0) + (b[1] || 0),
+    (a[2] || 0) + (b[2] || 0),
+    (a[3] || 0) + (b[3] || 0)
+  ];
+}
+
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
