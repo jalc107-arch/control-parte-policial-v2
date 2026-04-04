@@ -1192,8 +1192,7 @@ async function cargarEstructura() {
     cargarChecksSubunidadApoyoExtra();
 
     // 🔥 ESTA ES LA LÍNEA MÁS IMPORTANTE
-    cargarSubunidadesApoyoExtra();
-
+   
   } catch (error) {
     console.error(error);
   }
@@ -1752,10 +1751,10 @@ personas.forEach(p => {
   contenedor.innerHTML = "";
 
   const subunidades = [
-    ...new Set(
-      estructuraGlobal.map(x => (x.subunidad || "").trim()).filter(Boolean)
-    )
-  ];
+  ...new Set(
+    estructuraGlobal.map(x => String(x.subunidad || "").trim().toUpperCase()).filter(Boolean)
+  )
+].sort();
 
   subunidades.forEach(sub => {
     const label = document.createElement("label");
@@ -2929,31 +2928,6 @@ async function consultarControlCumplimientoDiario() {
   }
 }
 
-function cargarSubunidadesApoyoExtra() {
-  const subunidades = [...new Set(
-    estructuraGlobal
-      .map(x => String(x.subunidad || "").trim().toUpperCase())
-      .filter(Boolean)
-  )].sort();
-
-  const contenedor = document.getElementById("checks_subunidad_apoyo_extra");
-  if (!contenedor) return;
-
-  contenedor.innerHTML = "";
-
-  subunidades.forEach(subunidad => {
-    const label = document.createElement("label");
-    label.className = "check-item";
-
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = subunidad;
-
-    label.appendChild(input);
-    label.appendChild(document.createTextNode(subunidad));
-    contenedor.appendChild(label);
-  });
-}
   
 async function generarDistribucionExtraPorSubunidad() {
   let subunidades = Array.from(
@@ -3996,7 +3970,25 @@ function descargarPDFTotalModulo11() {
   const fecha = document.getElementById("m11_fecha").value;
   window.open(`/modulo11/pdf-total?fecha=${fecha}`);
 }
-  
+  document.addEventListener("DOMContentLoaded", () => {
+  const inputFecha = document.getElementById("fecha_control");
+  if (inputFecha) {
+    inputFecha.value = new Date().toISOString().split("T")[0];
+  }
+
+  document.getElementById("bloqueExcel").style.display = "none";
+  document.getElementById("bloqueUbicacion").style.display = "none";
+  document.getElementById("bloqueNovedades").style.display = "none";
+  document.getElementById("bloqueParte").style.display = "none";
+  document.getElementById("bloqueConsultaGeneral").style.display = "none";
+  document.getElementById("bloqueExtraordinario").style.display = "none";
+  document.getElementById("bloqueHistorialExtra").style.display = "none";
+  document.getElementById("bloqueControlCumplimiento").style.display = "none";
+  document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
+  document.getElementById("bloqueModulo11").style.display = "none";
+
+  cargarEstructura();
+});
 </script>
 
 <!-- LIBRERÍA PARA EXCEL -->
