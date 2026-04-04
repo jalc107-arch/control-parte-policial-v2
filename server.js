@@ -940,13 +940,14 @@ app.get("/servicio-extra-ocupados", async (req, res) => {
     }
 
     const result = await pool.query(
-      `
-      SELECT DISTINCT cedula
-      FROM servicios_extraordinarios
-      WHERE fecha = $1
-      `,
-      [fecha]
-    );
+  `
+  SELECT DISTINCT cedula
+  FROM servicios_extraordinarios
+  WHERE fecha = $1
+    AND COALESCE(cerrado, false) = false
+  `,
+  [fecha]
+);
 
     res.json({
       ok: true,
