@@ -786,14 +786,20 @@
   <div id="panelModulo11" class="panel-contenido">
 
     <div class="campo-corto">
-      <input type="date" id="m11_fecha" />
+<input type="date" id="m11_fecha" onchange="cargarServiciosModulo11()" />
     </div>
 
     <div class="campo-corto">
-      <select id="m11_unidad">
-        <option value="">Seleccionar UNIDAD</option>
+<select id="m11_unidad" onchange="cargarServiciosModulo11()">
+  <option value="">Seleccionar UNIDAD</option>
       </select>
     </div>
+
+    <div class="campo-corto">
+  <select id="m11_servicio">
+    <option value="">Seleccionar SERVICIO EXTRAORDINARIO</option>
+  </select>
+</div>
 
     <div class="acciones-inline">
       <button type="button" onclick="consultarModulo11()">Consultar tablero</button>
@@ -3425,7 +3431,7 @@ function cargarUnidadModulo11() {
     fechaInput.value = new Date().toISOString().split("T")[0];
   }
 }
-
+  
 function grupo4(grado = "") {
   const g = String(grado || "").toUpperCase().trim();
   if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
@@ -3448,14 +3454,48 @@ function texto4(arr = [0,0,0,0]) {
   return `${arr[0] || 0}-${arr[1] || 0}-${arr[2] || 0}-${arr[3] || 0}`;
 }
 
+  async function cargarServiciosModulo11() {
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+  const select = document.getElementById("m11_servicio");
+
+  if (!select) return;
+
+  select.innerHTML = '<option value="">Seleccionar SERVICIO EXTRAORDINARIO</option>';
+
+  if (!fecha || !unidad) return;
+
+  try {
+    const res = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.data)) return;
+
+    data.data.forEach(servicio => {
+      const op = document.createElement("option");
+      op.value = servicio.id || servicio.titulo_servicio || "";
+      op.textContent = servicio.titulo_servicio || servicio.nombre_servicio || servicio.id || "SERVICIO";
+      select.appendChild(op);
+    });
+  } catch (error) {
+    console.error("Error cargando servicios módulo 11:", error);
+  }
+}
+  
 async function consultarModulo11() {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
 
   if (!fecha) {
     alert("Debes seleccionar la fecha");
     return;
   }
+
+  if (!servicio) {
+  alert("Debes seleccionar el servicio extraordinario");
+  return;
+}
 
   if (!unidad) {
     alert("Debes seleccionar la unidad");
@@ -3463,7 +3503,7 @@ async function consultarModulo11() {
   }
 
   try {
-    const res = await fetch(`/modulo11-parte-extra?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
+    const res = await fetch(`/modulo11-parte-extra?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}`);
     const data = await res.json();
 
     if (!data.ok) {
@@ -3580,11 +3620,12 @@ HOSPITALIZADO             ${texto4(total.hospitalizado)}
 async function verDetalleModulo11(subunidad) {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
 
   if (!fecha || !unidad || !subunidad) return;
 
   try {
-    const res = await fetch(`/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&subunidad=${encodeURIComponent(subunidad)}`);
+const res = await fetch(`/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`);
     const data = await res.json();
 
     if (!data.ok) {
@@ -3722,6 +3763,7 @@ async function guardarControlModulo11() {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
   const subunidad = window.m11SubunidadActual || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
 
   if (!fecha || !unidad || !subunidad) {
     alert("Falta fecha, unidad o subunidad");
@@ -3747,7 +3789,8 @@ async function guardarControlModulo11() {
         unidad,
         subunidad,
         responsable: window.responsable || {},
-        detalle
+        detalle,
+        servicio
       })
     });
 
@@ -3770,6 +3813,7 @@ async function cerrarServicioModulo11() {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
   const subunidad = window.m11SubunidadActual || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
 
   if (!fecha || !unidad || !subunidad) {
     alert("Falta fecha, unidad o subunidad");
@@ -3789,6 +3833,7 @@ async function cerrarServicioModulo11() {
         fecha,
         unidad,
         subunidad,
+        servicio,
         responsable_cedula: window.responsable.cedula || "",
         responsable_nombre: window.responsable.nombre || ""
       })
