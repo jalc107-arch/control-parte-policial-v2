@@ -1774,59 +1774,6 @@ function renderizarPersonalModulo12() {
   box.style.display = "block";
 
   let html = `
-    <div class="sub-card" style="margin-bottom:12px;">
-      <h3>Agregar reemplazo</h3>
-      <div class="grid-form">
-        <div>
-          <label>A quién reemplaza</label>
-          <select id="m12_reemplaza_a">
-            <option value="">Seleccionar funcionario</option>
-            ${
-              window.m12DetalleActual
-                .filter(p => {
-                  const estado = String(p.estado_control || "").trim().toUpperCase();
-                  return ["NO ASISTE","EXCUSADO","INCAPACIDAD","HOSPITALIZADO"].includes(estado);
-                })
-                .map(p => `
-                  <option value="${String(p.cedula || "").trim()}">
-                    ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - ${p.cedula || ""}
-                  </option>
-                `).join("")
-            }
-          </select>
-        </div>
-
-        <div>
-          <label>Grado</label>
-          <input id="m12_rep_grado" placeholder="Ej: PT">
-        </div>
-
-        <div>
-          <label>Apellidos</label>
-          <input id="m12_rep_apellidos" placeholder="Apellidos">
-        </div>
-
-        <div>
-          <label>Nombres</label>
-          <input id="m12_rep_nombres" placeholder="Nombres">
-        </div>
-
-        <div>
-          <label>Cédula</label>
-          <input id="m12_rep_cedula" placeholder="Cédula">
-        </div>
-
-        <div>
-          <label>Teléfono</label>
-          <input id="m12_rep_telefono" placeholder="Teléfono">
-        </div>
-      </div>
-
-      <div class="acciones-inline">
-        <button type="button" onclick="agregarReemplazoModulo12()">Agregar reemplazo</button>
-      </div>
-    </div>
-
     <div class="tabla-wrap">
       <table class="tabla-app">
         <thead>
@@ -1857,7 +1804,7 @@ function renderizarPersonalModulo12() {
         <td>${ced}</td>
         <td>${p.telefono || ""}</td>
         <td>
-          <select id="m12_estado_${ced}">
+          <select id="m12_estado_${ced}" onchange="mostrarFormularioReemplazoModulo12('${ced}')">
             <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
             <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
             <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
@@ -1878,31 +1825,96 @@ function renderizarPersonalModulo12() {
         </tbody>
       </table>
     </div>
+
+    <div id="m12_reemplazo_box" class="sub-card" style="display:none; margin-top:12px;"></div>
   `;
 
   tabla.innerHTML = html;
 }
 
-  function agregarReemplazoModulo12() {
-  const reemplazaA = document.getElementById("m12_reemplaza_a")?.value || "";
+  function mostrarFormularioReemplazoModulo12(cedulaTitular) {
+  const box = document.getElementById("m12_reemplazo_box");
+  if (!box) return;
+
+  const estado = document.getElementById(`m12_estado_${cedulaTitular}`)?.value || "";
+  const persona = window.m12DetalleActual.find(p => String(p.cedula || "").trim() === String(cedulaTitular).trim());
+
+  if (!persona || estado !== "REEMPLAZO") {
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
+
+  box.style.display = "block";
+  box.innerHTML = `
+    <h3>Agregar reemplazo para</h3>
+    <div style="margin-bottom:10px; font-size:14px;">
+      <b>${persona.grado || ""} ${persona.apellidos || ""} ${persona.nombres || ""}</b><br>
+      Cédula: ${persona.cedula || ""} - Teléfono: ${persona.telefono || ""}
+    </div>
+
+    <div class="grid-form">
+      <div>
+        <label>Grado del reemplazo</label>
+        <input id="m12_rep_grado" placeholder="Ej: PT">
+      </div>
+
+      <div>
+        <label>Apellidos del reemplazo</label>
+        <input id="m12_rep_apellidos" placeholder="Apellidos">
+      </div>
+
+      <div>
+        <label>Nombres del reemplazo</label>
+        <input id="m12_rep_nombres" placeholder="Nombres">
+      </div>
+
+      <div>
+        <label>Cédula del reemplazo</label>
+        <input id="m12_rep_cedula" placeholder="Cédula">
+      </div>
+
+      <div>
+        <label>Teléfono del reemplazo</label>
+        <input id="m12_rep_telefono" placeholder="Teléfono">
+      </div>
+    </div>
+
+    <div class="acciones-inline">
+      <button type="button" onclick="agregarReemplazoModulo12('${cedulaTitular}')">Agregar reemplazo</button>
+    </div>
+  `;
+}
+  
+function agregarReemplazoModulo12(cedulaTitular) {
   const grado = document.getElementById("m12_rep_grado")?.value || "";
   const apellidos = document.getElementById("m12_rep_apellidos")?.value || "";
   const nombres = document.getElementById("m12_rep_nombres")?.value || "";
   const cedula = document.getElementById("m12_rep_cedula")?.value || "";
   const telefono = document.getElementById("m12_rep_telefono")?.value || "";
 
-  if (!reemplazaA || !grado || !apellidos || !nombres || !cedula || !telefono) {
+  if (!cedulaTitular || !grado || !apellidos || !nombres || !cedula || !telefono) {
     alert("Debes diligenciar todos los datos del reemplazo");
     return;
   }
 
-  const yaExiste = window.m12DetalleActual.some(p => String(p.cedula || "").trim() === String(cedula).trim());
+  const yaExiste = window.m12DetalleActual.some(
+    p => String(p.cedula || "").trim() === String(cedula).trim()
+  );
+
   if (yaExiste) {
     alert("Esa cédula ya existe en el listado");
     return;
   }
 
-  const reemplazado = window.m12DetalleActual.find(p => String(p.cedula || "").trim() === String(reemplazaA).trim());
+  const titular = window.m12DetalleActual.find(
+    p => String(p.cedula || "").trim() === String(cedulaTitular).trim()
+  );
+
+  if (!titular) {
+    alert("No se encontró el funcionario a reemplazar");
+    return;
+  }
 
   window.m12DetalleActual.push({
     grado,
@@ -1913,14 +1925,20 @@ function renderizarPersonalModulo12() {
     unidad: document.getElementById("m12_unidad")?.value || "",
     subunidad: document.getElementById("m12_subunidad")?.value || "",
     estado_control: "REEMPLAZO",
-    observacion: reemplazado
-      ? `REEMPLAZA A ${reemplazado.grado || ""} ${reemplazado.apellidos || ""} ${reemplazado.nombres || ""}`
-      : "REEMPLAZO",
+    observacion: `REEMPLAZA A ${titular.grado || ""} ${titular.apellidos || ""} ${titular.nombres || ""}`,
     es_reemplazo_manual: true,
-    reemplaza_a_cedula: reemplazaA
+    reemplaza_a_cedula: cedulaTitular
   });
 
   renderizarPersonalModulo12();
+
+  setTimeout(() => {
+    const box = document.getElementById("m12_reemplazo_box");
+    if (box) {
+      box.style.display = "none";
+      box.innerHTML = "";
+    }
+  }, 100);
 }
   
 function obtenerResponsableModulo12() {
