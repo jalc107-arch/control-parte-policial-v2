@@ -1978,7 +1978,7 @@ app.get("/modulo12-subunidades", async (req, res) => {
       FROM servicios_extraordinarios
       WHERE fecha = $1
         AND unidad = $2
-        AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
+        AND servicio = $3
         AND subunidad IS NOT NULL
         AND TRIM(subunidad) <> ''
       ORDER BY subunidad
