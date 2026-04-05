@@ -1610,31 +1610,41 @@ async function cargarSubunidadesModulo12() {
     const selectSubunidad = document.getElementById("m12_subunidad");
 
     if (!selectSubunidad) return;
+
     selectSubunidad.innerHTML = `<option value="">Seleccionar subunidad</option>`;
 
     if (!fecha || !unidad || !servicio) return;
 
-    const res = await fetch(`/modulo11-parte-extra?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}`);
+    const url = `/modulo12-subunidades?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}`;
+    console.log("MOD12 SUBUNIDADES URL:", url);
+
+    const res = await fetch(url);
     const data = await res.json();
+
+    console.log("MOD12 SUBUNIDADES RESPUESTA:", data);
 
     if (!data.ok) {
       alert(data.error || "No se pudieron cargar las subunidades");
       return;
     }
 
-    (data.resumen || []).forEach(item => {
+    (data.data || []).forEach(item => {
       const sub = String(item.subunidad || "").trim();
       if (!sub) return;
-      selectSubunidad.innerHTML += `<option value="${sub}">${sub}</option>`;
+
+      const option = document.createElement("option");
+      option.value = sub;
+      option.textContent = sub;
+      selectSubunidad.appendChild(option);
     });
 
     limpiarPersonalModulo12();
   } catch (error) {
-    console.error(error);
+    console.error("ERROR cargarSubunidadesModulo12:", error);
     alert("Error cargando subunidades");
   }
 }
-
+  
 async function consultarEstadoModulo12() {
   try {
     const fecha = document.getElementById("m12_fecha")?.value || "";
