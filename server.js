@@ -2196,10 +2196,10 @@ app.get("/modulo11-detalle", async (req, res) => {
 
 app.post("/modulo11-guardar-control", async (req, res) => {
   try {
-    const { fecha, unidad, subunidad, responsable = {}, detalle = [] } = req.body;
+    const { fecha, unidad, subunidad, servicio, responsable = {}, detalle = [] } = req.body;
 
-    if (!fecha || !unidad || !subunidad) {
-      return res.json({ ok: false, error: "Fecha, unidad y subunidad son obligatorias" });
+    if (!fecha || !unidad || !subunidad || !servicio) {
+      return res.json({ ok: false, error: "Fecha, unidad, subunidad y servicio son obligatorios" });
     }
 
     await pool.query(
@@ -2208,8 +2208,9 @@ app.post("/modulo11-guardar-control", async (req, res) => {
       WHERE fecha = $1
         AND unidad = $2
         AND subunidad = $3
+        AND titulo_servicio = $4
       `,
-      [fecha, unidad, subunidad]
+      [fecha, unidad, subunidad, servicio]
     );
 
     for (const p of detalle) {
@@ -2219,6 +2220,7 @@ app.post("/modulo11-guardar-control", async (req, res) => {
           fecha,
           unidad,
           subunidad,
+          titulo_servicio,
           cedula,
           grado,
           apellidos,
@@ -2232,12 +2234,13 @@ app.post("/modulo11-guardar-control", async (req, res) => {
           responsable_cedula,
           responsable_telefono
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
         `,
         [
           fecha,
           unidad,
           subunidad,
+          servicio,
           p.cedula || null,
           p.grado || null,
           p.apellidos || null,
