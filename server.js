@@ -2331,7 +2331,214 @@ function construirResumenModulo11DesdeLista(lista = []) {
 
   return base;
 }
+// =========================
+// MODULO 12 - INICIAR PARTE SUBUNIDAD
+// =========================
+app.post("/modulo12-iniciar-parte", async (req, res) => {
+  try {
+    const {
+      fecha,
+      unidad,
+      servicio,
+      subunidad,
+      responsable = {}
+    } = req.body;
 
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      return res.json({ ok: false, error: "Fecha, unidad, servicio y subunidad son obligatorios" });
+    }
+
+    const horaBogota = new Intl.DateTimeFormat("es-CO", {
+      timeZone: "America/Bogota",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).format(new Date());
+
+    await pool.query(
+      `
+      INSERT INTO modulo12_partes (
+        fecha,
+        unidad,
+        servicio,
+        subunidad,
+        estado_parte,
+        responsable_grado,
+        responsable_apellidos,
+        responsable_nombres,
+        responsable_cedula,
+        responsable_telefono,
+        hora_inicio,
+        updated_at
+      )
+      VALUES ($1,$2,$3,$4,'SACANDO PARTE',$5,$6,$7,$8,$9,$10,CURRENT_TIMESTAMP)
+      ON CONFLICT (fecha, unidad, servicio, subunidad)
+      DO UPDATE SET
+        estado_parte = 'SACANDO PARTE',
+        responsable_grado = EXCLUDED.responsable_grado,
+        responsable_apellidos = EXCLUDED.responsable_apellidos,
+        responsable_nombres = EXCLUDED.responsable_nombres,
+        responsable_cedula = EXCLUDED.responsable_cedula,
+        responsable_telefono = EXCLUDED.responsable_telefono,
+        hora_inicio = COALESCE(modulo12_partes.hora_inicio, EXCLUDED.hora_inicio),
+        updated_at = CURRENT_TIMESTAMP
+      `,
+      [
+        fecha,
+        unidad,
+        servicio,
+        subunidad,
+        responsable.grado || null,
+        responsable.apellidos || null,
+        responsable.nombres || null,
+        responsable.cedula || null,
+        responsable.telefono || null,
+        horaBogota
+      ]
+    );
+
+    return res.json({ ok: true, estado_parte: "SACANDO PARTE", hora_inicio: horaBogota });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+// =========================
+// MODULO 12 - CERRAR PARTE SUBUNIDAD
+// =========================
+app.post("/modulo12-cerrar-parte", async (req, res) => {
+  try {
+    const {
+      fecha,
+      unidad,
+      servicio,
+      subunidad,
+      responsable = {}
+    } = req.body;
+
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      return res.json({ ok: false, error: "Fecha, unidad, servicio y subunidad son obligatorios" });
+    }
+
+    const horaBogota = new Intl.DateTimeFormat("es-CO", {
+      timeZone: "America/Bogota",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).format(new Date());
+
+    await pool.query(
+      `
+      INSERT INTO modulo12_partes (
+        fecha,
+        unidad,
+        servicio,
+        subunidad,
+        estado_parte,
+        responsable_grado,
+        responsable_apellidos,
+        responsable_nombres,
+        responsable_cedula,
+        responsable_telefono,
+        hora_cierre,
+        updated_at
+      )
+      VALUES ($1,$2,$3,$4,'PARTE DADO',$5,$6,$7,$8,$9,$10,CURRENT_TIMESTAMP)
+      ON CONFLICT (fecha, unidad, servicio, subunidad)
+      DO UPDATE SET
+        estado_parte = 'PARTE DADO',
+        responsable_grado = EXCLUDED.responsable_grado,
+        responsable_apellidos = EXCLUDED.responsable_apellidos,
+        responsable_nombres = EXCLUDED.responsable_nombres,
+        responsable_cedula = EXCLUDED.responsable_cedula,
+        responsable_telefono = EXCLUDED.responsable_telefono,
+        hora_cierre = EXCLUDED.hora_cierre,
+        updated_at = CURRENT_TIMESTAMP
+      `,
+      [
+        fecha,
+        unidad,
+        servicio,
+        subunidad,
+        responsable.grado || null,
+        responsable.apellidos || null,
+        responsable.nombres || null,
+        responsable.cedula || null,
+        responsable.telefono || null,
+        horaBogota
+      ]
+    );
+
+    return res.json({ ok: true, estado_parte: "PARTE DADO", hora_cierre: horaBogota });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+// =========================
+// MODULO 12 - CONSULTAR ESTADO DE PARTE
+// =========================
+app.get("/modulo12-estado-parte", async (req, res) => {
+  try {
+    const fecha = String(req.query.fecha || "").trim();
+    const unidad = String(req.query.unidad || "").trim();
+    const servicio = String(req.query.servicio || "").trim();
+    const subunidad = String(req.query.subunidad || "").trim();
+
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      return res.json({ ok: false, error: "Fecha, unidad, servicio y subunidad son obligatorios" });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        estado_parte,
+        responsable_grado,
+        responsable_apellidos,
+        responsable_nombres,
+        responsable_cedula,
+        responsable_telefono,
+        hora_inicio,
+        hora_cierre
+      FROM modulo12_partes
+      WHERE fecha = $1
+        AND unidad = $2
+        AND servicio = $3
+        AND subunidad = $4
+      LIMIT 1
+      `,
+      [fecha, unidad, servicio, subunidad]
+    );
+
+    if (!result.rows.length) {
+      return res.json({
+        ok: true,
+        estado_parte: "NO HAN DADO PARTE",
+        responsable_parte: null
+      });
+    }
+
+    const row = result.rows[0];
+
+    return res.json({
+      ok: true,
+      estado_parte: row.estado_parte || "NO HAN DADO PARTE",
+      responsable_parte: {
+        hora: row.hora_cierre || row.hora_inicio || "",
+        grado: row.responsable_grado || "",
+        apellidos: row.responsable_apellidos || "",
+        nombres: row.responsable_nombres || "",
+        cedula: row.responsable_cedula || "",
+        telefono: row.responsable_telefono || ""
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
