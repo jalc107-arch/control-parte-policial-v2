@@ -866,6 +866,55 @@
   </div>
 </div>
 
+    <!-- ========================= -->
+<!-- MODULO 12 -->
+<!-- ========================= -->
+<section id="bloqueModulo12" class="bloque-app" style="display:none;">
+  <div class="card-app">
+    <h2>12. Parte por subunidad servicio extraordinario</h2>
+
+    <div class="grid-form">
+      <div>
+        <label for="m12_fecha">Fecha</label>
+        <input type="date" id="m12_fecha">
+      </div>
+
+      <div>
+        <label for="m12_unidad">Unidad</label>
+        <select id="m12_unidad"></select>
+      </div>
+
+      <div>
+        <label for="m12_servicio">Servicio extraordinario</label>
+        <select id="m12_servicio">
+          <option value="">Seleccionar servicio</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="m12_subunidad">Subunidad</label>
+        <select id="m12_subunidad">
+          <option value="">Seleccionar subunidad</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="acciones-inline" style="margin-top:12px;">
+      <button type="button" onclick="cargarPersonalModulo12()">Cargar personal</button>
+      <button type="button" onclick="iniciarParteModulo12()">Iniciar parte</button>
+      <button type="button" onclick="guardarParteModulo12()">Guardar parte</button>
+      <button type="button" onclick="cerrarParteModulo12()">Cerrar parte</button>
+    </div>
+
+    <div id="m12_estado_box" class="sub-card" style="display:none; margin-top:12px;"></div>
+
+    <div id="m12_personal_box" class="sub-card" style="display:none; margin-top:12px;">
+      <h3 id="m12_titulo_personal">Personal del servicio</h3>
+      <div id="m12_tabla_personal"></div>
+    </div>
+  </div>
+</section>
+
 
 <script>
 
@@ -4526,59 +4575,27 @@ function descargarPDFTotalModulo11() {
   win.document.close();
 }
 
-<!-- ========================= -->
-<!-- MODULO 12 -->
-<!-- ========================= -->
-<section id="bloqueModulo12" class="bloque-app" style="display:none;">
-  <div class="card-app">
-    <h2>12. Parte por subunidad servicio extraordinario</h2>
 
-    <div class="grid-form">
-      <div>
-        <label for="m12_fecha">Fecha</label>
-        <input type="date" id="m12_fecha">
-      </div>
+  
+ 
+  document.addEventListener("DOMContentLoaded", () => {
+  const inputFecha = document.getElementById("fecha_control");
+  if (inputFecha) {
+    inputFecha.value = new Date().toISOString().split("T")[0];
+  }
 
-      <div>
-        <label for="m12_unidad">Unidad</label>
-        <select id="m12_unidad"></select>
-      </div>
-
-      <div>
-        <label for="m12_servicio">Servicio extraordinario</label>
-        <select id="m12_servicio">
-          <option value="">Seleccionar servicio</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="m12_subunidad">Subunidad</label>
-        <select id="m12_subunidad">
-          <option value="">Seleccionar subunidad</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="acciones-inline" style="margin-top:12px;">
-      <button type="button" onclick="cargarPersonalModulo12()">Cargar personal</button>
-      <button type="button" onclick="iniciarParteModulo12()">Iniciar parte</button>
-      <button type="button" onclick="guardarParteModulo12()">Guardar parte</button>
-      <button type="button" onclick="cerrarParteModulo12()">Cerrar parte</button>
-    </div>
-
-    <div id="m12_estado_box" class="sub-card" style="display:none; margin-top:12px;"></div>
-
-    <div id="m12_personal_box" class="sub-card" style="display:none; margin-top:12px;">
-      <h3 id="m12_titulo_personal">Personal del servicio</h3>
-      <div id="m12_tabla_personal"></div>
-    </div>
-  </div>
-</section>
+  document.getElementById("bloqueExcel").style.display = "none";
+  document.getElementById("bloqueUbicacion").style.display = "none";
+  document.getElementById("bloqueNovedades").style.display = "none";
+  document.getElementById("bloqueParte").style.display = "none";
+  document.getElementById("bloqueConsultaGeneral").style.display = "none";
+  document.getElementById("bloqueExtraordinario").style.display = "none";
+  document.getElementById("bloqueHistorialExtra").style.display = "none";
+  document.getElementById("bloqueControlCumplimiento").style.display = "none";
+  document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
+  document.getElementById("bloqueModulo11").style.display = "none";
 
 
-  // =========================
-// EVENTOS MODULO 12
-// =========================
 document.addEventListener("DOMContentLoaded", () => {
   const fecha = document.getElementById("m12_fecha");
   const unidad = document.getElementById("m12_unidad");
@@ -4607,24 +4624,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
- 
-  document.addEventListener("DOMContentLoaded", () => {
-  const inputFecha = document.getElementById("fecha_control");
-  if (inputFecha) {
-    inputFecha.value = new Date().toISOString().split("T")[0];
-  }
-
-  document.getElementById("bloqueExcel").style.display = "none";
-  document.getElementById("bloqueUbicacion").style.display = "none";
-  document.getElementById("bloqueNovedades").style.display = "none";
-  document.getElementById("bloqueParte").style.display = "none";
-  document.getElementById("bloqueConsultaGeneral").style.display = "none";
-  document.getElementById("bloqueExtraordinario").style.display = "none";
-  document.getElementById("bloqueHistorialExtra").style.display = "none";
-  document.getElementById("bloqueControlCumplimiento").style.display = "none";
-  document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
-  document.getElementById("bloqueModulo11").style.display = "none";
-
+    
   cargarEstructura();
 });
 </script>
