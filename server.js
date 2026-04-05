@@ -1961,6 +1961,46 @@ app.post("/validar-codigo", async (req, res) => {
     });
   }
 });
+
+app.get("/modulo12-subunidades", async (req, res) => {
+  try {
+    const fecha = String(req.query.fecha || "").trim();
+    const unidad = String(req.query.unidad || "").trim();
+    const servicio = String(req.query.servicio || "").trim();
+
+    if (!fecha || !unidad || !servicio) {
+      return res.json({ ok: false, error: "Fecha, unidad y servicio obligatorios" });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT DISTINCT subunidad
+      FROM servicios_extraordinarios
+      WHERE fecha = $1
+        AND unidad = $2
+        AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
+        AND subunidad IS NOT NULL
+        AND TRIM(subunidad) <> ''
+      ORDER BY subunidad
+      `,
+      [fecha, unidad, servicio]
+    );
+
+    return res.json({
+      ok: true,
+      data: result.rows.map(r => ({
+        subunidad: r.subunidad
+      }))
+    });
+  } catch (error) {
+    console.error("ERROR MODULO12 SUBUNIDADES:", error);
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
 // =========================
 // PARTE EXTRA MODULO 11
 // =========================
