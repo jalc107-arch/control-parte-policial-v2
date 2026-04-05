@@ -338,40 +338,6 @@
   gap: 10px;
   margin-top: 12px;
 }
-
-    .grid-form{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap:14px;
-  align-items:end;
-}
-
-.grid-form label{
-  display:block;
-  text-align:left;
-  font-weight:700;
-  margin-bottom:6px;
-  color:#0B1F3A;
-}
-
-.grid-form input,
-.grid-form select{
-  width:100%;
-  box-sizing:border-box;
-}
-
-.acciones-inline{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:flex-start;
-}
-
-.card-app h2{
-  margin-top:0;
-  margin-bottom:16px;
-  text-align:left;
-}
     
 .tarjeta-resumen {
   border-radius: 12px;
@@ -435,6 +401,59 @@
   text-align: center;
   vertical-align: middle;
 }
+
+    .bloque-app {
+      margin-top: 16px;
+    }
+
+    .card-app {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 22px 18px;
+      border-radius: var(--radio-lg);
+      background: var(--blanco);
+      color: var(--texto-oscuro);
+      box-shadow: var(--sombra-card);
+    }
+
+    .card-app h2 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--azul-principal);
+      text-align: left;
+    }
+
+    .grid-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      align-items: end;
+      margin-top: 12px;
+    }
+
+    .grid-form > div {
+      text-align: left;
+    }
+
+    .grid-form label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--azul-principal);
+    }
+
+    #bloqueModulo12 .acciones-inline {
+      justify-content: flex-start;
+      margin-top: 14px;
+    }
+
+    #bloqueModulo12 .sub-card h3,
+    #bloqueModulo12 #m12_titulo_personal {
+      text-align: left;
+    }
     
   </style>
 </head>
