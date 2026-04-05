@@ -4460,6 +4460,8 @@ function renderizarDetalleModulo11() {
 
   let opcionesReemplazo = '<option value="">Seleccionar a quién reemplaza</option>';
 
+  const tieneValores = (arr = []) => arr.some(n => Number(n || 0) > 0);
+
   lista.forEach((p) => {
     const estado = String(p.estado_control || "").trim().toUpperCase();
     const grupo = grupo4(p.grado || "");
@@ -4499,6 +4501,7 @@ function renderizarDetalleModulo11() {
   });
 
   function tablaSimple(tituloBloque, columnas, filasHtml) {
+    if (!filasHtml || !String(filasHtml).trim()) return "";
     return `
       <details class="sub-card" style="margin-top:12px;">
         <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">${tituloBloque}</summary>
@@ -4508,13 +4511,21 @@ function renderizarDetalleModulo11() {
               <tr>${columnas.map(c => `<th>${c}</th>`).join("")}</tr>
             </thead>
             <tbody>
-              ${filasHtml || `<tr><td colspan="${columnas.length}">Sin información</td></tr>`}
+              ${filasHtml}
             </tbody>
           </table>
         </div>
       </details>
     `;
   }
+
+  let resumenTiposHtml = "";
+  if (tieneValores(tipos.EXCUSADO)) resumenTiposHtml += `EXCUSADO             ${texto4(tipos.EXCUSADO)}\n`;
+  if (tieneValores(tipos["NO ASISTE"])) resumenTiposHtml += `NO ASISTE            ${texto4(tipos["NO ASISTE"])}\n`;
+  if (tieneValores(tipos.RETARDADO)) resumenTiposHtml += `RETARDADO            ${texto4(tipos.RETARDADO)}\n`;
+  if (tieneValores(tipos.REEMPLAZO)) resumenTiposHtml += `REEMPLAZO            ${texto4(tipos.REEMPLAZO)}\n`;
+  if (tieneValores(tipos.INCAPACIDAD)) resumenTiposHtml += `INCAPACIDAD          ${texto4(tipos.INCAPACIDAD)}\n`;
+  if (tieneValores(tipos.HOSPITALIZADO)) resumenTiposHtml += `HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}\n`;
 
   const resumenHtml = `
     <div class="sub-card" style="margin-bottom:12px;">
@@ -4528,13 +4539,7 @@ function renderizarDetalleModulo11() {
 FUERZA EFECTIVA      ${texto4(base.fuerza_efectiva)}
 FUERZA DISPONIBLE    ${texto4(base.fuerza_disponible)}
 NOVEDADES            ${texto4(base.novedades)}
-EXCUSADO             ${texto4(tipos.EXCUSADO)}
-NO ASISTE            ${texto4(tipos["NO ASISTE"])}
-RETARDADO            ${texto4(tipos.RETARDADO)}
-REEMPLAZO            ${texto4(tipos.REEMPLAZO)}
-INCAPACIDAD          ${texto4(tipos.INCAPACIDAD)}
-HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
-      </pre>
+${resumenTiposHtml}</pre>
     </div>
   `;
 
@@ -4552,7 +4557,7 @@ HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
   let novedadesResumenRows = "";
   ["EXCUSADO", "NO ASISTE", "RETARDADO", "INCAPACIDAD", "HOSPITALIZADO", "REEMPLAZO"].forEach((tipo) => {
     const conteo = tipos[tipo] || [0, 0, 0, 0];
-    if (conteo.some(n => n > 0)) {
+    if (tieneValores(conteo)) {
       novedadesResumenRows += `
         <tr>
           <td>${tipo}</td>
