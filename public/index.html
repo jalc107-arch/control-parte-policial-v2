@@ -4418,9 +4418,8 @@ function renderizarDetalleModulo11() {
   const detalleBox = document.getElementById("m11_detalle");
   const tabla = document.getElementById("m11_detalle_tabla");
   const titulo = document.getElementById("m11_detalle_titulo");
-  const selectReemplaza = document.getElementById("m11_reemplaza_a");
 
-  if (!detalleBox || !tabla || !titulo || !selectReemplaza) return;
+  if (!detalleBox || !tabla || !titulo) return;
 
   detalleBox.style.display = "block";
 
@@ -4435,18 +4434,18 @@ function renderizarDetalleModulo11() {
   const lista = Array.isArray(window.m11DetalleActual) ? window.m11DetalleActual : [];
 
   const base = {
-    fuerza_efectiva: [0,0,0,0],
-    fuerza_disponible: [0,0,0,0],
-    novedades: [0,0,0,0]
+    fuerza_efectiva: [0, 0, 0, 0],
+    fuerza_disponible: [0, 0, 0, 0],
+    novedades: [0, 0, 0, 0]
   };
 
   const tipos = {
-    EXCUSADO: [0,0,0,0],
-    "NO ASISTE": [0,0,0,0],
-    RETARDADO: [0,0,0,0],
-    REEMPLAZO: [0,0,0,0],
-    INCAPACIDAD: [0,0,0,0],
-    HOSPITALIZADO: [0,0,0,0]
+    EXCUSADO: [0, 0, 0, 0],
+    "NO ASISTE": [0, 0, 0, 0],
+    RETARDADO: [0, 0, 0, 0],
+    REEMPLAZO: [0, 0, 0, 0],
+    INCAPACIDAD: [0, 0, 0, 0],
+    HOSPITALIZADO: [0, 0, 0, 0]
   };
 
   const disponibles = [];
@@ -4459,7 +4458,7 @@ function renderizarDetalleModulo11() {
     HOSPITALIZADO: []
   };
 
-  selectReemplaza.innerHTML = '<option value="">Seleccionar a quién reemplaza</option>';
+  let opcionesReemplazo = '<option value="">Seleccionar a quién reemplaza</option>';
 
   lista.forEach((p) => {
     const estado = String(p.estado_control || "").trim().toUpperCase();
@@ -4467,22 +4466,29 @@ function renderizarDetalleModulo11() {
 
     base.fuerza_efectiva = sumar4(base.fuerza_efectiva, grupo);
 
-    if (!estado || estado === "DISPONIBLE" || estado === "SACANDO PARTE" || estado === "PARTE" || estado === "REEMPLAZO") {
+    if (
+      !estado ||
+      estado === "DISPONIBLE" ||
+      estado === "SACANDO PARTE" ||
+      estado === "PARTE" ||
+      estado === "REEMPLAZO"
+    ) {
       base.fuerza_disponible = sumar4(base.fuerza_disponible, grupo);
       disponibles.push(p);
     }
 
-    if (["EXCUSADO","NO ASISTE","RETARDADO","INCAPACIDAD","HOSPITALIZADO"].includes(estado)) {
+    if (["EXCUSADO", "NO ASISTE", "RETARDADO", "INCAPACIDAD", "HOSPITALIZADO"].includes(estado)) {
       base.novedades = sumar4(base.novedades, grupo);
       tipos[estado] = sumar4(tipos[estado], grupo);
       detalleTipos[estado].push(p);
 
       const ced = String(p.cedula || "").trim();
-      if (ced) {
-        const op = document.createElement("option");
-        op.value = ced;
-        op.textContent = `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - ${ced}`;
-        selectReemplaza.appendChild(op);
+      const yaFueReemplazado = lista.some(
+        x => !!x.es_reemplazo_manual && String(x.reemplaza_a_cedula || "").trim() === ced
+      );
+
+      if (ced && !yaFueReemplazado) {
+        opcionesReemplazo += `<option value="${ced}">${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - ${ced}</option>`;
       }
     }
 
@@ -4544,8 +4550,8 @@ HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
   `).join("");
 
   let novedadesResumenRows = "";
-  ["EXCUSADO","NO ASISTE","RETARDADO","INCAPACIDAD","HOSPITALIZADO","REEMPLAZO"].forEach((tipo) => {
-    const conteo = tipos[tipo] || [0,0,0,0];
+  ["EXCUSADO", "NO ASISTE", "RETARDADO", "INCAPACIDAD", "HOSPITALIZADO", "REEMPLAZO"].forEach((tipo) => {
+    const conteo = tipos[tipo] || [0, 0, 0, 0];
     if (conteo.some(n => n > 0)) {
       novedadesResumenRows += `
         <tr>
@@ -4557,7 +4563,7 @@ HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
   });
 
   let novedadesDetalleHtml = "";
-  ["EXCUSADO","NO ASISTE","RETARDADO","INCAPACIDAD","HOSPITALIZADO"].forEach((tipo) => {
+  ["EXCUSADO", "NO ASISTE", "RETARDADO", "INCAPACIDAD", "HOSPITALIZADO"].forEach((tipo) => {
     const listaTipo = detalleTipos[tipo] || [];
     if (!listaTipo.length) return;
 
@@ -4584,7 +4590,10 @@ HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
       "Reemplazos",
       ["#", "Reemplazo", "Cédula", "Teléfono", "Reemplaza a", "Observación"],
       detalleTipos["REEMPLAZO"].map((p, i) => {
-        const reemplazado = lista.find(x => String(x.cedula || "").trim() === String(p.reemplaza_a_cedula || "").trim());
+        const reemplazado = lista.find(
+          x => String(x.cedula || "").trim() === String(p.reemplaza_a_cedula || "").trim()
+        );
+
         return `
           <tr>
             <td>${i + 1}</td>
@@ -4617,36 +4626,35 @@ HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
             </tr>
           </thead>
           <tbody>
-            ${
-              lista.map((p, i) => {
-                const ced = String(p.cedula || "").trim();
-                const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
-                return `
-                  <tr>
-                    <td>${i + 1}</td>
-                    <td>${p.grado || ""}</td>
-                    <td>${p.apellidos || ""}</td>
-                    <td>${p.nombres || ""}</td>
-                    <td>${ced}</td>
-                    <td>${p.telefono || ""}</td>
-                    <td>
-                      <select id="m11_estado_${ced}">
-                        <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
-                        <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
-                        <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
-                        <option value="EXCUSADO" ${estado === "EXCUSADO" ? "selected" : ""}>EXCUSADO</option>
-                        <option value="INCAPACIDAD" ${estado === "INCAPACIDAD" ? "selected" : ""}>INCAPACIDAD</option>
-                        <option value="HOSPITALIZADO" ${estado === "HOSPITALIZADO" ? "selected" : ""}>HOSPITALIZADO</option>
-                        <option value="NO ASISTE" ${estado === "NO ASISTE" ? "selected" : ""}>NO ASISTE</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input id="m11_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación" />
-                    </td>
-                  </tr>
-                `;
-              }).join("")
-            }
+            ${lista.map((p, i) => {
+              const ced = String(p.cedula || "").trim();
+              const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
+
+              return `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${p.grado || ""}</td>
+                  <td>${p.apellidos || ""}</td>
+                  <td>${p.nombres || ""}</td>
+                  <td>${ced}</td>
+                  <td>${p.telefono || ""}</td>
+                  <td>
+                    <select id="m11_estado_${ced}">
+                      <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
+                      <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
+                      <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
+                      <option value="EXCUSADO" ${estado === "EXCUSADO" ? "selected" : ""}>EXCUSADO</option>
+                      <option value="INCAPACIDAD" ${estado === "INCAPACIDAD" ? "selected" : ""}>INCAPACIDAD</option>
+                      <option value="HOSPITALIZADO" ${estado === "HOSPITALIZADO" ? "selected" : ""}>HOSPITALIZADO</option>
+                      <option value="NO ASISTE" ${estado === "NO ASISTE" ? "selected" : ""}>NO ASISTE</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input id="m11_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación" />
+                  </td>
+                </tr>
+              `;
+            }).join("")}
           </tbody>
         </table>
       </div>
@@ -4659,7 +4667,7 @@ HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
       <div style="margin-top:10px;">
         <label>Seleccionar a quién reemplaza</label>
         <select id="m11_reemplaza_a" style="margin-bottom:8px;">
-          ${selectReemplaza.innerHTML}
+          ${opcionesReemplazo}
         </select>
 
         <label>Grado</label>
