@@ -527,14 +527,24 @@
 
     
     <div class="seccion" id="bloqueExcel" style="display:none;">
-      <h2>Paso 2 — Cargar archivo</h2>
-      <div class="campo-corto">
-        <input type="file" id="fileExcel" accept=".xlsx" />
-      </div>
-      <div class="acciones-inline">
-        <button onclick="subirExcel()">Subir Excel</button>
-      </div>
+  
+  <div class="barra-modulo" onclick="togglePaso2()">
+    2. Cargar archivo ▼
+  </div>
+
+  <div id="contenidoPaso2" style="display:none; padding:10px;">
+    
+    <div class="campo-corto">
+      <input type="file" id="fileExcel" accept=".xlsx" />
     </div>
+
+    <div class="acciones-inline">
+      <button onclick="subirExcel()">Subir Excel</button>
+    </div>
+
+  </div>
+
+</div>
 
     <div class="seccion" id="bloqueUbicacion" style="display:none;">
       <h2>Paso 3 — Registro del servicio</h2>
@@ -5236,6 +5246,11 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error(error);
     alert("Error guardando cambios");
   }
+}
+
+  function togglePaso2() {
+  const c = document.getElementById("contenidoPaso2");
+  c.style.display = c.style.display === "none" ? "block" : "none";
 }
   
 </script>
