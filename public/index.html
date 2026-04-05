@@ -1249,7 +1249,16 @@ if (!data.autorizado) {
   document.getElementById("bloqueHistorialExtra").style.display = "block";
   document.getElementById("bloqueControlCumplimiento").style.display = "block";
   document.getElementById("bloqueConfigExtraGlobal").style.display = "block";
+  if (
+  window.usuarioEsAdmin ||
+  window.usuarioRol === "SUPERVISOR" ||
+  window.usuarioRol === "JEFE_SERVICIO" ||
+  window.usuarioRol === "JEFE_PMU"
+) {
   document.getElementById("bloqueModulo11").style.display = "block";
+} else {
+  document.getElementById("bloqueModulo11").style.display = "none";
+}
   document.getElementById("bloqueModulo12").style.display = "block";
 
   consultarParteExtraGlobal();
