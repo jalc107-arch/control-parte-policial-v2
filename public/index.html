@@ -1330,37 +1330,7 @@ async function cerrarParteModulo12() {
   }
 }
 
-// =========================
-// EVENTOS MODULO 12
-// =========================
-document.addEventListener("DOMContentLoaded", () => {
-  const fecha = document.getElementById("m12_fecha");
-  const unidad = document.getElementById("m12_unidad");
-  const servicio = document.getElementById("m12_servicio");
-  const subunidad = document.getElementById("m12_subunidad");
-
-  if (fecha && !fecha.value) {
-    fecha.value = new Date().toISOString().split("T")[0];
-  }
-
-  fecha?.addEventListener("change", async () => {
-    await cargarServiciosModulo12();
-  });
-
-  unidad?.addEventListener("change", async () => {
-    await cargarServiciosModulo12();
-  });
-
-  servicio?.addEventListener("change", async () => {
-    await cargarSubunidadesModulo12();
-  });
-
-  subunidad?.addEventListener("change", async () => {
-    await consultarEstadoModulo12();
-    limpiarPersonalModulo12();
-  });
-});
-    
+   
 <script>
 
   function grupoGrado(grado = "") {
@@ -4604,7 +4574,38 @@ function descargarPDFTotalModulo11() {
     </div>
   </div>
 </section>
-  
+
+
+  // =========================
+// EVENTOS MODULO 12
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+  const fecha = document.getElementById("m12_fecha");
+  const unidad = document.getElementById("m12_unidad");
+  const servicio = document.getElementById("m12_servicio");
+  const subunidad = document.getElementById("m12_subunidad");
+
+  if (fecha && !fecha.value) {
+    fecha.value = new Date().toISOString().split("T")[0];
+  }
+
+  fecha?.addEventListener("change", async () => {
+    await cargarServiciosModulo12();
+  });
+
+  unidad?.addEventListener("change", async () => {
+    await cargarServiciosModulo12();
+  });
+
+  servicio?.addEventListener("change", async () => {
+    await cargarSubunidadesModulo12();
+  });
+
+  subunidad?.addEventListener("change", async () => {
+    await consultarEstadoModulo12();
+    limpiarPersonalModulo12();
+  });
+});
   
   document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
