@@ -1270,15 +1270,40 @@ if (!data.autorizado) {
 
       document.getElementById("estacion_select").value = data.estacion || "";
 
-      document.getElementById("unidad_select").disabled = true;
-      document.getElementById("subunidad_select").disabled = true;
-      document.getElementById("estacion_select").disabled = true;
-    } else {
-      document.getElementById("unidad_select").disabled = false;
-      document.getElementById("subunidad_select").disabled = false;
-      document.getElementById("estacion_select").disabled = false;
-    }
+     const unidadSelect = document.getElementById("unidad_select");
 
+if (unidadSelect) {
+  unidadSelect.value = data.unidad || "";
+}
+
+cargarSubunidadesMultiple();
+
+if (!data.esOficial) {
+  if (unidadSelect) {
+    unidadSelect.disabled = true;
+  }
+
+  setTimeout(() => {
+    if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
+    cargarEstacionesMultiple();
+
+    setTimeout(() => {
+      if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
+      cargarOrganicosMultiple();
+
+      setTimeout(() => {
+        if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
+        actualizarRutaDependenciaParte();
+      }, 100);
+    }, 100);
+  }, 100);
+
+} else {
+  if (unidadSelect) {
+    unidadSelect.disabled = false;
+  }
+  actualizarRutaDependenciaParte();
+}
     document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
     document.getElementById("bloqueUbicacion").style.display = "block";
     document.getElementById("bloqueNovedades").style.display = "none";
