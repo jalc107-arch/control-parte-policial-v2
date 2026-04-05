@@ -1309,7 +1309,8 @@ if (!data.esOficial) {
     document.getElementById("bloqueNovedades").style.display = "none";
     document.getElementById("bloqueParte").style.display = "none";
 
-    if (data.esOficial || data.rol === "ADMIN_EXCEL") {
+
+      if (data.esOficial || data.rol === "ADMIN_EXCEL" || data.es_admin) {
   document.getElementById("bloqueOrganico").style.display = "block";
   document.getElementById("bloqueConsultaGeneral").style.display = "block";
   document.getElementById("bloqueExtraordinario").style.display = "block";
@@ -1348,14 +1349,14 @@ if (!data.esOficial) {
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
 
-    if (data.esOficial || data.rol === "ADMIN_EXCEL") {
-      document.getElementById("consulta_unidad").value = data.unidad || "";
-      cargarConsultaDependencias();
+    if (data.esOficial || data.rol === "ADMIN_EXCEL" || data.es_admin) {
+  document.getElementById("consulta_unidad").value = data.unidad || "";
+  cargarConsultaDependencias();
 
-      if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
-      if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
-      if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
-    }
+  if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
+  if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
+  if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
+}
 
   } catch (error) {
     console.error(error);
