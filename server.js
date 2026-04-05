@@ -2099,10 +2099,11 @@ app.get("/modulo11-detalle", async (req, res) => {
   try {
     const fecha = String(req.query.fecha || "").trim();
     const unidad = String(req.query.unidad || "").trim();
+    const servicio = String(req.query.servicio || "").trim();
     const subunidad = String(req.query.subunidad || "").trim();
 
-    if (!fecha || !unidad || !subunidad) {
-      return res.json({ ok: false, error: "Fecha, unidad y subunidad son obligatorias" });
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      return res.json({ ok: false, error: "Fecha, unidad, servicio y subunidad son obligatorios" });
     }
 
     const servicios = await pool.query(
@@ -2122,9 +2123,10 @@ app.get("/modulo11-detalle", async (req, res) => {
       WHERE s.fecha = $1
         AND s.unidad = $2
         AND s.subunidad = $3
+        AND COALESCE(s.titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $4
       ORDER BY ${construirOrdenGradoSQL("s")}, s.apellidos, s.nombres
       `,
-      [fecha, unidad, subunidad]
+      [fecha, unidad, subunidad, servicio]
     );
 
     const controles = await pool.query(
@@ -2143,8 +2145,9 @@ app.get("/modulo11-detalle", async (req, res) => {
       WHERE fecha = $1
         AND unidad = $2
         AND subunidad = $3
+        AND titulo_servicio = $4
       `,
-      [fecha, unidad, subunidad]
+      [fecha, unidad, subunidad, servicio]
     );
 
     const mapaControl = {};
@@ -2153,17 +2156,17 @@ app.get("/modulo11-detalle", async (req, res) => {
     });
 
     const detalle = servicios.rows.map(p => {
-  const control = mapaControl[String(p.cedula || "").trim()] || {};
-  return {
-    ...p,
-    estado_control: control.estado_control
-      ? String(control.estado_control).trim().toUpperCase()
-      : "",
-    observacion: control.observacion || "",
-    es_reemplazo_manual: !!control.es_reemplazo_manual,
-    reemplaza_a_cedula: control.reemplaza_a_cedula || ""
-  };
-});
+      const control = mapaControl[String(p.cedula || "").trim()] || {};
+      return {
+        ...p,
+        estado_control: control.estado_control
+          ? String(control.estado_control).trim().toUpperCase()
+          : "",
+        observacion: control.observacion || "",
+        es_reemplazo_manual: !!control.es_reemplazo_manual,
+        reemplaza_a_cedula: control.reemplaza_a_cedula || ""
+      };
+    });
 
     controles.rows
       .filter(r => r.es_reemplazo_manual)
