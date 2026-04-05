@@ -1916,6 +1916,17 @@ function agregarReemplazoModulo12(cedulaTitular) {
     return;
   }
 
+  const selectTitular = document.getElementById(`m12_estado_${cedulaTitular}`);
+  const obsTitular = document.getElementById(`m12_obs_${cedulaTitular}`);
+
+  if (selectTitular) {
+    selectTitular.value = "NO ASISTE";
+  }
+
+  if (obsTitular) {
+    obsTitular.value = `REEMPLAZADO POR ${grado} ${apellidos} ${nombres} CC ${cedula}`;
+  }
+
   window.m12DetalleActual.push({
     grado,
     apellidos,
