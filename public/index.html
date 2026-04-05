@@ -1197,24 +1197,28 @@ async function validarCodigoOTP() {
       }
     }
 
-   async function validarResponsable() {
+async function validarResponsable() {
   const cedula = document.getElementById("cedula_responsable").value.trim();
 
-     if (!otpValidado) {
-  alert("Primero debes validar el código de seguridad");
-  return;
-}
+  if (!otpValidado) {
+    alert("Primero debes validar el código de seguridad");
+    return;
+  }
 
-  document.getElementById("lista").innerHTML = "";
-  document.getElementById("resultado").innerText = "";
-  document.getElementById("resultado_extra").innerText = "";
-  ultimoResultadoConsulta = [];
-  ultimosSeleccionadosExtra = [];
-
+  const lista = document.getElementById("lista");
+  const resultado = document.getElementById("resultado");
+  const resultadoExtra = document.getElementById("resultado_extra");
   const generalBox = document.getElementById("resultado_general");
   const detalleBox = document.getElementById("resultado_detalle");
+
+  if (lista) lista.innerHTML = "";
+  if (resultado) resultado.innerText = "";
+  if (resultadoExtra) resultadoExtra.innerText = "";
   if (generalBox) generalBox.innerHTML = "";
   if (detalleBox) detalleBox.innerHTML = "";
+
+  ultimoResultadoConsulta = [];
+  ultimosSeleccionadosExtra = [];
 
   if (!cedula) {
     alert("Ingresa la cédula");
@@ -1231,28 +1235,33 @@ async function validarCodigoOTP() {
     const data = await res.json();
     console.log("RESPUESTA:", data);
 
-window.usuarioRol = data.rol || "";
-window.usuarioCedula = data.cedula || "";
-window.usuarioEsAdmin = !!data.es_admin;
+    window.usuarioRol = data.rol || "";
+    window.usuarioCedula = data.cedula || "";
+    window.usuarioEsAdmin = !!data.es_admin;
 
-    // ❌ No existe la cédula
-if (!data.ok) {
-   alert("Cédula no encontrada");
-   return;
-}
+    if (!data.ok) {
+      alert("Cédula no encontrada");
+      return;
+    }
 
-// ⚠️ Existe pero sin permisos
-if (!data.autorizado) {
-   alert("No tiene permisos");
-   return;
-}
-  
-    document.getElementById("cedula_elabora").value = data.cedula || cedula;
-    document.getElementById("nombre_elabora").value = data.nombre || "";
-    document.getElementById("grado").value = data.grado || "";
-    document.getElementById("telefono_elabora").value = data.telefono || "";
+    if (!data.autorizado) {
+      alert("No tiene permisos");
+      return;
+    }
 
-    document.getElementById("datos_responsable").innerText = `${data.grado || ""} - ${data.nombre || ""}`;
+    const cedulaElabora = document.getElementById("cedula_elabora");
+    const nombreElabora = document.getElementById("nombre_elabora");
+    const grado = document.getElementById("grado");
+    const telefonoElabora = document.getElementById("telefono_elabora");
+    const datosResponsable = document.getElementById("datos_responsable");
+
+    if (cedulaElabora) cedulaElabora.value = data.cedula || cedula;
+    if (nombreElabora) nombreElabora.value = data.nombre || "";
+    if (grado) grado.value = data.grado || "";
+    if (telefonoElabora) telefonoElabora.value = data.telefono || "";
+    if (datosResponsable) {
+      datosResponsable.innerText = `${data.grado || ""} - ${data.nombre || ""}`;
+    }
 
     window.responsable = {
       cedula: data.cedula || "",
@@ -1261,109 +1270,120 @@ if (!data.autorizado) {
       telefono: data.telefono || ""
     };
 
+    const unidadSelect = document.getElementById("unidad_select");
+
+    if (unidadSelect) {
+      unidadSelect.value = data.unidad || "";
+    }
+
+    cargarSubunidadesMultiple();
+
     if (!data.esOficial) {
-      document.getElementById("unidad_select").value = data.unidad || "";
-      cargarSubunidades();
-
-      document.getElementById("subunidad_select").value = data.subunidad || "";
-      cargarEstaciones();
-
-      document.getElementById("estacion_select").value = data.estacion || "";
-
-     const unidadSelect = document.getElementById("unidad_select");
-
-if (unidadSelect) {
-  unidadSelect.value = data.unidad || "";
-}
-
-cargarSubunidadesMultiple();
-
-if (!data.esOficial) {
-  if (unidadSelect) {
-    unidadSelect.disabled = true;
-  }
-
-  setTimeout(() => {
-    if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
-    cargarEstacionesMultiple();
-
-    setTimeout(() => {
-      if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
-      cargarOrganicosMultiple();
+      if (unidadSelect) unidadSelect.disabled = true;
 
       setTimeout(() => {
-        if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
-        actualizarRutaDependenciaParte();
+        if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
+        cargarEstacionesMultiple();
+
+        setTimeout(() => {
+          if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
+          cargarOrganicosMultiple();
+
+          setTimeout(() => {
+            if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
+            actualizarRutaDependenciaParte();
+          }, 100);
+        }, 100);
       }, 100);
-    }, 100);
-  }, 100);
+    } else {
+      if (unidadSelect) unidadSelect.disabled = false;
+      actualizarRutaDependenciaParte();
+    }
 
-} else {
-  if (unidadSelect) {
-    unidadSelect.disabled = false;
-  }
-  actualizarRutaDependenciaParte();
-}
-    document.getElementById("bloqueExcel").style.display = data.puedeSubirExcel ? "block" : "none";
-    document.getElementById("bloqueUbicacion").style.display = "block";
-    document.getElementById("bloqueNovedades").style.display = "none";
-    document.getElementById("bloqueParte").style.display = "none";
+    const bloqueExcel = document.getElementById("bloqueExcel");
+    const bloqueUbicacion = document.getElementById("bloqueUbicacion");
+    const bloqueNovedades = document.getElementById("bloqueNovedades");
+    const bloqueParte = document.getElementById("bloqueParte");
 
+    if (bloqueExcel) bloqueExcel.style.display = data.puedeSubirExcel ? "block" : "none";
+    if (bloqueUbicacion) bloqueUbicacion.style.display = "block";
+    if (bloqueNovedades) bloqueNovedades.style.display = "none";
+    if (bloqueParte) bloqueParte.style.display = "none";
 
-      if (data.esOficial || data.rol === "ADMIN_EXCEL" || data.es_admin) {
-  document.getElementById("bloqueOrganico").style.display = "block";
-  document.getElementById("bloqueConsultaGeneral").style.display = "block";
-  document.getElementById("bloqueExtraordinario").style.display = "block";
-  document.getElementById("bloqueHistorialExtra").style.display = "block";
-  document.getElementById("bloqueControlCumplimiento").style.display = "block";
-  document.getElementById("bloqueConfigExtraGlobal").style.display = "block";
-  if (
-  window.usuarioEsAdmin ||
-  window.usuarioRol === "SUPERVISOR" ||
-  window.usuarioRol === "JEFE_SERVICIO" ||
-  window.usuarioRol === "JEFE_PMU"
-) {
-  document.getElementById("bloqueModulo11").style.display = "block";
-} else {
-  document.getElementById("bloqueModulo11").style.display = "none";
-}
-  document.getElementById("bloqueModulo12").style.display = "block";
+    if (data.esOficial || data.rol === "ADMIN_EXCEL" || data.es_admin) {
+      const bloqueOrganico = document.getElementById("bloqueOrganico");
+      const bloqueConsultaGeneral = document.getElementById("bloqueConsultaGeneral");
+      const bloqueExtraordinario = document.getElementById("bloqueExtraordinario");
+      const bloqueHistorialExtra = document.getElementById("bloqueHistorialExtra");
+      const bloqueControlCumplimiento = document.getElementById("bloqueControlCumplimiento");
+      const bloqueConfigExtraGlobal = document.getElementById("bloqueConfigExtraGlobal");
+      const bloqueModulo11 = document.getElementById("bloqueModulo11");
+      const bloqueModulo12 = document.getElementById("bloqueModulo12");
 
-  consultarParteExtraGlobal();
-  cargarUnidadModulo11();
+      if (bloqueOrganico) bloqueOrganico.style.display = "block";
+      if (bloqueConsultaGeneral) bloqueConsultaGeneral.style.display = "block";
+      if (bloqueExtraordinario) bloqueExtraordinario.style.display = "block";
+      if (bloqueHistorialExtra) bloqueHistorialExtra.style.display = "block";
+      if (bloqueControlCumplimiento) bloqueControlCumplimiento.style.display = "block";
+      if (bloqueConfigExtraGlobal) bloqueConfigExtraGlobal.style.display = "block";
 
-  if (typeof inicializarModulo12 === "function") {
-    inicializarModulo12();
-  }
-} else {
-  document.getElementById("bloqueOrganico").style.display = "none";
-  document.getElementById("bloqueConsultaGeneral").style.display = "none";
-  document.getElementById("bloqueExtraordinario").style.display = "none";
-  document.getElementById("bloqueHistorialExtra").style.display = "none";
-  document.getElementById("bloqueControlCumplimiento").style.display = "none";
-  document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
-  document.getElementById("bloqueModulo11").style.display = "none";
-  document.getElementById("bloqueModulo12").style.display = "none";
-}
+      if (
+        window.usuarioEsAdmin ||
+        window.usuarioRol === "SUPERVISOR" ||
+        window.usuarioRol === "JEFE_SERVICIO" ||
+        window.usuarioRol === "JEFE_PMU"
+      ) {
+        if (bloqueModulo11) bloqueModulo11.style.display = "block";
+      } else {
+        if (bloqueModulo11) bloqueModulo11.style.display = "none";
+      }
+
+      if (bloqueModulo12) bloqueModulo12.style.display = "block";
+
+      consultarParteExtraGlobal();
+      cargarUnidadModulo11();
+
+      if (typeof inicializarModulo12 === "function") {
+        inicializarModulo12();
+      }
+    } else {
+      const ids = [
+        "bloqueOrganico",
+        "bloqueConsultaGeneral",
+        "bloqueExtraordinario",
+        "bloqueHistorialExtra",
+        "bloqueControlCumplimiento",
+        "bloqueConfigExtraGlobal",
+        "bloqueModulo11",
+        "bloqueModulo12"
+      ];
+
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+    }
 
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
 
     if (data.esOficial || data.rol === "ADMIN_EXCEL" || data.es_admin) {
-  document.getElementById("consulta_unidad").value = data.unidad || "";
-  cargarConsultaDependencias();
+      const consultaUnidad = document.getElementById("consulta_unidad");
+      if (consultaUnidad) consultaUnidad.value = data.unidad || "";
 
-  if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
-  if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
-  if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
-}
+      cargarConsultaDependencias();
+
+      if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
+      if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
+      if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
+    }
 
   } catch (error) {
     console.error(error);
     alert("Error validando responsable");
   }
 }
-
+  
 async function cargarEstructura() {
   try {
     const res = await fetch("/estructura");
