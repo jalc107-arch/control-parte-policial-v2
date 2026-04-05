@@ -5164,12 +5164,13 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarEstructura();
 });
 
-  function guardarCambiosEdicionModulo11() {
+  async function guardarCambiosEdicionModulo11() {
   if (!Array.isArray(window.m11DetalleActual)) {
     alert("No hay datos para guardar");
     return;
   }
 
+  // 1. Actualizar datos en memoria
   window.m11DetalleActual.forEach(p => {
     const ced = String(p.cedula || "").trim();
 
@@ -5185,7 +5186,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  alert("Cambios aplicados. Ahora guarda el parte.");
+  // 2. 🔥 AQUÍ ESTÁ LO IMPORTANTE → guardar realmente
+  try {
+    await fetch("/api/modulo11/guardar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        detalle: window.m11DetalleActual
+      })
+    });
+
+    alert("Cambios guardados correctamente");
+
+    // 3. refrescar pantalla
+    location.reload();
+
+  } catch (error) {
+    console.error(error);
+    alert("Error guardando cambios");
+  }
 }
   
 </script>
