@@ -1182,24 +1182,31 @@ if (!data.autorizado) {
     document.getElementById("bloqueParte").style.display = "none";
 
     if (data.esOficial || data.rol === "ADMIN_EXCEL") {
-      document.getElementById("bloqueOrganico").style.display = "block";
-      document.getElementById("bloqueConsultaGeneral").style.display = "block";
-      document.getElementById("bloqueExtraordinario").style.display = "block";
-      document.getElementById("bloqueHistorialExtra").style.display = "block";
-      document.getElementById("bloqueControlCumplimiento").style.display = "block";
-      document.getElementById("bloqueConfigExtraGlobal").style.display = "block";
-      consultarParteExtraGlobal();
-      document.getElementById("bloqueModulo11").style.display = "block";
-      cargarUnidadModulo11();
-    } else {
-      document.getElementById("bloqueOrganico").style.display = "none";
-      document.getElementById("bloqueConsultaGeneral").style.display = "none";
-      document.getElementById("bloqueExtraordinario").style.display = "none";
-      document.getElementById("bloqueHistorialExtra").style.display = "none";
-      document.getElementById("bloqueControlCumplimiento").style.display = "none";
-      document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
-      document.getElementById("bloqueModulo11").style.display = "none";
-    }
+  document.getElementById("bloqueOrganico").style.display = "block";
+  document.getElementById("bloqueConsultaGeneral").style.display = "block";
+  document.getElementById("bloqueExtraordinario").style.display = "block";
+  document.getElementById("bloqueHistorialExtra").style.display = "block";
+  document.getElementById("bloqueControlCumplimiento").style.display = "block";
+  document.getElementById("bloqueConfigExtraGlobal").style.display = "block";
+  document.getElementById("bloqueModulo11").style.display = "block";
+  document.getElementById("bloqueModulo12").style.display = "block";
+
+  consultarParteExtraGlobal();
+  cargarUnidadModulo11();
+
+  if (typeof inicializarModulo12 === "function") {
+    inicializarModulo12();
+  }
+} else {
+  document.getElementById("bloqueOrganico").style.display = "none";
+  document.getElementById("bloqueConsultaGeneral").style.display = "none";
+  document.getElementById("bloqueExtraordinario").style.display = "none";
+  document.getElementById("bloqueHistorialExtra").style.display = "none";
+  document.getElementById("bloqueControlCumplimiento").style.display = "none";
+  document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
+  document.getElementById("bloqueModulo11").style.display = "none";
+  document.getElementById("bloqueModulo12").style.display = "none";
+}
 
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
@@ -1877,6 +1884,18 @@ async function cerrarParteModulo12() {
   } catch (error) {
     console.error(error);
     alert("Error cerrando parte");
+  }
+}
+  function inicializarModulo12() {
+  const fecha = document.getElementById("m12_fecha");
+  const unidad = document.getElementById("m12_unidad");
+
+  if (fecha && !fecha.value) {
+    fecha.value = new Date().toISOString().split("T")[0];
+  }
+
+  if (unidad) {
+    unidad.innerHTML = document.getElementById("m11_unidad")?.innerHTML || '<option value="">Seleccionar UNIDAD</option>';
   }
 }
 
@@ -4594,6 +4613,7 @@ function descargarPDFTotalModulo11() {
   document.getElementById("bloqueControlCumplimiento").style.display = "none";
   document.getElementById("bloqueConfigExtraGlobal").style.display = "none";
   document.getElementById("bloqueModulo11").style.display = "none";
+    document.getElementById("bloqueModulo12").style.display = "none";
 
 
 document.addEventListener("DOMContentLoaded", () => {
