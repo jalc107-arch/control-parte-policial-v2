@@ -560,7 +560,11 @@
 </div>
 
     <div class="seccion" id="bloqueUbicacion" style="display:none;">
-      <h2>Paso 3 — Registro del servicio</h2>
+      <div class="panel-toggle" onclick="togglePaso3()">
+  3. Registro del servicio <span id="flechaPaso3">▼</span>
+</div>
+
+<div id="contenidoPaso3" class="panel-contenido">
 
       <select id="unidad_select" onchange="cargarSubunidades()">
         <option value="">Seleccionar UNIDAD</option>
@@ -611,6 +615,7 @@
   </div>
 </div>
     </div>
+      </div>
 
    
     
@@ -5275,6 +5280,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (f) f.innerText = "▼";
   }
 }
+
+function togglePaso3() {
+  const c = document.getElementById("contenidoPaso3");
+  const f = document.getElementById("flechaPaso3");
+
+  if (!c) return;
+
+  if (c.style.display === "none") {
+    c.style.display = "block";
+    if (f) f.innerText = "▲";
+  } else {
+    c.style.display = "none";
+    if (f) f.innerText = "▼";
+  }
+}  
   
 </script>
 
