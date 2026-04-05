@@ -1633,6 +1633,334 @@ app.get("/modulo11-servicios", async (req, res) => {
   }
 });
 
+// =========================
+// HISTORIAL DE SERVICIOS EXTRAORDINARIOS
+// =========================
+app.post("/historial-servicio-extraordinario", async (req, res) => {
+  const {
+    unidad = "",
+    subunidades = [],
+    estaciones = [],
+    organicos = [],
+    fechaInicio = "",
+    fechaFin = "",
+    grado = "",
+    rol = ""
+  } = req.body;
+
+  try {
+    const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
+    const rolLimpio = String(rol).toUpperCase().trim();
+
+    const esOficial = esGradoOficial(gradoLimpio);
+    const esAdmin = rolLimpio === "ADMIN_EXCEL";
+
+    // 🔒 Validación
+    if (!esOficial && !esAdmin) {
+      return res.status(403).json({
+        ok: false,
+        error: "No autorizado para consultar historial"
+      });
+    }
+
+    let query = `
+      SELECT
+        grado,
+        apellidos,
+        nombres,
+        cedula,
+        unidad,
+        subunidad,
+        estacion,
+        organico,
+        COUNT(*) AS veces,
+        MIN(fecha) AS primera_vez,
+        MAX(fecha) AS ultima_vez
+      FROM servicios_extraordinarios
+      WHERE 1=1
+    `;
+
+    const params = [];
+    let index = 1;
+
+    if (unidad) {
+      query += ` AND unidad = $${index}`;
+      params.push(unidad);
+      index++;
+    }
+
+    const subunidadesLimpias = normalizarArrayValores(subunidades);
+    const estacionesLimpias = normalizarArrayValores(estaciones);
+    const organicosLimpios = normalizarArrayValores(organicos);
+
+    if (subunidadesLimpias.length > 0) {
+      query += ` AND subunidad = ANY($${index})`;
+      params.push(subunidadesLimpias);
+      index++;
+    }
+
+    if (estacionesLimpias.length > 0) {
+      query += ` AND estacion = ANY($${index})`;
+      params.push(estacionesLimpias);
+      index++;
+    }
+
+    if (organicosLimpios.length > 0) {
+      query += ` AND organico = ANY($${index})`;
+      params.push(organicosLimpios);
+      index++;
+    }
+
+    if (fechaInicio) {
+      query += ` AND fecha >= $${index}`;
+      params.push(fechaInicio);
+      index++;
+    }
+
+    if (fechaFin) {
+      query += ` AND fecha <= $${index}`;
+      params.push(fechaFin);
+      index++;
+    }
+
+    query += `
+      GROUP BY grado, apellidos, nombres, cedula, unidad, subunidad, estacion, organico
+      ORDER BY
+        ${construirOrdenGradoSQL()},
+        apellidos,
+        nombres
+    `;
+
+    const result = await pool.query(query, params);
+
+    return res.json({
+      ok: true,
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.error("ERROR HISTORIAL:", error);
+
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
+// =========================
+// CONFIG PARTE EXTRA GLOBAL
+// =========================
+app.get("/config/parte-extra-global", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
+    );
+
+    const activo =
+      result.rows.length > 0 && String(result.rows[0].valor) === "true";
+
+    res.json({
+      ok: true,
+      activo
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
+app.post("/config/parte-extra-global", async (req, res) => {
+  try {
+    const { activo } = req.body;
+
+    await pool.query(
+      `
+      INSERT INTO configuracion_sistema (clave, valor)
+      VALUES ('parte_extra_global', $1)
+      ON CONFLICT (clave)
+      DO UPDATE SET valor = EXCLUDED.valor
+      `,
+      [activo ? "true" : "false"]
+    );
+
+    res.json({
+      ok: true,
+      activo: !!activo,
+      mensaje: activo
+        ? "Parte extraordinario global ACTIVADO"
+        : "Parte extraordinario global DESACTIVADO"
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
+// =========================
+// OTP - ENVIAR CODIGO
+// =========================
+app.post("/enviar-codigo", async (req, res) => {
+  const { cedula } = req.body;
+
+  try {
+    if (!cedula) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: "Cédula obligatoria"
+      });
+    }
+
+    const personaResult = await pool.query(
+      "SELECT cedula, telefono, nombres, apellidos FROM personal WHERE cedula = $1 LIMIT 1",
+      [cedula]
+    );
+
+    if (personaResult.rows.length === 0) {
+      return res.json({
+        ok: false,
+        mensaje: "Cédula no encontrada"
+      });
+    }
+
+    const persona = personaResult.rows[0];
+    const telefono = String(persona.telefono || "").trim();
+
+    // 🔒 Limitar intentos (máximo 3 códigos por 5 minutos)
+const intentos = await pool.query(
+  `SELECT COUNT(*) FROM otp_codigos
+   WHERE cedula = $1
+   AND created_at > NOW() - INTERVAL '5 minutes'`,
+  [cedula]
+);
+
+if (parseInt(intentos.rows[0].count, 10) >= 3) {
+  return res.json({
+    ok: false,
+    mensaje: "Has solicitado muchos códigos. Intenta en 5 minutos."
+  });
+}
+
+    if (!telefono) {
+      return res.json({
+        ok: false,
+        mensaje: "El funcionario no tiene teléfono registrado"
+      });
+    }
+
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    const expira = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
+
+    await pool.query(
+      `INSERT INTO otp_codigos (cedula, codigo, expira, usado)
+       VALUES ($1, $2, $3, false)`,
+      [cedula, codigo, expira]
+    );
+
+   try {
+  await enviarWhatsAppOTP(telefono, codigo);
+
+  console.log("OTP enviado:", {
+    cedula,
+    telefono,
+    expira
+  });
+
+  return res.json({
+    ok: true,
+    mensaje: "Código enviado correctamente al teléfono registrado"
+  });
+} catch (envioError) {
+  console.error("ERROR ENVIO OTP:", envioError.message);
+
+  return res.status(500).json({
+    ok: false,
+    mensaje: `No se pudo enviar el código por WhatsApp: ${envioError.message}`
+  });
+}
+    
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
+// =========================
+// OTP - VALIDAR CODIGO
+// =========================
+app.post("/validar-codigo", async (req, res) => {
+  const { cedula, codigo } = req.body;
+
+  try {
+    // 🔒 Validación básica
+    if (!cedula || !codigo) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: "Cédula y código son obligatorios"
+      });
+    }
+
+    // 🔍 Buscar código más reciente
+    const result = await pool.query(
+      `SELECT id, expira, usado
+       FROM otp_codigos
+       WHERE cedula = $1
+         AND codigo = $2
+       ORDER BY id DESC
+       LIMIT 1`,
+      [cedula, codigo]
+    );
+
+    // ❌ No existe
+    if (result.rows.length === 0) {
+      return res.json({
+        ok: false,
+        mensaje: "Código inválido"
+      });
+    }
+
+    const otp = result.rows[0];
+
+    // ❌ Ya usado
+    if (otp.usado) {
+      return res.json({
+        ok: false,
+        mensaje: "Este código ya fue utilizado"
+      });
+    }
+
+    // ❌ Expirado
+    if (new Date() > new Date(otp.expira)) {
+      return res.json({
+        ok: false,
+        mensaje: "El código ha expirado"
+      });
+    }
+
+    // ✅ Marcar como usado
+    await pool.query(
+      "UPDATE otp_codigos SET usado = true WHERE id = $1",
+      [otp.id]
+    );
+
+    return res.json({
+      ok: true,
+      mensaje: "Código validado correctamente"
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
 app.get("/modulo11-parte-extra", async (req, res) => {
   try {
     const fecha = String(req.query.fecha || "").trim();
