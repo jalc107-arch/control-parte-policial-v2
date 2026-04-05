@@ -866,471 +866,7 @@
   </div>
 </div>
 
-// =========================
-// MODULO 12
-// =========================
 
-window.m12DetalleActual = [];
-window.m12EstadoActual = "NO HAN DADO PARTE";
-
-function abrirModulo12() {
-  ocultarTodosLosBloques();
-  const bloque = document.getElementById("bloqueModulo12");
-  if (bloque) bloque.style.display = "block";
-
-  const fecha = document.getElementById("m12_fecha");
-  if (fecha && !fecha.value) {
-    fecha.value = new Date().toISOString().split("T")[0];
-  }
-
-  cargarUnidadesModulo12();
-}
-
-function ocultarTodosLosBloques() {
-  [
-    "bloqueExcel",
-    "bloqueUbicacion",
-    "bloqueNovedades",
-    "bloqueParte",
-    "bloqueConsultaGeneral",
-    "bloqueExtraordinario",
-    "bloqueHistorialExtra",
-    "bloqueControlCumplimiento",
-    "bloqueConfigExtraGlobal",
-    "bloqueModulo11",
-    "bloqueModulo12"
-  ].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "none";
-  });
-}
-
-async function cargarUnidadesModulo12() {
-  try {
-    const selectUnidad = document.getElementById("m12_unidad");
-    if (!selectUnidad) return;
-
-    const res = await fetch("/estructura");
-    const data = await res.json();
-
-    const unidades = [...new Set((data || []).map(x => String(x.unidad || "").trim()).filter(Boolean))];
-
-    selectUnidad.innerHTML = `<option value="">Seleccionar unidad</option>`;
-    unidades.forEach(u => {
-      selectUnidad.innerHTML += `<option value="${u}">${u}</option>`;
-    });
-
-    if (unidades.includes("MEBOG")) {
-      selectUnidad.value = "MEBOG";
-      await cargarServiciosModulo12();
-    }
-  } catch (error) {
-    console.error(error);
-    alert("No se pudieron cargar las unidades del módulo 12");
-  }
-}
-
-async function cargarServiciosModulo12() {
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const selectServicio = document.getElementById("m12_servicio");
-
-    if (!selectServicio) return;
-    selectServicio.innerHTML = `<option value="">Seleccionar servicio</option>`;
-
-    if (!fecha || !unidad) return;
-
-    const res = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "No se pudieron cargar los servicios");
-      return;
-    }
-
-    (data.data || []).forEach(item => {
-      selectServicio.innerHTML += `
-        <option value="${item.titulo_servicio}">${item.titulo_servicio}</option>
-      `;
-    });
-
-    limpiarSubunidadesModulo12();
-    limpiarPersonalModulo12();
-  } catch (error) {
-    console.error(error);
-    alert("Error cargando servicios");
-  }
-}
-
-function limpiarSubunidadesModulo12() {
-  const select = document.getElementById("m12_subunidad");
-  if (select) {
-    select.innerHTML = `<option value="">Seleccionar subunidad</option>`;
-  }
-}
-
-function limpiarPersonalModulo12() {
-  const box = document.getElementById("m12_personal_box");
-  const tabla = document.getElementById("m12_tabla_personal");
-  const estadoBox = document.getElementById("m12_estado_box");
-
-  window.m12DetalleActual = [];
-  window.m12EstadoActual = "NO HAN DADO PARTE";
-
-  if (box) box.style.display = "none";
-  if (tabla) tabla.innerHTML = "";
-  if (estadoBox) {
-    estadoBox.style.display = "none";
-    estadoBox.innerHTML = "";
-  }
-}
-
-async function cargarSubunidadesModulo12() {
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const servicio = document.getElementById("m12_servicio")?.value || "";
-    const selectSubunidad = document.getElementById("m12_subunidad");
-
-    if (!selectSubunidad) return;
-    selectSubunidad.innerHTML = `<option value="">Seleccionar subunidad</option>`;
-
-    if (!fecha || !unidad || !servicio) return;
-
-    const res = await fetch(`/modulo11-parte-extra?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}`);
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "No se pudieron cargar las subunidades");
-      return;
-    }
-
-    (data.resumen || []).forEach(item => {
-      const sub = String(item.subunidad || "").trim();
-      if (!sub) return;
-      selectSubunidad.innerHTML += `<option value="${sub}">${sub}</option>`;
-    });
-
-    limpiarPersonalModulo12();
-  } catch (error) {
-    console.error(error);
-    alert("Error cargando subunidades");
-  }
-}
-
-async function consultarEstadoModulo12() {
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const servicio = document.getElementById("m12_servicio")?.value || "";
-    const subunidad = document.getElementById("m12_subunidad")?.value || "";
-    const box = document.getElementById("m12_estado_box");
-
-    if (!box) return;
-
-    if (!fecha || !unidad || !servicio || !subunidad) {
-      box.style.display = "none";
-      return;
-    }
-
-    const res = await fetch(
-      `/modulo12-estado-parte?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`
-    );
-    const data = await res.json();
-
-    if (!data.ok) {
-      box.style.display = "none";
-      return;
-    }
-
-    window.m12EstadoActual = data.estado_parte || "NO HAN DADO PARTE";
-
-    const rp = data.responsable_parte;
-    const color =
-      window.m12EstadoActual === "NO HAN DADO PARTE" ? "#B42318" :
-      window.m12EstadoActual === "SACANDO PARTE" ? "#B54708" :
-      "#067647";
-
-    box.style.display = "block";
-    box.innerHTML = `
-      <div style="font-weight:700; color:${color}; font-size:14px;">
-        ${window.m12EstadoActual}
-      </div>
-      ${
-        rp
-          ? `<div style="font-size:12px; margin-top:6px;">
-              ${rp.hora || ""} ${rp.grado || ""} ${rp.apellidos || ""} ${rp.nombres || ""} - CC ${rp.cedula || ""} - TEL ${rp.telefono || ""}
-            </div>`
-          : ""
-      }
-    `;
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function cargarPersonalModulo12() {
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const servicio = document.getElementById("m12_servicio")?.value || "";
-    const subunidad = document.getElementById("m12_subunidad")?.value || "";
-
-    if (!fecha || !unidad || !servicio || !subunidad) {
-      alert("Debes seleccionar fecha, unidad, servicio y subunidad");
-      return;
-    }
-
-    await consultarEstadoModulo12();
-
-    const res = await fetch(
-      `/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`
-    );
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "No se pudo cargar el personal");
-      return;
-    }
-
-    window.m12DetalleActual = Array.isArray(data.detalle) ? data.detalle : [];
-    renderizarPersonalModulo12();
-  } catch (error) {
-    console.error(error);
-    alert("Error cargando personal del módulo 12");
-  }
-}
-
-function renderizarPersonalModulo12() {
-  const box = document.getElementById("m12_personal_box");
-  const tabla = document.getElementById("m12_tabla_personal");
-  const titulo = document.getElementById("m12_titulo_personal");
-  const subunidad = document.getElementById("m12_subunidad")?.value || "";
-
-  if (!box || !tabla || !titulo) return;
-
-  titulo.innerText = `Personal del servicio - ${subunidad}`;
-  box.style.display = "block";
-
-  let html = `
-    <div class="tabla-wrap">
-      <table class="tabla-app">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Grado</th>
-            <th>Apellidos</th>
-            <th>Nombres</th>
-            <th>Cédula</th>
-            <th>Teléfono</th>
-            <th>Estado</th>
-            <th>Observación</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  window.m12DetalleActual.forEach((p, i) => {
-    const ced = String(p.cedula || "").trim();
-    const estado = String(p.estado_control || "").trim().toUpperCase();
-
-    html += `
-      <tr>
-        <td>${i + 1}</td>
-        <td>${p.grado || ""}</td>
-        <td>${p.apellidos || ""}</td>
-        <td>${p.nombres || ""}</td>
-        <td>${ced}</td>
-        <td>${p.telefono || ""}</td>
-        <td>
-          <select id="m12_estado_${ced}">
-            <option value="" ${estado === "" ? "selected" : ""}>SIN NOVEDAD</option>
-            <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
-            <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
-            <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
-            <option value="EXCUSADO" ${estado === "EXCUSADO" ? "selected" : ""}>EXCUSADO</option>
-            <option value="INCAPACIDAD" ${estado === "INCAPACIDAD" ? "selected" : ""}>INCAPACIDAD</option>
-            <option value="HOSPITALIZADO" ${estado === "HOSPITALIZADO" ? "selected" : ""}>HOSPITALIZADO</option>
-            <option value="NO ASISTE" ${estado === "NO ASISTE" ? "selected" : ""}>NO ASISTE</option>
-          </select>
-        </td>
-        <td>
-          <input id="m12_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación">
-        </td>
-      </tr>
-    `;
-  });
-
-  html += `
-        </tbody>
-      </table>
-    </div>
-  `;
-
-  tabla.innerHTML = html;
-}
-
-function obtenerResponsableModulo12() {
-  const r = window.responsable || {};
-
-  const nombreCompleto = String(r.nombre || "").trim();
-  const partes = nombreCompleto.split(/\s+/);
-
-  return {
-    grado: r.grado || "",
-    apellidos: partes.length >= 2 ? partes.slice(-2).join(" ") : "",
-    nombres: partes.length >= 3 ? partes.slice(0, -2).join(" ") : nombreCompleto,
-    cedula: r.cedula || "",
-    telefono: r.telefono || ""
-  };
-}
-
-async function iniciarParteModulo12() {
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const servicio = document.getElementById("m12_servicio")?.value || "";
-    const subunidad = document.getElementById("m12_subunidad")?.value || "";
-
-    if (!fecha || !unidad || !servicio || !subunidad) {
-      alert("Debes seleccionar fecha, unidad, servicio y subunidad");
-      return;
-    }
-
-    const responsable = obtenerResponsableModulo12();
-
-    const res = await fetch("/modulo12-iniciar-parte", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        fecha,
-        unidad,
-        servicio,
-        subunidad,
-        responsable
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "No se pudo iniciar el parte");
-      return;
-    }
-
-    await consultarEstadoModulo12();
-    alert("Parte iniciado correctamente");
-  } catch (error) {
-    console.error(error);
-    alert("Error iniciando parte");
-  }
-}
-
-async function guardarParteModulo12() {
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const servicio = document.getElementById("m12_servicio")?.value || "";
-    const subunidad = document.getElementById("m12_subunidad")?.value || "";
-
-    if (!fecha || !unidad || !servicio || !subunidad) {
-      alert("Faltan datos");
-      return;
-    }
-
-    if (!window.m12DetalleActual.length) {
-      alert("Primero debes cargar el personal");
-      return;
-    }
-
-    const detalle = window.m12DetalleActual.map(p => {
-      const ced = String(p.cedula || "").trim();
-      return {
-        ...p,
-        estado_control: document.getElementById(`m12_estado_${ced}`)?.value || "",
-        observacion: document.getElementById(`m12_obs_${ced}`)?.value || ""
-      };
-    });
-
-    const responsable = obtenerResponsableModulo12();
-
-    const res = await fetch("/modulo11-guardar-control", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        fecha,
-        unidad,
-        subunidad,
-        servicio,
-        responsable,
-        detalle
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "No se pudo guardar el parte");
-      return;
-    }
-
-    alert("Parte guardado correctamente");
-    await consultarEstadoModulo12();
-  } catch (error) {
-    console.error(error);
-    alert("Error guardando parte");
-  }
-}
-
-async function cerrarParteModulo12() {
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const servicio = document.getElementById("m12_servicio")?.value || "";
-    const subunidad = document.getElementById("m12_subunidad")?.value || "";
-
-    if (!fecha || !unidad || !servicio || !subunidad) {
-      alert("Faltan datos");
-      return;
-    }
-
-    const responsable = obtenerResponsableModulo12();
-
-    const res = await fetch("/modulo12-cerrar-parte", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        fecha,
-        unidad,
-        servicio,
-        subunidad,
-        responsable
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "No se pudo cerrar el parte");
-      return;
-    }
-
-    alert("Parte cerrado correctamente");
-    await consultarEstadoModulo12();
-  } catch (error) {
-    console.error(error);
-    alert("Error cerrando parte");
-  }
-}
-
-   
 <script>
 
   function grupoGrado(grado = "") {
@@ -4606,6 +4142,472 @@ document.addEventListener("DOMContentLoaded", () => {
     limpiarPersonalModulo12();
   });
 });
+
+// =========================
+// MODULO 12
+// =========================
+
+window.m12DetalleActual = [];
+window.m12EstadoActual = "NO HAN DADO PARTE";
+
+function abrirModulo12() {
+  ocultarTodosLosBloques();
+  const bloque = document.getElementById("bloqueModulo12");
+  if (bloque) bloque.style.display = "block";
+
+  const fecha = document.getElementById("m12_fecha");
+  if (fecha && !fecha.value) {
+    fecha.value = new Date().toISOString().split("T")[0];
+  }
+
+  cargarUnidadesModulo12();
+}
+
+function ocultarTodosLosBloques() {
+  [
+    "bloqueExcel",
+    "bloqueUbicacion",
+    "bloqueNovedades",
+    "bloqueParte",
+    "bloqueConsultaGeneral",
+    "bloqueExtraordinario",
+    "bloqueHistorialExtra",
+    "bloqueControlCumplimiento",
+    "bloqueConfigExtraGlobal",
+    "bloqueModulo11",
+    "bloqueModulo12"
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+}
+
+async function cargarUnidadesModulo12() {
+  try {
+    const selectUnidad = document.getElementById("m12_unidad");
+    if (!selectUnidad) return;
+
+    const res = await fetch("/estructura");
+    const data = await res.json();
+
+    const unidades = [...new Set((data || []).map(x => String(x.unidad || "").trim()).filter(Boolean))];
+
+    selectUnidad.innerHTML = `<option value="">Seleccionar unidad</option>`;
+    unidades.forEach(u => {
+      selectUnidad.innerHTML += `<option value="${u}">${u}</option>`;
+    });
+
+    if (unidades.includes("MEBOG")) {
+      selectUnidad.value = "MEBOG";
+      await cargarServiciosModulo12();
+    }
+  } catch (error) {
+    console.error(error);
+    alert("No se pudieron cargar las unidades del módulo 12");
+  }
+}
+
+async function cargarServiciosModulo12() {
+  try {
+    const fecha = document.getElementById("m12_fecha")?.value || "";
+    const unidad = document.getElementById("m12_unidad")?.value || "";
+    const selectServicio = document.getElementById("m12_servicio");
+
+    if (!selectServicio) return;
+    selectServicio.innerHTML = `<option value="">Seleccionar servicio</option>`;
+
+    if (!fecha || !unidad) return;
+
+    const res = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudieron cargar los servicios");
+      return;
+    }
+
+    (data.data || []).forEach(item => {
+      selectServicio.innerHTML += `
+        <option value="${item.titulo_servicio}">${item.titulo_servicio}</option>
+      `;
+    });
+
+    limpiarSubunidadesModulo12();
+    limpiarPersonalModulo12();
+  } catch (error) {
+    console.error(error);
+    alert("Error cargando servicios");
+  }
+}
+
+function limpiarSubunidadesModulo12() {
+  const select = document.getElementById("m12_subunidad");
+  if (select) {
+    select.innerHTML = `<option value="">Seleccionar subunidad</option>`;
+  }
+}
+
+function limpiarPersonalModulo12() {
+  const box = document.getElementById("m12_personal_box");
+  const tabla = document.getElementById("m12_tabla_personal");
+  const estadoBox = document.getElementById("m12_estado_box");
+
+  window.m12DetalleActual = [];
+  window.m12EstadoActual = "NO HAN DADO PARTE";
+
+  if (box) box.style.display = "none";
+  if (tabla) tabla.innerHTML = "";
+  if (estadoBox) {
+    estadoBox.style.display = "none";
+    estadoBox.innerHTML = "";
+  }
+}
+
+async function cargarSubunidadesModulo12() {
+  try {
+    const fecha = document.getElementById("m12_fecha")?.value || "";
+    const unidad = document.getElementById("m12_unidad")?.value || "";
+    const servicio = document.getElementById("m12_servicio")?.value || "";
+    const selectSubunidad = document.getElementById("m12_subunidad");
+
+    if (!selectSubunidad) return;
+    selectSubunidad.innerHTML = `<option value="">Seleccionar subunidad</option>`;
+
+    if (!fecha || !unidad || !servicio) return;
+
+    const res = await fetch(`/modulo11-parte-extra?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudieron cargar las subunidades");
+      return;
+    }
+
+    (data.resumen || []).forEach(item => {
+      const sub = String(item.subunidad || "").trim();
+      if (!sub) return;
+      selectSubunidad.innerHTML += `<option value="${sub}">${sub}</option>`;
+    });
+
+    limpiarPersonalModulo12();
+  } catch (error) {
+    console.error(error);
+    alert("Error cargando subunidades");
+  }
+}
+
+async function consultarEstadoModulo12() {
+  try {
+    const fecha = document.getElementById("m12_fecha")?.value || "";
+    const unidad = document.getElementById("m12_unidad")?.value || "";
+    const servicio = document.getElementById("m12_servicio")?.value || "";
+    const subunidad = document.getElementById("m12_subunidad")?.value || "";
+    const box = document.getElementById("m12_estado_box");
+
+    if (!box) return;
+
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      box.style.display = "none";
+      return;
+    }
+
+    const res = await fetch(
+      `/modulo12-estado-parte?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`
+    );
+    const data = await res.json();
+
+    if (!data.ok) {
+      box.style.display = "none";
+      return;
+    }
+
+    window.m12EstadoActual = data.estado_parte || "NO HAN DADO PARTE";
+
+    const rp = data.responsable_parte;
+    const color =
+      window.m12EstadoActual === "NO HAN DADO PARTE" ? "#B42318" :
+      window.m12EstadoActual === "SACANDO PARTE" ? "#B54708" :
+      "#067647";
+
+    box.style.display = "block";
+    box.innerHTML = `
+      <div style="font-weight:700; color:${color}; font-size:14px;">
+        ${window.m12EstadoActual}
+      </div>
+      ${
+        rp
+          ? `<div style="font-size:12px; margin-top:6px;">
+              ${rp.hora || ""} ${rp.grado || ""} ${rp.apellidos || ""} ${rp.nombres || ""} - CC ${rp.cedula || ""} - TEL ${rp.telefono || ""}
+            </div>`
+          : ""
+      }
+    `;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function cargarPersonalModulo12() {
+  try {
+    const fecha = document.getElementById("m12_fecha")?.value || "";
+    const unidad = document.getElementById("m12_unidad")?.value || "";
+    const servicio = document.getElementById("m12_servicio")?.value || "";
+    const subunidad = document.getElementById("m12_subunidad")?.value || "";
+
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      alert("Debes seleccionar fecha, unidad, servicio y subunidad");
+      return;
+    }
+
+    await consultarEstadoModulo12();
+
+    const res = await fetch(
+      `/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`
+    );
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo cargar el personal");
+      return;
+    }
+
+    window.m12DetalleActual = Array.isArray(data.detalle) ? data.detalle : [];
+    renderizarPersonalModulo12();
+  } catch (error) {
+    console.error(error);
+    alert("Error cargando personal del módulo 12");
+  }
+}
+
+function renderizarPersonalModulo12() {
+  const box = document.getElementById("m12_personal_box");
+  const tabla = document.getElementById("m12_tabla_personal");
+  const titulo = document.getElementById("m12_titulo_personal");
+  const subunidad = document.getElementById("m12_subunidad")?.value || "";
+
+  if (!box || !tabla || !titulo) return;
+
+  titulo.innerText = `Personal del servicio - ${subunidad}`;
+  box.style.display = "block";
+
+  let html = `
+    <div class="tabla-wrap">
+      <table class="tabla-app">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Grado</th>
+            <th>Apellidos</th>
+            <th>Nombres</th>
+            <th>Cédula</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Observación</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  window.m12DetalleActual.forEach((p, i) => {
+    const ced = String(p.cedula || "").trim();
+    const estado = String(p.estado_control || "").trim().toUpperCase();
+
+    html += `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${p.grado || ""}</td>
+        <td>${p.apellidos || ""}</td>
+        <td>${p.nombres || ""}</td>
+        <td>${ced}</td>
+        <td>${p.telefono || ""}</td>
+        <td>
+          <select id="m12_estado_${ced}">
+            <option value="" ${estado === "" ? "selected" : ""}>SIN NOVEDAD</option>
+            <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
+            <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
+            <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
+            <option value="EXCUSADO" ${estado === "EXCUSADO" ? "selected" : ""}>EXCUSADO</option>
+            <option value="INCAPACIDAD" ${estado === "INCAPACIDAD" ? "selected" : ""}>INCAPACIDAD</option>
+            <option value="HOSPITALIZADO" ${estado === "HOSPITALIZADO" ? "selected" : ""}>HOSPITALIZADO</option>
+            <option value="NO ASISTE" ${estado === "NO ASISTE" ? "selected" : ""}>NO ASISTE</option>
+          </select>
+        </td>
+        <td>
+          <input id="m12_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación">
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  tabla.innerHTML = html;
+}
+
+function obtenerResponsableModulo12() {
+  const r = window.responsable || {};
+
+  const nombreCompleto = String(r.nombre || "").trim();
+  const partes = nombreCompleto.split(/\s+/);
+
+  return {
+    grado: r.grado || "",
+    apellidos: partes.length >= 2 ? partes.slice(-2).join(" ") : "",
+    nombres: partes.length >= 3 ? partes.slice(0, -2).join(" ") : nombreCompleto,
+    cedula: r.cedula || "",
+    telefono: r.telefono || ""
+  };
+}
+
+async function iniciarParteModulo12() {
+  try {
+    const fecha = document.getElementById("m12_fecha")?.value || "";
+    const unidad = document.getElementById("m12_unidad")?.value || "";
+    const servicio = document.getElementById("m12_servicio")?.value || "";
+    const subunidad = document.getElementById("m12_subunidad")?.value || "";
+
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      alert("Debes seleccionar fecha, unidad, servicio y subunidad");
+      return;
+    }
+
+    const responsable = obtenerResponsableModulo12();
+
+    const res = await fetch("/modulo12-iniciar-parte", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        servicio,
+        subunidad,
+        responsable
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo iniciar el parte");
+      return;
+    }
+
+    await consultarEstadoModulo12();
+    alert("Parte iniciado correctamente");
+  } catch (error) {
+    console.error(error);
+    alert("Error iniciando parte");
+  }
+}
+
+async function guardarParteModulo12() {
+  try {
+    const fecha = document.getElementById("m12_fecha")?.value || "";
+    const unidad = document.getElementById("m12_unidad")?.value || "";
+    const servicio = document.getElementById("m12_servicio")?.value || "";
+    const subunidad = document.getElementById("m12_subunidad")?.value || "";
+
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      alert("Faltan datos");
+      return;
+    }
+
+    if (!window.m12DetalleActual.length) {
+      alert("Primero debes cargar el personal");
+      return;
+    }
+
+    const detalle = window.m12DetalleActual.map(p => {
+      const ced = String(p.cedula || "").trim();
+      return {
+        ...p,
+        estado_control: document.getElementById(`m12_estado_${ced}`)?.value || "",
+        observacion: document.getElementById(`m12_obs_${ced}`)?.value || ""
+      };
+    });
+
+    const responsable = obtenerResponsableModulo12();
+
+    const res = await fetch("/modulo11-guardar-control", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        subunidad,
+        servicio,
+        responsable,
+        detalle
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo guardar el parte");
+      return;
+    }
+
+    alert("Parte guardado correctamente");
+    await consultarEstadoModulo12();
+  } catch (error) {
+    console.error(error);
+    alert("Error guardando parte");
+  }
+}
+
+async function cerrarParteModulo12() {
+  try {
+    const fecha = document.getElementById("m12_fecha")?.value || "";
+    const unidad = document.getElementById("m12_unidad")?.value || "";
+    const servicio = document.getElementById("m12_servicio")?.value || "";
+    const subunidad = document.getElementById("m12_subunidad")?.value || "";
+
+    if (!fecha || !unidad || !servicio || !subunidad) {
+      alert("Faltan datos");
+      return;
+    }
+
+    const responsable = obtenerResponsableModulo12();
+
+    const res = await fetch("/modulo12-cerrar-parte", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        servicio,
+        subunidad,
+        responsable
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo cerrar el parte");
+      return;
+    }
+
+    alert("Parte cerrado correctamente");
+    await consultarEstadoModulo12();
+  } catch (error) {
+    console.error(error);
+    alert("Error cerrando parte");
+  }
+}
+
+   
   
   document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
