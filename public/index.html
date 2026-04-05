@@ -4251,39 +4251,34 @@ function renderizarTableroModulo11() {
 
   const responsable = window.m11ResponsableParte;
 
-  if (boxResp) {
-    if (responsable) {
-      boxResp.style.display = "block";
-      boxResp.innerHTML = `
-        <b>Responsable del parte:</b><br>
-        ${responsable.nombre || ""}<br>
-        Cédula: ${responsable.cedula || ""}<br>
-        Teléfono: ${responsable.telefono || ""}
-      `;
-    } else {
-      boxResp.style.display = "none";
-      boxResp.innerHTML = "";
-    }
+  if (boxResp && responsable) {
+    boxResp.style.display = "block";
+    boxResp.innerHTML = `
+      <b>Responsable del parte:</b><br>
+      ${responsable.nombre || ""}<br>
+      Cédula: ${responsable.cedula || ""}<br>
+      Teléfono: ${responsable.telefono || ""}
+    `;
   }
 
   const resumen = Array.isArray(window.m11Resumen) ? window.m11Resumen : [];
   if (!resumen.length) {
-    if (box) {
-      box.innerHTML = `<div class="sub-card">No hay información para esa fecha/unidad.</div>`;
-    }
+    box.innerHTML = `<div class="sub-card">No hay información para esa fecha/unidad.</div>`;
     return;
   }
 
+  const tieneValores = (arr = []) => arr.some(n => Number(n || 0) > 0);
+
   let total = {
-    fuerza_efectiva: [0, 0, 0, 0],
-    fuerza_disponible: [0, 0, 0, 0],
-    novedades: [0, 0, 0, 0],
-    excusado: [0, 0, 0, 0],
-    no_asiste: [0, 0, 0, 0],
-    retardado: [0, 0, 0, 0],
-    reemplazo: [0, 0, 0, 0],
-    incapacidad: [0, 0, 0, 0],
-    hospitalizado: [0, 0, 0, 0]
+    fuerza_efectiva: [0,0,0,0],
+    fuerza_disponible: [0,0,0,0],
+    novedades: [0,0,0,0],
+    excusado: [0,0,0,0],
+    no_asiste: [0,0,0,0],
+    retardado: [0,0,0,0],
+    reemplazo: [0,0,0,0],
+    incapacidad: [0,0,0,0],
+    hospitalizado: [0,0,0,0]
   };
 
   let tarjetasHtml = "";
@@ -4312,25 +4307,41 @@ function renderizarTableroModulo11() {
       estadoParte === "SACANDO PARTE" ? "#B54708" :
       "#067647";
 
-    const bloqueResumen = estadoParte === "NO HAN DADO PARTE"
-      ? `
-        <pre style="margin-top:10px;">
-FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}
-        </pre>
-      `
-      : `
-        <pre style="margin-top:10px;">
-FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}
-FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}
-NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}
-EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}
-NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}
-RETARDADO            ${texto4(r.retardado || [0,0,0,0])}
-REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}
-INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}
-HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}
-        </pre>
-      `;
+    let resumenTexto = `FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}\n`;
+
+    if (estadoParte !== "NO HAN DADO PARTE") {
+      if (tieneValores(r.fuerza_disponible || [0,0,0,0])) {
+        resumenTexto += `FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}\n`;
+      }
+
+      if (tieneValores(r.novedades || [0,0,0,0])) {
+        resumenTexto += `NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}\n`;
+      }
+
+      if (tieneValores(r.excusado || [0,0,0,0])) {
+        resumenTexto += `EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}\n`;
+      }
+
+      if (tieneValores(r.no_asiste || [0,0,0,0])) {
+        resumenTexto += `NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}\n`;
+      }
+
+      if (tieneValores(r.retardado || [0,0,0,0])) {
+        resumenTexto += `RETARDADO            ${texto4(r.retardado || [0,0,0,0])}\n`;
+      }
+
+      if (tieneValores(r.reemplazo || [0,0,0,0])) {
+        resumenTexto += `REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}\n`;
+      }
+
+      if (tieneValores(r.incapacidad || [0,0,0,0])) {
+        resumenTexto += `INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}\n`;
+      }
+
+      if (tieneValores(r.hospitalizado || [0,0,0,0])) {
+        resumenTexto += `HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}\n`;
+      }
+    }
 
     tarjetasHtml += `
       <div class="sub-card" style="text-align:left; margin-top:0;">
@@ -4347,7 +4358,7 @@ HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}
             : ""
         }
 
-        ${bloqueResumen}
+        <pre style="margin-top:10px;">${resumenTexto}</pre>
 
         <div class="acciones-inline">
           <button type="button" onclick="verDetalleModulo11('${String(item.subunidad || "").replace(/'/g, "\\'")}')">Ver detalle</button>
@@ -4357,22 +4368,39 @@ HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}
     `;
   });
 
-  const totalHtml = `
-    <div class="sub-card" style="text-align:left; margin-top:16px; border:2px solid #0B1F3A;">
-      <h3 style="margin-top:0;">TOTAL GENERAL</h3>
-      <pre style="margin-top:10px;">
-TOTAL FUERZA EFECTIVA      ${texto4(total.fuerza_efectiva)}
-TOTAL FUERZA DISPONIBLE    ${texto4(total.fuerza_disponible)}
-TOTAL NOVEDADES            ${texto4(total.novedades)}
-EXCUSADO                  ${texto4(total.excusado)}
-NO ASISTE                 ${texto4(total.no_asiste)}
-RETARDADO                 ${texto4(total.retardado)}
-REEMPLAZO                 ${texto4(total.reemplazo)}
-INCAPACIDAD               ${texto4(total.incapacidad)}
-HOSPITALIZADO             ${texto4(total.hospitalizado)}
-      </pre>
-    </div>
-  `;
+  let totalTexto = `TOTAL FUERZA EFECTIVA      ${texto4(total.fuerza_efectiva)}\n`;
+
+  if (tieneValores(total.fuerza_disponible)) {
+    totalTexto += `TOTAL FUERZA DISPONIBLE    ${texto4(total.fuerza_disponible)}\n`;
+  }
+
+  if (tieneValores(total.novedades)) {
+    totalTexto += `TOTAL NOVEDADES            ${texto4(total.novedades)}\n`;
+  }
+
+  if (tieneValores(total.excusado)) {
+    totalTexto += `EXCUSADO                  ${texto4(total.excusado)}\n`;
+  }
+
+  if (tieneValores(total.no_asiste)) {
+    totalTexto += `NO ASISTE                 ${texto4(total.no_asiste)}\n`;
+  }
+
+  if (tieneValores(total.retardado)) {
+    totalTexto += `RETARDADO                 ${texto4(total.retardado)}\n`;
+  }
+
+  if (tieneValores(total.reemplazo)) {
+    totalTexto += `REEMPLAZO                 ${texto4(total.reemplazo)}\n`;
+  }
+
+  if (tieneValores(total.incapacidad)) {
+    totalTexto += `INCAPACIDAD               ${texto4(total.incapacidad)}\n`;
+  }
+
+  if (tieneValores(total.hospitalizado)) {
+    totalTexto += `HOSPITALIZADO             ${texto4(total.hospitalizado)}\n`;
+  }
 
   box.innerHTML = `
     <div style="
@@ -4384,10 +4412,14 @@ HOSPITALIZADO             ${texto4(total.hospitalizado)}
     ">
       ${tarjetasHtml}
     </div>
-    ${totalHtml}
+
+    <div class="sub-card" style="text-align:left; margin-top:16px; border:2px solid #0B1F3A;">
+      <h3>TOTAL GENERAL</h3>
+      <pre style="margin-top:10px;">${totalTexto}</pre>
+    </div>
   `;
 }
-
+  
 async function verDetalleModulo11(subunidad) {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
