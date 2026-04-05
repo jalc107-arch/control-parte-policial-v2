@@ -2294,6 +2294,43 @@ function sumar4Servidor(a = [0,0,0,0], b = [0,0,0,0]) {
     (a[3] || 0) + (b[3] || 0)
   ];
 }
+function construirResumenModulo11DesdeLista(lista = []) {
+  const base = {
+    fuerza_efectiva: [0,0,0,0],
+    fuerza_disponible: [0,0,0,0],
+    novedades: [0,0,0,0],
+    excusado: [0,0,0,0],
+    no_asiste: [0,0,0,0],
+    retardado: [0,0,0,0],
+    reemplazo: [0,0,0,0],
+    incapacidad: [0,0,0,0],
+    hospitalizado: [0,0,0,0]
+  };
+
+  lista.forEach(p => {
+    const g = grupo4Servidor(p.grado || "");
+    const estado = String(p.estado_control || "").trim().toUpperCase();
+
+    base.fuerza_efectiva = sumar4Servidor(base.fuerza_efectiva, g);
+
+    if (estado === "DISPONIBLE" || estado === "REEMPLAZO" || estado === "SACANDO PARTE" || estado === "PARTE") {
+      base.fuerza_disponible = sumar4Servidor(base.fuerza_disponible, g);
+    }
+
+    if (["EXCUSADO","NO ASISTE","RETARDADO","INCAPACIDAD","HOSPITALIZADO"].includes(estado)) {
+      base.novedades = sumar4Servidor(base.novedades, g);
+    }
+
+    if (estado === "EXCUSADO") base.excusado = sumar4Servidor(base.excusado, g);
+    if (estado === "NO ASISTE") base.no_asiste = sumar4Servidor(base.no_asiste, g);
+    if (estado === "RETARDADO") base.retardado = sumar4Servidor(base.retardado, g);
+    if (estado === "REEMPLAZO") base.reemplazo = sumar4Servidor(base.reemplazo, g);
+    if (estado === "INCAPACIDAD") base.incapacidad = sumar4Servidor(base.incapacidad, g);
+    if (estado === "HOSPITALIZADO") base.hospitalizado = sumar4Servidor(base.hospitalizado, g);
+  });
+
+  return base;
+}
 
 // =========================
 // LEVANTAR SERVIDOR
