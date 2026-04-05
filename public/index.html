@@ -4707,36 +4707,82 @@ function volverTableroModulo11() {
 
 function agregarReemplazoModulo11() {
   const reemplazaA = document.getElementById("m11_reemplaza_a")?.value || "";
-  const grado = document.getElementById("m11_rep_grado")?.value || "";
-  const apellidos = document.getElementById("m11_rep_apellidos")?.value || "";
-  const nombres = document.getElementById("m11_rep_nombres")?.value || "";
-  const cedula = document.getElementById("m11_rep_cedula")?.value || "";
-  const telefono = document.getElementById("m11_rep_telefono")?.value || "";
-  const unidad = document.getElementById("m11_rep_unidad")?.value || "";
-  const subunidad = document.getElementById("m11_rep_subunidad")?.value || "";
+  const grado = (document.getElementById("m11_rep_grado")?.value || "").trim().toUpperCase();
+  const apellidos = (document.getElementById("m11_rep_apellidos")?.value || "").trim().toUpperCase();
+  const nombres = (document.getElementById("m11_rep_nombres")?.value || "").trim().toUpperCase();
+  const cedula = (document.getElementById("m11_rep_cedula")?.value || "").trim();
+  const telefono = (document.getElementById("m11_rep_telefono")?.value || "").trim();
+  const unidad = (document.getElementById("m11_rep_unidad")?.value || "").trim();
+  const subunidad = (document.getElementById("m11_rep_subunidad")?.value || "").trim();
 
   if (!reemplazaA || !grado || !apellidos || !nombres || !cedula || !telefono || !unidad || !subunidad) {
-    alert("Debes diligenciar todos los campos del reemplazo");
+    alert("Debes diligenciar todos los datos del reemplazo");
     return;
   }
 
-  const reemplazado = window.m11DetalleActual.find(p => String(p.cedula || "").trim() === String(reemplazaA).trim());
+  if (!window.m11DetalleActual || !Array.isArray(window.m11DetalleActual)) {
+    alert("No hay detalle cargado");
+    return;
+  }
 
+  const cedulaNueva = String(cedula).trim();
+  const cedulaTitular = String(reemplazaA).trim();
+
+  if (cedulaNueva === cedulaTitular) {
+    alert("El reemplazo no puede tener la misma cédula del funcionario reemplazado");
+    return;
+  }
+
+  const yaExisteCedula = window.m11DetalleActual.some(
+    p => String(p.cedula || "").trim() === cedulaNueva
+  );
+
+  if (yaExisteCedula) {
+    alert("Esa cédula ya existe en el listado");
+    return;
+  }
+
+  const titular = window.m11DetalleActual.find(
+    p => String(p.cedula || "").trim() === cedulaTitular
+  );
+
+  if (!titular) {
+    alert("No se encontró el funcionario a reemplazar");
+    return;
+  }
+
+  const yaFueReemplazado = window.m11DetalleActual.some(
+    p => !!p.es_reemplazo_manual && String(p.reemplaza_a_cedula || "").trim() === cedulaTitular
+  );
+
+  if (yaFueReemplazado) {
+    alert("Ese funcionario ya tiene un reemplazo asignado");
+    return;
+  }
+
+  // Marcar al titular como NO ASISTE para que no sume en disponibles
+  titular.estado_control = "NO ASISTE";
+  titular.observacion = `REEMPLAZADO POR ${grado} ${apellidos} ${nombres} CC ${cedulaNueva}`;
+  titular.fue_reemplazado = true;
+
+  // Agregar nuevo reemplazo
   window.m11DetalleActual.push({
     grado,
     apellidos,
     nombres,
-    cedula,
+    cedula: cedulaNueva,
     telefono,
     unidad,
     subunidad,
     estado_control: "REEMPLAZO",
-    observacion: reemplazado ? `REEMPLAZA A ${reemplazado.grado || ""} ${reemplazado.apellidos || ""} ${reemplazado.nombres || ""}` : "REEMPLAZO",
+    observacion: `REEMPLAZA A ${titular.grado || ""} ${titular.apellidos || ""} ${titular.nombres || ""}`,
     es_reemplazo_manual: true,
-    reemplaza_a_cedula: reemplazaA
+    reemplaza_a_cedula: cedulaTitular
   });
 
   renderizarDetalleModulo11();
+
+  alert("Reemplazo agregado correctamente");
 }
 
 async function guardarControlModulo11() {
