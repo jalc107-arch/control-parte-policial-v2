@@ -399,6 +399,7 @@ app.post("/validar-responsable", async (req, res) => {
     const grado = (persona.grado || "").toUpperCase().trim().replace(/\s+/g, "");
     const cargo = (persona.cargo || "").toUpperCase().trim();
     const rol = (persona.rol || "").toUpperCase().trim();
+    const esAdmin = rol === "ADMIN";
 
     const esOficial = esGradoOficial(grado);
 
@@ -419,20 +420,21 @@ app.post("/validar-responsable", async (req, res) => {
       rol === "ADMIN_EXCEL";
 
    res.json({
-  ok: true, // ✅ SI EXISTE
-  autorizado: puedeGenerarParte, // 🔥 PERMISOS APARTE
-      puedeSubirExcel,
-      nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
-      grado: persona.grado || "",
-      cedula: persona.cedula || "",
-      telefono: persona.telefono || "",
-      unidad: persona.unidad || "",
-      subunidad: persona.subunidad || "",
-      estacion: persona.estacion || "",
-      organico: persona.organico || "",
-      rol,
-      esOficial
-    });
+  ok: true,
+  autorizado: puedeGenerarParte,
+  puedeSubirExcel,
+  nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
+  grado: persona.grado || "",
+  cedula: persona.cedula || "",
+  telefono: persona.telefono || "",
+  unidad: persona.unidad || "",
+  subunidad: persona.subunidad || "",
+  estacion: persona.estacion || "",
+  organico: persona.organico || "",
+  rol,
+  esOficial,
+  es_admin: esAdmin
+});
   } catch (error) {
     res.status(500).json({
       ok: false,
