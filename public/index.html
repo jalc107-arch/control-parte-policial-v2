@@ -559,62 +559,64 @@
 
 </div>
 
-<button type="button" class="panel-toggle" onclick="togglePanel('panelPaso3')">
-  3. Registro del servicio
-</button>
+<div class="seccion" id="bloqueUbicacion" style="display:none;">
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelPaso3')">
+    3. Registro del servicio
+  </button>
 
-<div id="panelPaso3" class="panel-contenido">
+  <div id="panelPaso3" class="panel-contenido">
 
-  <select id="unidad_select" onchange="cargarSubunidades()">
-    <option value="">Seleccionar UNIDAD</option>
-  </select>
-  <br>
-
-  <select id="subunidad_select" onchange="cargarEstaciones(); cargarOrganicos()">
-    <option value="">Seleccionar SUBUNIDAD</option>
-  </select>
-  <br>
-
-  <select id="estacion_select" onchange="cargarOrganicos()">
-    <option value="">Seleccionar ESTACIÓN</option>
-  </select>
-  <br>
-
-  <div id="bloqueOrganico" style="display:none;">
-    <select id="organico_select">
-      <option value="">Seleccionar ORGÁNICO</option>
+    <select id="unidad_select" onchange="cargarSubunidades()">
+      <option value="">Seleccionar UNIDAD</option>
     </select>
     <br>
-  </div>
 
-  <div class="acciones-inline">
-    <button onclick="cargarPersonal()">Continuar</button>
-  </div>
+    <select id="subunidad_select" onchange="cargarEstaciones(); cargarOrganicos()">
+      <option value="">Seleccionar SUBUNIDAD</option>
+    </select>
+    <br>
 
-  <div id="bloqueNovedades" style="display:none; margin-top:18px;">
-    <div class="sub-card">
-      <h3>Asignar novedad</h3>
-      <div id="lista"></div>
-      <div class="acciones-inline">
-        <button onclick="guardarNovedades()">Guardar</button>
+    <select id="estacion_select" onchange="cargarOrganicos()">
+      <option value="">Seleccionar ESTACIÓN</option>
+    </select>
+    <br>
+
+    <div id="bloqueOrganico" style="display:none;">
+      <select id="organico_select">
+        <option value="">Seleccionar ORGÁNICO</option>
+      </select>
+      <br>
+    </div>
+
+    <div class="acciones-inline">
+      <button onclick="cargarPersonal()">Continuar</button>
+    </div>
+
+    <div id="bloqueNovedades" style="display:none; margin-top:18px;">
+      <div class="sub-card">
+        <h3>Asignar novedad</h3>
+        <div id="lista"></div>
+        <div class="acciones-inline">
+          <button onclick="guardarNovedades()">Guardar</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div id="bloqueParte" style="display:none; margin-top:18px;">
-    <div class="sub-card">
-      <h3>Salida del parte</h3>
-      <div class="acciones-inline">
-        <button onclick="generarParte()">Generar</button>
-        <button onclick="descargarPDF()">Descargar</button>
+    <div id="bloqueParte" style="display:none; margin-top:18px;">
+      <div class="sub-card">
+        <h3>Salida del parte</h3>
+        <div class="acciones-inline">
+          <button onclick="generarParte()">Generar</button>
+          <button onclick="descargarPDF()">Descargar</button>
+        </div>
+        <div class="campo-corto">
+          <input type="file" id="foto_parte" accept="image/*" capture="environment" class="input-archivo-minimal">
+        </div>
+        <pre id="resultado"></pre>
       </div>
-      <div class="campo-corto">
-        <input type="file" id="foto_parte" accept="image/*" capture="environment" class="input-archivo-minimal">
-      </div>
-      <pre id="resultado"></pre>
     </div>
-  </div>
 
+  </div>
 </div>
     
     <div class="seccion" id="bloqueConsultaGeneral" style="display:none;">
