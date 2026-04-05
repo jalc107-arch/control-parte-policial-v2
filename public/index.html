@@ -5170,39 +5170,55 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // 1. Actualizar datos en memoria
-  window.m11DetalleActual.forEach(p => {
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
+  const subunidad = window.m11SubunidadActual || "";
+
+  if (!fecha || !unidad || !servicio || !subunidad) {
+    alert("Faltan datos para guardar");
+    return;
+  }
+
+  const detalleActualizado = window.m11DetalleActual.map(p => {
     const ced = String(p.cedula || "").trim();
 
     const estadoSelect = document.getElementById(`m11_estado_${ced}`);
     const obsInput = document.getElementById(`m11_obs_${ced}`);
 
-    if (estadoSelect) {
-      p.estado_control = estadoSelect.value;
-    }
-
-    if (obsInput) {
-      p.observacion = obsInput.value;
-    }
+    return {
+      ...p,
+      estado_control: estadoSelect ? estadoSelect.value : (p.estado_control || "DISPONIBLE"),
+      observacion: obsInput ? obsInput.value : (p.observacion || "")
+    };
   });
 
-  // 2. 🔥 AQUÍ ESTÁ LO IMPORTANTE → guardar realmente
   try {
-    await fetch("/api/modulo11/guardar", {
+    const res = await fetch("/modulo11-guardar-control", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        detalle: window.m11DetalleActual
+        fecha,
+        unidad,
+        subunidad,
+        servicio,
+        responsable: window.responsable || {},
+        detalle: detalleActualizado
       })
     });
 
-    alert("Cambios guardados correctamente");
+    const data = await res.json();
 
-    // 3. refrescar pantalla
-    location.reload();
+    if (!data.ok) {
+      alert(data.error || "No se pudo guardar");
+      return;
+    }
 
+    window.m11DetalleActual = detalleActualizado;
+
+    alert("Cambios guardados correctamente ✅");
+
+    await verDetalleModulo11(subunidad);
   } catch (error) {
     console.error(error);
     alert("Error guardando cambios");
