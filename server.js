@@ -2030,24 +2030,25 @@ app.get("/modulo11-parte-extra", async (req, res) => {
 
     const agrupado = {};
 
-    servicios.rows.forEach(p => {
-      const sub = String(p.subunidad || "SIN SUBUNIDAD").trim();
-      if (!agrupado[sub]) agrupado[sub] = [];
+servicios.rows.forEach(p => {
+  const sub = String(p.subunidad || "SIN SUBUNIDAD").trim();
+  if (!agrupado[sub]) agrupado[sub] = [];
 
-      const control = mapaControl[String(p.cedula || "").trim()] || {};
+  const control = mapaControl[String(p.cedula || "").trim()] || {};
 
-      agrupado[sub].push({
-  ...p,
-  estado_control: control.estado_control
-    ? String(control.estado_control).trim().toUpperCase()
-    : "",
-  observacion: control.observacion || ""
+  agrupado[sub].push({
+    ...p,
+    estado_control: control.estado_control
+      ? String(control.estado_control).trim().toUpperCase()
+      : "",
+    observacion: control.observacion || ""
+  });
 });
 
-    const resumen = Object.keys(agrupado).sort().map(subunidad => ({
-      subunidad,
-      resumen: construirResumenModulo11DesdeLista(agrupado[subunidad])
-    }));
+const resumen = Object.keys(agrupado).sort().map(subunidad => ({
+  subunidad,
+  resumen: construirResumenModulo11DesdeLista(agrupado[subunidad])
+}));
 
     return res.json({
       ok: true,
