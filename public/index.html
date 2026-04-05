@@ -339,6 +339,40 @@
   margin-top: 12px;
 }
 
+    .grid-form{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap:14px;
+  align-items:end;
+}
+
+.grid-form label{
+  display:block;
+  text-align:left;
+  font-weight:700;
+  margin-bottom:6px;
+  color:#0B1F3A;
+}
+
+.grid-form input,
+.grid-form select{
+  width:100%;
+  box-sizing:border-box;
+}
+
+.acciones-inline{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+}
+
+.card-app h2{
+  margin-top:0;
+  margin-bottom:16px;
+  text-align:left;
+}
+    
 .tarjeta-resumen {
   border-radius: 12px;
   padding: 14px;
