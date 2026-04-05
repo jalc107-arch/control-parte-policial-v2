@@ -566,41 +566,41 @@
 
   <div id="panelPaso3" class="panel-contenido">
 
-   <select id="unidad_select" onchange="cargarSubunidadesMultiple()">
-  <option value="">Seleccionar UNIDAD</option>
-</select>
-<br>
+    <select id="unidad_select" onchange="cargarSubunidadesMultiple()">
+      <option value="">Seleccionar UNIDAD</option>
+    </select>
+    <br>
 
-<div class="filtro-box">
-  <div class="filtro-titulo">Subunidad</div>
-  <div class="filtro-botones">
-    <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_parte')">Seleccionar todas</button>
-    <button type="button" onclick="limpiarChecks('checks_subunidad_parte'); cargarEstacionesMultiple(); cargarOrganicosMultiple();">Limpiar</button>
-  </div>
-  <div id="checks_subunidad_parte" class="checks-contenedor"></div>
-</div>
-
-<div class="filtro-box">
-  <div class="filtro-titulo">Estación / Grupo</div>
-  <div class="filtro-botones">
-    <button type="button" onclick="seleccionarTodasChecks('checks_estacion_parte'); cargarOrganicosMultiple();">Seleccionar todas</button>
-    <button type="button" onclick="limpiarChecks('checks_estacion_parte'); cargarOrganicosMultiple();">Limpiar</button>
-  </div>
-  <div id="checks_estacion_parte" class="checks-contenedor"></div>
-</div>
-
-<div id="bloqueOrganico" style="display:block;">
-  <div class="filtro-box">
-    <div class="filtro-titulo">Orgánico</div>
-    <div class="filtro-botones">
-      <button type="button" onclick="seleccionarTodasChecks('checks_organico_parte')">Seleccionar todas</button>
-      <button type="button" onclick="limpiarChecks('checks_organico_parte')">Limpiar</button>
+    <div class="filtro-box">
+      <div class="filtro-titulo">Subunidad</div>
+      <div class="filtro-botones">
+        <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_parte')">Seleccionar todas</button>
+        <button type="button" onclick="limpiarChecks('checks_subunidad_parte'); cargarEstacionesMultiple(); cargarOrganicosMultiple(); actualizarRutaDependenciaParte();">Limpiar</button>
+      </div>
+      <div id="checks_subunidad_parte" class="checks-contenedor"></div>
     </div>
-    <div id="checks_organico_parte" class="checks-contenedor"></div>
-  </div>
-</div>
 
-<div class="ayuda" id="ruta_dependencia_actual"></div>
+    <div class="filtro-box">
+      <div class="filtro-titulo">Estación / Grupo</div>
+      <div class="filtro-botones">
+        <button type="button" onclick="seleccionarTodasChecks('checks_estacion_parte'); cargarOrganicosMultiple(); actualizarRutaDependenciaParte();">Seleccionar todas</button>
+        <button type="button" onclick="limpiarChecks('checks_estacion_parte'); cargarOrganicosMultiple(); actualizarRutaDependenciaParte();">Limpiar</button>
+      </div>
+      <div id="checks_estacion_parte" class="checks-contenedor"></div>
+    </div>
+
+    <div id="bloqueOrganico" style="display:block;">
+      <div class="filtro-box">
+        <div class="filtro-titulo">Orgánico</div>
+        <div class="filtro-botones">
+          <button type="button" onclick="seleccionarTodasChecks('checks_organico_parte'); actualizarRutaDependenciaParte();">Seleccionar todas</button>
+          <button type="button" onclick="limpiarChecks('checks_organico_parte'); actualizarRutaDependenciaParte();">Limpiar</button>
+        </div>
+        <div id="checks_organico_parte" class="checks-contenedor"></div>
+      </div>
+    </div>
+
+    <div class="ayuda" id="ruta_dependencia_actual"></div>
 
     <div class="acciones-inline">
       <button onclick="cargarPersonal()">Continuar</button>
