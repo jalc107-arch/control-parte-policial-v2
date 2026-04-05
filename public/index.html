@@ -4695,8 +4695,14 @@ ${resumenTiposHtml}</pre>
           </tbody>
         </table>
       </div>
-    </details>
-  `;
+
+<div class="acciones-inline" style="margin-top:10px;">
+  <button type="button" onclick="guardarCambiosEdicionModulo11()">
+    Guardar cambios
+  </button>
+</div> 
+</details>
+`;
 
   const reemplazoFormHtml = `
     <details class="sub-card" style="margin-top:12px;">
@@ -5157,6 +5163,31 @@ document.addEventListener("DOMContentLoaded", () => {
     
   cargarEstructura();
 });
+
+  function guardarCambiosEdicionModulo11() {
+  if (!Array.isArray(window.m11DetalleActual)) {
+    alert("No hay datos para guardar");
+    return;
+  }
+
+  window.m11DetalleActual.forEach(p => {
+    const ced = String(p.cedula || "").trim();
+
+    const estadoSelect = document.getElementById(`m11_estado_${ced}`);
+    const obsInput = document.getElementById(`m11_obs_${ced}`);
+
+    if (estadoSelect) {
+      p.estado_control = estadoSelect.value;
+    }
+
+    if (obsInput) {
+      p.observacion = obsInput.value;
+    }
+  });
+
+  alert("Cambios aplicados. Ahora guarda el parte.");
+}
+  
 </script>
 
 <!-- LIBRERÍA PARA EXCEL -->
