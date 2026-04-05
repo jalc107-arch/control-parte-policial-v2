@@ -1961,6 +1961,9 @@ app.post("/validar-codigo", async (req, res) => {
     });
   }
 });
+// =========================
+// PARTE EXTRA MODULO 11
+// =========================
 app.get("/modulo11-parte-extra", async (req, res) => {
   try {
     const fecha = String(req.query.fecha || "").trim();
@@ -2094,7 +2097,9 @@ app.get("/modulo11-parte-extra", async (req, res) => {
     return res.status(500).json({ ok: false, error: error.message });
   }
 });
-
+// =========================
+// DETALLE MODULO 11
+// =========================
 app.get("/modulo11-detalle", async (req, res) => {
   try {
     const fecha = String(req.query.fecha || "").trim();
@@ -2193,7 +2198,9 @@ app.get("/modulo11-detalle", async (req, res) => {
     return res.status(500).json({ ok: false, error: error.message });
   }
 });
-
+// =========================
+// GUARDAR CONTROL MODULO 11
+// =========================
 app.post("/modulo11-guardar-control", async (req, res) => {
   try {
     const { fecha, unidad, subunidad, servicio, responsable = {}, detalle = [] } = req.body;
@@ -2264,6 +2271,9 @@ app.post("/modulo11-guardar-control", async (req, res) => {
     return res.status(500).json({ ok: false, error: error.message });
   }
 });
+// =========================
+// CERRAR SERVICIO MODULO 11
+// =========================
 
 app.post("/modulo11-cerrar-servicio", async (req, res) => {
   try {
@@ -2271,12 +2281,13 @@ app.post("/modulo11-cerrar-servicio", async (req, res) => {
       fecha,
       unidad,
       subunidad,
+      servicio,
       responsable_cedula,
       responsable_nombre
     } = req.body;
 
-    if (!fecha || !unidad || !subunidad) {
-      return res.json({ ok: false, error: "Fecha, unidad y subunidad son obligatorias" });
+    if (!fecha || !unidad || !subunidad || !servicio) {
+      return res.json({ ok: false, error: "Fecha, unidad, subunidad y servicio son obligatorios" });
     }
 
     await pool.query(
@@ -2285,16 +2296,18 @@ app.post("/modulo11-cerrar-servicio", async (req, res) => {
       SET
         cerrado = true,
         fecha_cierre = NOW(),
-        cerrado_por_cedula = $4,
-        cerrado_por_nombre = $5
+        cerrado_por_cedula = $5,
+        cerrado_por_nombre = $6
       WHERE fecha = $1
         AND unidad = $2
         AND subunidad = $3
+        AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $4
       `,
       [
         fecha,
         unidad,
         subunidad,
+        servicio,
         responsable_cedula || null,
         responsable_nombre || null
       ]
