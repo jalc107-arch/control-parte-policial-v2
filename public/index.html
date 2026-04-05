@@ -1436,104 +1436,109 @@ async function cargarEstructura() {
         organicoSelect.appendChild(option);
       });
     }
+async function cargarPersonal() {
+  const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
+  if (!cedulaValidada) {
+    alert("Primero debes validar al responsable");
+    return;
+  }
 
-    async function cargarPersonal() {
-      const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
-      if (!cedulaValidada) {
-        alert("Primero debes validar al responsable");
-        return;
-      }
+  const unidad = document.getElementById("unidad_select").value;
+  const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+  const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+  const organicos = obtenerChecksMarcados("checks_organico_parte");
 
-     const unidad = document.getElementById("unidad_select").value;
-const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
-const estaciones = obtenerChecksMarcados("checks_estacion_parte");
-const organicos = obtenerChecksMarcados("checks_organico_parte");
+  if (!unidad) {
+    alert("La unidad es obligatoria");
+    return;
+  }
 
-      if (!unidad || !subunidad) {
-        alert("Unidad y subunidad son obligatorias");
-        return;
-      }
+  try {
+    const res = await fetch("/personal-filtrado", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        unidad,
+        subunidades,
+        estaciones,
+        organicos
+      })
+    });
 
-      try {
-        const res = await fetch("/personal-filtrado", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ unidad, subunidad, estacion, organico })
-        });
+    const data = await res.json();
+    const contenedor = document.getElementById("lista");
+    contenedor.innerHTML = "";
 
-        const data = await res.json();
-        const contenedor = document.getElementById("lista");
-        contenedor.innerHTML = "";
-
-        if (!data.ok || !data.data || data.data.length === 0) {
-          contenedor.innerHTML = "<p>No hay personal para ese filtro.</p>";
-          return;
-        }
-
-document.getElementById("bloqueNovedades").style.display = "block";
-document.getElementById("bloqueParte").style.display = "block";
-        
-        const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
-
-        data.data.sort((a, b) => {
-          const ga = (a.grado || "").toUpperCase();
-          const gb = (b.grado || "").toUpperCase();
-          const ia = ordenGrados.indexOf(ga);
-          const ib = ordenGrados.indexOf(gb);
-          return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-        });
-
-        data.data.forEach(p => {
-          const div = document.createElement("div");
-          div.className = "persona";
-
-          div.innerHTML = `
-            <b>
-              ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
-              <span class="persona-cc">CC ${p.cedula || ""}</span>
-            </b>
-            <select id="novedad-${p.cedula}">
-              <option value="">DISPONIBLE</option>
-              <option value="SERVICIO">SERVICIO</option>
-              <option value="SERVICIO EXTRAORDINARIO">SERVICIO EXTRAORDINARIO</option>
-              <option value="PERMISO">PERMISO</option>
-              <option value="VACACIONES">VACACIONES</option>
-              <option value="EXCUSADOS">EXCUSADOS</option>
-              <option value="SUSPENDIDOS">SUSPENDIDOS</option>              
-              <option value="CURSO ASCENSO">CURSO ASCENSO</option>
-              <option value="COMISION EXTERIOR">COMISION EXTERIOR</option>
-              <option value="COMISION DE SERVICIO">COMISION DE SERVICIO</option>
-              <option value="HOSPITALIZADO">HOSPITALIZADO</option>
-              <option value="FRANQUICIA">FRANQUICIA</option>
-              <option value="RETARDADOS DE LA FORMACION">RETARDADOS DE LA FORMACION</option>
-              <option value="PLAN ELECTORAL">PLAN ELECTORAL</option>
-              <option value="PERMISO NAVIDEÑO">PERMISO NAVIDEÑO</option>
-              <option value="PERMISO SEMANA SANTA">PERMISO SEMANA SANTA</option>
-              <option value="PERMISO EXTRAORDINARIOS">PERMISO EXTRAORDINARIOS</option>
-              <option value="LICENCIA LUTO">LICENCIA LUTO</option>
-              <option value="LICENCIA MATERNIDAD">LICENCIA MATERNIDAD</option>
-              <option value="HORARIO FLEXIBLE">HORARIO FLEXIBLE</option>
-              <option value="FUERA DE LA FORMACION">FUERA DE LA FORMACION</option>
-              <option value="CITA MEDICA">CITA MEDICA</option>
-              <option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
-              <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
-            </select>
-          `;
-
-          contenedor.appendChild(div);
-        });
-
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition((pos) => {
-            document.getElementById("latitud").value = pos.coords.latitude;
-            document.getElementById("longitud").value = pos.coords.longitude;
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Error cargando personal");
-      }
+    if (!data.ok || !data.data || data.data.length === 0) {
+      contenedor.innerHTML = "<p>No hay personal para ese filtro.</p>";
+      return;
     }
+
+    document.getElementById("bloqueNovedades").style.display = "block";
+    document.getElementById("bloqueParte").style.display = "block";
+
+    const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+
+    data.data.sort((a, b) => {
+      const ga = (a.grado || "").toUpperCase();
+      const gb = (b.grado || "").toUpperCase();
+      const ia = ordenGrados.indexOf(ga);
+      const ib = ordenGrados.indexOf(gb);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+
+    data.data.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "persona";
+
+      div.innerHTML = `
+        <b>
+          ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
+          <span class="persona-cc">CC ${p.cedula || ""}</span>
+        </b>
+        <select id="novedad-${p.cedula}">
+          <option value="">DISPONIBLE</option>
+          <option value="SERVICIO">SERVICIO</option>
+          <option value="SERVICIO EXTRAORDINARIO">SERVICIO EXTRAORDINARIO</option>
+          <option value="PERMISO">PERMISO</option>
+          <option value="VACACIONES">VACACIONES</option>
+          <option value="EXCUSADOS">EXCUSADOS</option>
+          <option value="SUSPENDIDOS">SUSPENDIDOS</option>
+          <option value="CURSO ASCENSO">CURSO ASCENSO</option>
+          <option value="COMISION EXTERIOR">COMISION EXTERIOR</option>
+          <option value="COMISION DE SERVICIO">COMISION DE SERVICIO</option>
+          <option value="HOSPITALIZADO">HOSPITALIZADO</option>
+          <option value="FRANQUICIA">FRANQUICIA</option>
+          <option value="RETARDADOS DE LA FORMACION">RETARDADOS DE LA FORMACION</option>
+          <option value="PLAN ELECTORAL">PLAN ELECTORAL</option>
+          <option value="PERMISO NAVIDEÑO">PERMISO NAVIDEÑO</option>
+          <option value="PERMISO SEMANA SANTA">PERMISO SEMANA SANTA</option>
+          <option value="PERMISO EXTRAORDINARIOS">PERMISO EXTRAORDINARIOS</option>
+          <option value="LICENCIA LUTO">LICENCIA LUTO</option>
+          <option value="LICENCIA MATERNIDAD">LICENCIA MATERNIDAD</option>
+          <option value="HORARIO FLEXIBLE">HORARIO FLEXIBLE</option>
+          <option value="FUERA DE LA FORMACION">FUERA DE LA FORMACION</option>
+          <option value="CITA MEDICA">CITA MEDICA</option>
+          <option value="CUMPLE FUNCIONES DIFERENTES DE POLCO">CUMPLE FUNCIONES DIFERENTES DE POLCO</option>
+          <option value="NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO">NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO</option>
+        </select>
+      `;
+
+      contenedor.appendChild(div);
+    });
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        document.getElementById("latitud").value = pos.coords.latitude;
+        document.getElementById("longitud").value = pos.coords.longitude;
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Error cargando personal");
+  }
+}
+   
 
   // =========================
 // MODULO 12
