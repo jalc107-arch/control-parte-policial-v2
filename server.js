@@ -1965,9 +1965,10 @@ app.get("/modulo11-parte-extra", async (req, res) => {
   try {
     const fecha = String(req.query.fecha || "").trim();
     const unidad = String(req.query.unidad || "").trim();
+    const servicio = String(req.query.servicio || "").trim();
 
-    if (!fecha || !unidad) {
-      return res.json({ ok: false, error: "Fecha y unidad son obligatorias" });
+    if (!fecha || !unidad || !servicio) {
+      return res.json({ ok: false, error: "Fecha, unidad y servicio son obligatorias" });
     }
 
     const servicios = await pool.query(
@@ -1986,78 +1987,106 @@ app.get("/modulo11-parte-extra", async (req, res) => {
       LEFT JOIN personal p ON s.cedula = p.cedula
       WHERE s.fecha = $1
         AND s.unidad = $2
+        AND COALESCE(s.titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
       ORDER BY s.subunidad, ${construirOrdenGradoSQL("s")}, s.apellidos, s.nombres
       `,
-      [fecha, unidad]
+      [fecha, unidad, servicio]
     );
 
     const controles = await pool.query(
       `
       SELECT
         cedula,
+        subunidad,
         estado_control,
         observacion
       FROM modulo11_control_servicio
       WHERE fecha = $1
         AND unidad = $2
+        AND titulo_servicio = $3
       `,
-      [fecha, unidad]
+      [fecha, unidad, servicio]
     );
 
-    const responsables = await pool.query(
+    const partes12 = await pool.query(
       `
       SELECT
-        responsable_nombre,
+        subunidad,
+        estado_parte,
+        responsable_grado,
+        responsable_apellidos,
+        responsable_nombres,
         responsable_cedula,
-        responsable_telefono
-      FROM modulo11_control_servicio
+        responsable_telefono,
+        hora_inicio,
+        hora_cierre
+      FROM modulo12_partes
       WHERE fecha = $1
         AND unidad = $2
-        AND responsable_cedula IS NOT NULL
-      ORDER BY id DESC
-      LIMIT 1
+        AND servicio = $3
       `,
-      [fecha, unidad]
+      [fecha, unidad, servicio]
     );
 
     const mapaControl = {};
     controles.rows.forEach(r => {
-      mapaControl[String(r.cedula || "").trim()] = {
-        estado_control: String(r.estado_control || "DISPONIBLE").trim().toUpperCase(),
+      mapaControl[`${String(r.subunidad || "").trim()}__${String(r.cedula || "").trim()}`] = {
+        estado_control: String(r.estado_control || "").trim().toUpperCase(),
         observacion: r.observacion || ""
+      };
+    });
+
+    const mapaParte12 = {};
+    partes12.rows.forEach(r => {
+      mapaParte12[String(r.subunidad || "").trim()] = {
+        estado_parte: r.estado_parte || "NO HAN DADO PARTE",
+        responsable_parte: {
+          hora: r.hora_cierre || r.hora_inicio || "",
+          grado: r.responsable_grado || "",
+          apellidos: r.responsable_apellidos || "",
+          nombres: r.responsable_nombres || "",
+          cedula: r.responsable_cedula || "",
+          telefono: r.responsable_telefono || ""
+        }
       };
     });
 
     const agrupado = {};
 
-servicios.rows.forEach(p => {
-  const sub = String(p.subunidad || "SIN SUBUNIDAD").trim();
-  if (!agrupado[sub]) agrupado[sub] = [];
+    servicios.rows.forEach(p => {
+      const sub = String(p.subunidad || "SIN SUBUNIDAD").trim();
+      if (!agrupado[sub]) agrupado[sub] = [];
 
-  const control = mapaControl[String(p.cedula || "").trim()] || {};
+      const key = `${sub}__${String(p.cedula || "").trim()}`;
+      const control = mapaControl[key] || {};
 
-  agrupado[sub].push({
-    ...p,
-    estado_control: control.estado_control
-      ? String(control.estado_control).trim().toUpperCase()
-      : "",
-    observacion: control.observacion || ""
-  });
-});
+      agrupado[sub].push({
+        ...p,
+        estado_control: control.estado_control
+          ? String(control.estado_control).trim().toUpperCase()
+          : "",
+        observacion: control.observacion || ""
+      });
+    });
 
-const resumen = Object.keys(agrupado).sort().map(subunidad => ({
-  subunidad,
-  resumen: construirResumenModulo11DesdeLista(agrupado[subunidad])
-}));
+    const resumen = Object.keys(agrupado).sort().map(subunidad => {
+      const parte12 = mapaParte12[subunidad] || {
+        estado_parte: "NO HAN DADO PARTE",
+        responsable_parte: null
+      };
+
+      return {
+        subunidad,
+        resumen: construirResumenModulo11DesdeLista(agrupado[subunidad]),
+        estado_parte: parte12.estado_parte,
+        responsable_parte: parte12.responsable_parte
+      };
+    });
 
     return res.json({
       ok: true,
       resumen,
-      responsable: responsables.rows.length ? {
-        nombre: responsables.rows[0].responsable_nombre || "",
-        cedula: responsables.rows[0].responsable_cedula || "",
-        telefono: responsables.rows[0].responsable_telefono || ""
-      } : null
+      responsable: null
     });
 
   } catch (error) {
