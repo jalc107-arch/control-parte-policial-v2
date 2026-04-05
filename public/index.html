@@ -4528,7 +4528,25 @@ function renderizarDetalleModulo11() {
     }
   });
 
-  let resumenHtml = `
+  function tablaSimple(tituloBloque, columnas, filasHtml) {
+    return `
+      <details class="sub-card" style="margin-top:12px;">
+        <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">${tituloBloque}</summary>
+        <div class="tabla-wrap" style="margin-top:10px;">
+          <table class="tabla-app">
+            <thead>
+              <tr>${columnas.map(c => `<th>${c}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${filasHtml || `<tr><td colspan="${columnas.length}">Sin información</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    `;
+  }
+
+  const resumenHtml = `
     <div class="sub-card" style="margin-bottom:12px;">
       <div><b>Fecha servicio:</b> ${fecha}</div>
       <div><b>Servicio:</b> ${servicio}</div>
@@ -4550,10 +4568,77 @@ HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
     </div>
   `;
 
-  let disponiblesHtml = `
-    <div class="sub-card">
-      <h3>Fuerza disponible</h3>
-      <div class="tabla-wrap">
+  const disponiblesRows = disponibles.map((p, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${p.grado || ""}</td>
+      <td>${p.apellidos || ""}</td>
+      <td>${p.nombres || ""}</td>
+      <td>${p.cedula || ""}</td>
+      <td>${p.telefono || ""}</td>
+    </tr>
+  `).join("");
+
+  let novedadesResumenRows = "";
+  ["EXCUSADO","NO ASISTE","RETARDADO","INCAPACIDAD","HOSPITALIZADO","REEMPLAZO"].forEach((tipo) => {
+    const conteo = tipos[tipo] || [0,0,0,0];
+    if (conteo.some(n => n > 0)) {
+      novedadesResumenRows += `
+        <tr>
+          <td>${tipo}</td>
+          <td>${texto4(conteo)}</td>
+        </tr>
+      `;
+    }
+  });
+
+  let novedadesDetalleHtml = "";
+  ["EXCUSADO","NO ASISTE","RETARDADO","INCAPACIDAD","HOSPITALIZADO"].forEach((tipo) => {
+    const listaTipo = detalleTipos[tipo] || [];
+    if (!listaTipo.length) return;
+
+    novedadesDetalleHtml += tablaSimple(
+      tipo,
+      ["#", "Grado", "Apellidos", "Nombres", "Cédula", "Teléfono", "Observación"],
+      listaTipo.map((p, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${p.grado || ""}</td>
+          <td>${p.apellidos || ""}</td>
+          <td>${p.nombres || ""}</td>
+          <td>${p.cedula || ""}</td>
+          <td>${p.telefono || ""}</td>
+          <td>${p.observacion || ""}</td>
+        </tr>
+      `).join("")
+    );
+  });
+
+  let reemplazosHtml = "";
+  if ((detalleTipos["REEMPLAZO"] || []).length) {
+    reemplazosHtml = tablaSimple(
+      "Reemplazos",
+      ["#", "Reemplazo", "Cédula", "Teléfono", "Reemplaza a", "Observación"],
+      detalleTipos["REEMPLAZO"].map((p, i) => {
+        const reemplazado = lista.find(x => String(x.cedula || "").trim() === String(p.reemplaza_a_cedula || "").trim());
+        return `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}</td>
+            <td>${p.cedula || ""}</td>
+            <td>${p.telefono || ""}</td>
+            <td>${reemplazado ? `${reemplazado.grado || ""} ${reemplazado.apellidos || ""} ${reemplazado.nombres || ""}` : (p.reemplaza_a_cedula || "")}</td>
+            <td>${p.observacion || ""}</td>
+          </tr>
+        `;
+      }).join("")
+    );
+  }
+
+  const editarParteHtml = `
+    <details class="sub-card" style="margin-top:12px;">
+      <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">Editar parte</summary>
+      <div class="tabla-wrap" style="margin-top:10px;">
         <table class="tabla-app">
           <thead>
             <tr>
@@ -4563,27 +4648,94 @@ HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}
               <th>Nombres</th>
               <th>Cédula</th>
               <th>Teléfono</th>
+              <th>Estado</th>
+              <th>Observación</th>
             </tr>
           </thead>
           <tbody>
             ${
-              disponibles.map((p, i) => `
-                <tr>
-                  <td>${i + 1}</td>
-                  <td>${p.grado || ""}</td>
-                  <td>${p.apellidos || ""}</td>
-                  <td>${p.nombres || ""}</td>
-                  <td>${p.cedula || ""}</td>
-                  <td>${p.telefono || ""}</td>
-                </tr>
-              `).join("")
+              lista.map((p, i) => {
+                const ced = String(p.cedula || "").trim();
+                const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
+                return `
+                  <tr>
+                    <td>${i + 1}</td>
+                    <td>${p.grado || ""}</td>
+                    <td>${p.apellidos || ""}</td>
+                    <td>${p.nombres || ""}</td>
+                    <td>${ced}</td>
+                    <td>${p.telefono || ""}</td>
+                    <td>
+                      <select id="m11_estado_${ced}">
+                        <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
+                        <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
+                        <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
+                        <option value="EXCUSADO" ${estado === "EXCUSADO" ? "selected" : ""}>EXCUSADO</option>
+                        <option value="INCAPACIDAD" ${estado === "INCAPACIDAD" ? "selected" : ""}>INCAPACIDAD</option>
+                        <option value="HOSPITALIZADO" ${estado === "HOSPITALIZADO" ? "selected" : ""}>HOSPITALIZADO</option>
+                        <option value="NO ASISTE" ${estado === "NO ASISTE" ? "selected" : ""}>NO ASISTE</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input id="m11_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación" />
+                    </td>
+                  </tr>
+                `;
+              }).join("")
             }
           </tbody>
         </table>
       </div>
-    </div>
+    </details>
   `;
 
+  const reemplazoFormHtml = `
+    <details class="sub-card" style="margin-top:12px;">
+      <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">Agregar reemplazo en terreno</summary>
+      <div style="margin-top:10px;">
+        <label>Seleccionar a quién reemplaza</label>
+        <select id="m11_reemplaza_a" style="margin-bottom:8px;">
+          ${selectReemplaza.innerHTML}
+        </select>
+
+        <label>Grado</label>
+        <input id="m11_rep_grado" placeholder="Grado">
+
+        <label>Apellidos</label>
+        <input id="m11_rep_apellidos" placeholder="Apellidos">
+
+        <label>Nombres</label>
+        <input id="m11_rep_nombres" placeholder="Nombres">
+
+        <label>Cédula</label>
+        <input id="m11_rep_cedula" placeholder="Cédula">
+
+        <label>Teléfono</label>
+        <input id="m11_rep_telefono" placeholder="Teléfono">
+
+        <label>Unidad</label>
+        <input id="m11_rep_unidad" value="${unidad}" placeholder="Unidad">
+
+        <label>Subunidad</label>
+        <input id="m11_rep_subunidad" value="${subunidad}" placeholder="Subunidad">
+
+        <div class="acciones-inline">
+          <button type="button" onclick="agregarReemplazoModulo11()">Agregar reemplazo</button>
+        </div>
+      </div>
+    </details>
+  `;
+
+  tabla.innerHTML =
+    resumenHtml +
+    tablaSimple("Fuerza disponible", ["#", "Grado", "Apellidos", "Nombres", "Cédula", "Teléfono"], disponiblesRows) +
+    tablaSimple("Resumen de novedades", ["Tipo", "Conteo"], novedadesResumenRows) +
+    novedadesDetalleHtml +
+    reemplazosHtml +
+    editarParteHtml +
+    reemplazoFormHtml;
+}
+  
   function bloqueTipoNovedad(tipo, listaTipo) {
     if (!listaTipo.length) return "";
     return `
