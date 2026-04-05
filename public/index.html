@@ -4703,6 +4703,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+    inicializarModulo12();
+
+  const m12Fecha = document.getElementById("m12_fecha");
+  const m12Unidad = document.getElementById("m12_unidad");
+  const m12Servicio = document.getElementById("m12_servicio");
+  const m12Subunidad = document.getElementById("m12_subunidad");
+
+  m12Fecha?.addEventListener("change", async () => {
+    await cargarServiciosModulo12();
+  });
+
+  m12Unidad?.addEventListener("change", async () => {
+    await cargarServiciosModulo12();
+  });
+
+  m12Servicio?.addEventListener("change", async () => {
+    await cargarSubunidadesModulo12();
+  });
+
+  m12Subunidad?.addEventListener("change", async () => {
+    await consultarEstadoModulo12();
+  });
     
   cargarEstructura();
 });
