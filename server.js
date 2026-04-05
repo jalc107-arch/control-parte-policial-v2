@@ -594,13 +594,13 @@ app.get("/estructura", async (req, res) => {
 // CARGAR PERSONAL FILTRADO
 // =========================
 app.post("/personal-filtrado", async (req, res) => {
-  const { unidad, subunidad, estacion, organico } = req.body;
+  const { unidad, subunidades = [], estaciones = [], organicos = [] } = req.body;
 
   try {
-    if (!unidad || !subunidad) {
+    if (!unidad) {
       return res.status(400).json({
         ok: false,
-        error: "Unidad y subunidad son obligatorias"
+        error: "Unidad es obligatoria"
       });
     }
 
@@ -609,21 +609,26 @@ app.post("/personal-filtrado", async (req, res) => {
       FROM personal
       WHERE activo = true
         AND unidad = $1
-        AND subunidad = $2
     `;
 
-    const params = [unidad, subunidad];
-    let index = 3;
+    const params = [unidad];
+    let index = 2;
 
-    if (estacion && estacion.trim() !== "") {
-      query += ` AND estacion = $${index}`;
-      params.push(estacion);
+    if (Array.isArray(subunidades) && subunidades.length > 0) {
+      query += ` AND subunidad = ANY($${index})`;
+      params.push(subunidades);
       index++;
     }
 
-    if (organico && organico.trim() !== "") {
-      query += ` AND organico = $${index}`;
-      params.push(organico);
+    if (Array.isArray(estaciones) && estaciones.length > 0) {
+      query += ` AND estacion = ANY($${index})`;
+      params.push(estaciones);
+      index++;
+    }
+
+    if (Array.isArray(organicos) && organicos.length > 0) {
+      query += ` AND organico = ANY($${index})`;
+      params.push(organicos);
       index++;
     }
 
@@ -647,7 +652,6 @@ app.post("/personal-filtrado", async (req, res) => {
     });
   }
 });
-
 // =========================
 // GUARDAR NOVEDADES
 // =========================
