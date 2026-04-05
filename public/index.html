@@ -529,8 +529,8 @@
     <div class="seccion" id="bloqueExcel" style="display:none;">
   
   <div class="barra-modulo" onclick="togglePaso2()">
-    2. Cargar archivo ▼
-  </div>
+  2. Cargar archivo <span id="flechaPaso2">▼</span>
+</div>
 
   <div id="contenidoPaso2" style="display:none; padding:10px;">
     
@@ -5250,7 +5250,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function togglePaso2() {
   const c = document.getElementById("contenidoPaso2");
-  c.style.display = c.style.display === "none" ? "block" : "none";
+  const f = document.getElementById("flechaPaso2");
+
+  if (!c) return;
+
+  if (c.style.display === "none") {
+    c.style.display = "block";
+    if (f) f.innerText = "▲";
+  } else {
+    c.style.display = "none";
+    if (f) f.innerText = "▼";
+  }
 }
   
 </script>
