@@ -1356,16 +1356,24 @@ async function cargarEstructura() {
       unidadSelect.appendChild(option);
     });
 
-    document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
-    document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
-    document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+   if (document.getElementById("subunidad_select")) {
+  document.getElementById("subunidad_select").innerHTML = '<option value="">Seleccionar SUBUNIDAD</option>';
+}
+
+if (document.getElementById("estacion_select")) {
+  document.getElementById("estacion_select").innerHTML = '<option value="">Seleccionar ESTACIÓN</option>';
+}
+
+if (document.getElementById("organico_select")) {
+  document.getElementById("organico_select").innerHTML = '<option value="">Seleccionar ORGÁNICO</option>';
+}
 
     // 🔥 ORDEN CORRECTO
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
-
     cargarChecksSubunidadApoyoExtra();
-
+    cargarSubunidadesMultiple();
+    
     // 🔥 ESTA ES LA LÍNEA MÁS IMPORTANTE
    
   } catch (error) {
