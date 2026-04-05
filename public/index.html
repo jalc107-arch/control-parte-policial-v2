@@ -566,27 +566,41 @@
 
   <div id="panelPaso3" class="panel-contenido">
 
-    <select id="unidad_select" onchange="cargarSubunidades()">
-      <option value="">Seleccionar UNIDAD</option>
-    </select>
-    <br>
+   <select id="unidad_select" onchange="cargarSubunidadesMultiple()">
+  <option value="">Seleccionar UNIDAD</option>
+</select>
+<br>
 
-    <select id="subunidad_select" onchange="cargarEstaciones(); cargarOrganicos()">
-      <option value="">Seleccionar SUBUNIDAD</option>
-    </select>
-    <br>
+<div class="filtro-box">
+  <div class="filtro-titulo">Subunidad</div>
+  <div class="filtro-botones">
+    <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_parte')">Seleccionar todas</button>
+    <button type="button" onclick="limpiarChecks('checks_subunidad_parte'); cargarEstacionesMultiple(); cargarOrganicosMultiple();">Limpiar</button>
+  </div>
+  <div id="checks_subunidad_parte" class="checks-contenedor"></div>
+</div>
 
-    <select id="estacion_select" onchange="cargarOrganicos()">
-      <option value="">Seleccionar ESTACIÓN</option>
-    </select>
-    <br>
+<div class="filtro-box">
+  <div class="filtro-titulo">Estación / Grupo</div>
+  <div class="filtro-botones">
+    <button type="button" onclick="seleccionarTodasChecks('checks_estacion_parte'); cargarOrganicosMultiple();">Seleccionar todas</button>
+    <button type="button" onclick="limpiarChecks('checks_estacion_parte'); cargarOrganicosMultiple();">Limpiar</button>
+  </div>
+  <div id="checks_estacion_parte" class="checks-contenedor"></div>
+</div>
 
-    <div id="bloqueOrganico" style="display:none;">
-      <select id="organico_select">
-        <option value="">Seleccionar ORGÁNICO</option>
-      </select>
-      <br>
+<div id="bloqueOrganico" style="display:block;">
+  <div class="filtro-box">
+    <div class="filtro-titulo">Orgánico</div>
+    <div class="filtro-botones">
+      <button type="button" onclick="seleccionarTodasChecks('checks_organico_parte')">Seleccionar todas</button>
+      <button type="button" onclick="limpiarChecks('checks_organico_parte')">Limpiar</button>
     </div>
+    <div id="checks_organico_parte" class="checks-contenedor"></div>
+  </div>
+</div>
+
+<div class="ayuda" id="ruta_dependencia_actual"></div>
 
     <div class="acciones-inline">
       <button onclick="cargarPersonal()">Continuar</button>
@@ -1430,10 +1444,10 @@ async function cargarEstructura() {
         return;
       }
 
-      const unidad = document.getElementById("unidad_select").value;
-      const subunidad = document.getElementById("subunidad_select").value;
-      const estacion = document.getElementById("estacion_select").value;
-      const organico = document.getElementById("organico_select")?.value || "";
+     const unidad = document.getElementById("unidad_select").value;
+const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+const organicos = obtenerChecksMarcados("checks_organico_parte");
 
       if (!unidad || !subunidad) {
         alert("Unidad y subunidad son obligatorias");
@@ -5281,6 +5295,97 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 }
 
+  function obtenerChecksMarcados(idContenedor) {
+  const cont = document.getElementById(idContenedor);
+  if (!cont) return [];
+
+  return [...cont.querySelectorAll('input[type="checkbox"]:checked')]
+    .map(x => x.value)
+    .filter(Boolean);
+}
+
+function pintarChecks(idContenedor, valores = [], onchangeFn = "") {
+  const cont = document.getElementById(idContenedor);
+  if (!cont) return;
+
+  if (!valores.length) {
+    cont.innerHTML = `<div class="ayuda">Sin opciones</div>`;
+    return;
+  }
+
+  cont.innerHTML = valores.map(v => `
+    <label class="check-item">
+      <input type="checkbox" value="${v}" ${onchangeFn ? `onchange="${onchangeFn}"` : ""}>
+      ${v}
+    </label>
+  `).join("");
+}
+
+function actualizarRutaDependenciaParte() {
+  const unidad = document.getElementById("unidad_select")?.value || "SIN UNIDAD";
+  const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+  const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+  const organicos = obtenerChecksMarcados("checks_organico_parte");
+
+  const s = subunidades.length ? subunidades.join(", ") : "SIN SUBUNIDAD";
+  const e = estaciones.length ? estaciones.join(", ") : "SIN ESTACIÓN/GRUPO";
+  const o = organicos.length ? organicos.join(", ") : "SIN ORGÁNICO";
+
+  const box = document.getElementById("ruta_dependencia_actual");
+  if (!box) return;
+
+  box.innerText = `${unidad} - ${s} - ${e} - ${o}`;
+}
+
+function cargarSubunidadesMultiple() {
+  const unidad = document.getElementById("unidad_select")?.value || "";
+
+  const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+  const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))].sort();
+
+  pintarChecks("checks_subunidad_parte", subunidades, "cargarEstacionesMultiple(); cargarOrganicosMultiple(); actualizarRutaDependenciaParte();");
+  pintarChecks("checks_estacion_parte", [], "");
+  pintarChecks("checks_organico_parte", [], "");
+  actualizarRutaDependenciaParte();
+}
+
+function cargarEstacionesMultiple() {
+  const unidad = document.getElementById("unidad_select")?.value || "";
+  const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
+
+  let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+
+  if (subunidadesMarcadas.length) {
+    filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
+  }
+
+  const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))].sort();
+
+  pintarChecks("checks_estacion_parte", estaciones, "cargarOrganicosMultiple(); actualizarRutaDependenciaParte();");
+  cargarOrganicosMultiple();
+  actualizarRutaDependenciaParte();
+}
+
+function cargarOrganicosMultiple() {
+  const unidad = document.getElementById("unidad_select")?.value || "";
+  const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
+  const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_parte");
+
+  let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+
+  if (subunidadesMarcadas.length) {
+    filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
+  }
+
+  if (estacionesMarcadas.length) {
+    filtrados = filtrados.filter(x => estacionesMarcadas.includes(x.estacion));
+  }
+
+  const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))].sort();
+
+  pintarChecks("checks_organico_parte", organicos, "actualizarRutaDependenciaParte();");
+  actualizarRutaDependenciaParte();
+}
   
 </script>
 
