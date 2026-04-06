@@ -2346,9 +2346,16 @@ async function cerrarParteModulo12() {
       `);
       ventana.document.close();
 
-      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
       const unidad = document.getElementById("unidad_select").value;
-      const subunidad = document.getElementById("subunidad_select").value;
+      const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+      const estaciones = obtenerChecksMarcados("checks_estacion_parte").map(x => x.trim().toUpperCase());
+      const organicos = obtenerChecksMarcados("checks_organico_parte");
+
+      if (!unidad) {
+  alert("Debes seleccionar la unidad");
+  return;
+}
+      
       const grado = document.getElementById("grado").value.trim();
       const nombre = document.getElementById("nombre_elabora").value.trim();
       const cedula = document.getElementById("cedula_elabora").value.trim();
@@ -2362,7 +2369,7 @@ async function cerrarParteModulo12() {
         const dataVal = await validar.json();
 
         const personas = document.querySelectorAll(".persona");
-const novedadesSeleccionadas = [];
+        const novedadesSeleccionadas = [];
 
 personas.forEach(p => {
   const select = p.querySelector("select");
@@ -2387,14 +2394,15 @@ personas.forEach(p => {
             body: JSON.stringify({
               tipo: dataVal.tipo || null,
               unidad,
-              subunidad,
-              estacion,
+              subunidades,
+              estaciones,
+              organicos,
               grado_responsable: grado,
               nombre_responsable: nombre,
               cedula_responsable: cedula,
               telefono_responsable: telefono,
               texto_parte: contenido,
-              novedades: novedadesSeleccionadas              
+              novedades: novedadesSeleccionadas
             })
           });
 
