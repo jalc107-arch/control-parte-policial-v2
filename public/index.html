@@ -2913,80 +2913,133 @@ const jefePmu = window.seleccionServicio.pmu;
   const resultado = document.getElementById("resultado");
   const lista = document.getElementById("lista");
 
-  if (!unidad) {
-    alert("Debes seleccionar la unidad");
-    return;
-  }
-
-  if (!lista) {
-    alert("No hay listado de personal");
-    return;
-  }
-
+  if (!unidad) return alert("Debes seleccionar la unidad");
+  if (!lista) return alert("No hay listado");
+  
   const personas = [...lista.querySelectorAll(".persona")];
+  if (!personas.length) return alert("No hay personal");
 
-  if (!personas.length) {
-    alert("No hay personal cargado");
-    return;
+  // =========================
+  // FUNCIONES AUX
+  // =========================
+  function grupo(grado = "") {
+    const g = grado.toUpperCase().trim();
+    if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
+    if (["CM","SC","IJ","IT","SI"].includes(g)) return [0,1,0,0];
+    if (["PT","PP"].includes(g)) return [0,0,1,0];
+    if (["AUX"].includes(g)) return [0,0,0,1];
+    return [0,0,0,0];
   }
 
-  const conteos = {};
-  const detalleNovedades = {};
+  function sumar(a,b){
+    return [a[0]+b[0],a[1]+b[1],a[2]+b[2],a[3]+b[3]];
+  }
 
-  personas.forEach(persona => {
-    const cedulaSpan = persona.querySelector(".persona-cc");
-    const select = persona.querySelector("select");
+  function f(v){
+    return `${v[0]}-${v[1]}-${v[2]}-${v[3]}`;
+  }
 
-    if (!cedulaSpan || !select) return;
+  // =========================
+  // VARIABLES
+  // =========================
+  let FE = [0,0,0,0];
+  let FD = [0,0,0,0];
+  let FN = [0,0,0,0];
 
-    const textoCedula = cedulaSpan.innerText || "";
-    const cedulaPersona = textoCedula.replace("CC", "").trim();
+  const disponibles = [];
+  const novedades = {};
 
-    const nombreTexto = persona.querySelector("b")?.childNodes?.[0]?.textContent?.trim() || "";
-    const novedad = (select.value || "DISPONIBLE").trim().toUpperCase();
+  // =========================
+  // RECORRER PERSONAL
+  // =========================
+  personas.forEach(p => {
+    const b = p.querySelector("b");
+    const s = p.querySelector("select");
+    const cc = p.querySelector(".persona-cc");
 
-    if (!conteos[novedad]) conteos[novedad] = 0;
-    conteos[novedad]++;
+    if (!b || !s || !cc) return;
 
-    if (!detalleNovedades[novedad]) detalleNovedades[novedad] = [];
-    detalleNovedades[novedad].push(`${nombreTexto} - CC ${cedulaPersona}`);
+    const texto = b.childNodes[0]?.textContent?.trim() || "";
+    const partes = texto.split(" ").filter(Boolean);
+    const gradoP = partes[0] || "";
+
+    const g = grupo(gradoP);
+
+    const cedulaP = cc.innerText.replace("CC","").trim();
+    const tipo = String(s.value || "").trim().toUpperCase();
+
+    FE = sumar(FE,g);
+
+    const persona = {
+      grado: gradoP,
+      nombre: texto.replace(gradoP,"").trim(),
+      cedula: cedulaP,
+      g
+    };
+
+    if (!tipo) {
+      disponibles.push(persona);
+      FD = sumar(FD,g);
+    } else {
+      if (!novedades[tipo]) novedades[tipo]=[];
+      novedades[tipo].push(persona);
+      FN = sumar(FN,g);
+    }
   });
 
-  const total = personas.length;
-  const disponibles = conteos["DISPONIBLE"] || 0;
-  const novedades = total - disponibles;
+  // =========================
+  // TEXTO
+  // =========================
+  let txt = "";
 
-  let texto = "";
-  texto += `PARTE DE PERSONAL\n`;
-  texto += `Responsable: ${grado} ${nombre}\n`;
-  texto += `Cédula: ${cedula}\n`;
-  texto += `Teléfono: ${telefono}\n`;
-  texto += `Unidad: ${unidad}\n`;
-  texto += `Subunidad(es): ${subunidades.length ? subunidades.join(", ") : "TODAS"}\n`;
-  texto += `Estación(es)/Grupo(s): ${estaciones.length ? estaciones.join(", ") : "TODAS"}\n`;
-  texto += `Orgánico(s): ${organicos.length ? organicos.join(", ") : "TODOS"}\n`;
-  texto += `\n`;
-  texto += `FUERZA EFECTIVA: ${total}\n`;
-  texto += `FUERZA DISPONIBLE: ${disponibles}\n`;
-  texto += `NOVEDADES: ${novedades}\n`;
-  texto += `\n`;
+  txt += `PARTE DE PERSONAL\n`;
+  txt += `Responsable: ${grado} ${nombre}\n`;
+  txt += `Cédula: ${cedula}\n`;
+  txt += `Teléfono: ${telefono}\n`;
+  txt += `Unidad: ${unidad}\n`;
+  txt += `Subunidad(es): ${subunidades.join(", ") || "TODAS"}\n`;
+  txt += `Estación(es)/Grupo(s): ${estaciones.join(", ") || "TODAS"}\n`;
+  txt += `Orgánico(s): ${organicos.join(", ") || "TODOS"}\n\n`;
 
-  Object.keys(conteos)
-    .filter(k => k !== "DISPONIBLE")
-    .sort()
-    .forEach(tipo => {
-      texto += `${tipo}: ${conteos[tipo]}\n`;
-      detalleNovedades[tipo].forEach(item => {
-        texto += ` - ${item}\n`;
-      });
-      texto += `\n`;
+  txt += `FUERZA EFECTIVA       ${f(FE)}\n`;
+  txt += `FUERZA DISPONIBLE     ${f(FD)}\n`;
+  txt += `NOVEDADES             ${f(FN)}\n\n`;
+
+  // =========================
+  // DISPONIBLES
+  // =========================
+  txt += `DISPONIBLES ${f(FD)}\n`;
+
+  if (!disponibles.length) {
+    txt += `SIN PERSONAL DISPONIBLE\n\n`;
+  } else {
+    disponibles.forEach((p,i)=>{
+      txt += `${i+1}. ${p.grado} ${p.nombre} - CC ${p.cedula}\n`;
+    });
+    txt += `\n`;
+  }
+
+  // =========================
+  // NOVEDADES
+  // =========================
+  Object.keys(novedades).forEach(tipo=>{
+    let conteo=[0,0,0,0];
+
+    novedades[tipo].forEach(p=>{
+      conteo = sumar(conteo,p.g);
     });
 
-  if (resultado) {
-    resultado.innerText = texto;
-  }
+    txt += `${tipo} ${f(conteo)}\n`;
+
+    novedades[tipo].forEach((p,i)=>{
+      txt += `${i+1}. ${p.grado} ${p.nombre} - CC ${p.cedula}\n`;
+    });
+
+    txt += `\n`;
+  });
+
+  resultado.innerText = txt;
 }
-  
     async function consultarNovedades() {
       const unidad = document.getElementById("consulta_unidad").value;
       const subunidades = obtenerValoresChecks("checks_subunidad");
