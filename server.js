@@ -655,129 +655,78 @@ app.post("/personal-filtrado", async (req, res) => {
 // =========================
 // GUARDAR NOVEDADES
 // =========================
-app.post("/guardar-novedades", async (req, res) => {
-  const {
-    unidad,
-    subunidades = [],
-    estaciones = [],
-    organicos = [],
-    novedades = [],
-    grado = "",
-    rol = "",
-    cedula_responsable = "",
-    nombre_responsable = ""
-  } = req.body;
+async function guardarNovedades() {
+  const unidad = document.getElementById("unidad_select")?.value || "";
+  const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+  const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+  const organicos = obtenerChecksMarcados("checks_organico_parte");
+
+  const cedulaResponsable = document.getElementById("cedula_elabora")?.value || "";
+  const nombreResponsable = document.getElementById("nombre_elabora")?.value || "";
+  const grado = document.getElementById("grado")?.value || "";
+  const rol = window.usuarioRol || "";
+
+  if (!unidad) {
+    alert("Debes seleccionar la unidad");
+    return;
+  }
+
+  const personas = document.querySelectorAll(".persona");
+  if (!personas.length) {
+    alert("No hay personal cargado");
+    return;
+  }
+
+  const novedades = [];
+
+  personas.forEach(p => {
+    const select = p.querySelector("select");
+    if (!select) return;
+
+    const cedulaPersona = String(select.id || "").replace("novedad-", "").trim();
+    const tipo = (select.value || "").trim();
+
+    if (!cedulaPersona) return;
+    if (!tipo) return;
+
+    novedades.push({
+      cedula: cedulaPersona,
+      tipo
+    });
+  });
 
   try {
-    if (!unidad) {
-      return res.status(400).json({
-        ok: false,
-        error: "La unidad es obligatoria"
-      });
-    }
-
-    if (!Array.isArray(novedades)) {
-      return res.status(400).json({
-        ok: false,
-        error: "Datos inválidos"
-      });
-    }
-
-    const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
-    const rolLimpio = String(rol).toUpperCase().trim();
-
-    const esOficial = esGradoOficial(gradoLimpio);
-    const esExento = esOficial || rolLimpio === "ADMIN_EXCEL";
-
-    const { estado, esMediodia } = validarHorarioParte();
-
-    const config = await pool.query(
-      "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
-    );
-
-    const parteExtraGlobal =
-      config.rows.length > 0 && config.rows[0].valor === "true";
-
-    if (!esExento && !parteExtraGlobal) {
-      if (!esMediodia && estado === "bloqueado") {
-        return res.json({
-          ok: false,
-          mensaje: "⚠️ Fuera de horario. Solo puedes trabajar en modo consulta, sin guardar novedades."
-        });
-      }
-    }
-
-    const horario = validarHorarioParte();
-    let franja = "general";
-
-    if (horario.esMediodia) {
-      franja = "mediodia";
-    } else if (horario.tipo === "mañana") {
-      franja = "mañana";
-    } else if (horario.tipo === "noche") {
-      franja = "noche";
-    }
-
-    const estacionTexto = Array.isArray(estaciones) ? estaciones.join(", ") : "";
-    const subunidadTexto = Array.isArray(subunidades) ? subunidades.join(", ") : "";
-    const organicoTexto = Array.isArray(organicos) ? organicos.join(", ") : "";
-
-    for (const n of novedades) {
-      if (!n.cedula || !n.tipo) continue;
-
-      await pool.query(
-        `INSERT INTO novedades (
-          cedula,
-          estacion,
-          tipo_novedad,
-          fecha,
-          actualizado_por_cedula,
-          actualizado_por_nombre,
-          hora_registro,
-          franja
-        )
-        VALUES (
-          $1,
-          $2,
-          $3,
-          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date,
-          $4,
-          $5,
-          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
-          $6
-        )
-        ON CONFLICT (cedula, fecha)
-        DO UPDATE SET
-          estacion = EXCLUDED.estacion,
-          tipo_novedad = EXCLUDED.tipo_novedad,
-          actualizado_por_cedula = EXCLUDED.actualizado_por_cedula,
-          actualizado_por_nombre = EXCLUDED.actualizado_por_nombre,
-          hora_registro = EXCLUDED.hora_registro,
-          franja = EXCLUDED.franja`,
-        [
-          n.cedula,
-          estacionTexto || subunidadTexto || organicoTexto || null,
-          n.tipo,
-          cedula_responsable,
-          nombre_responsable,
-          franja
-        ]
-      );
-    }
-
-    return res.json({
-      ok: true,
-      mensaje: esMediodia
-        ? "Novedades guardadas correctamente en franja de mediodía ✅"
-        : "Novedades guardadas correctamente ✅"
+    const res = await fetch("/guardar-novedades", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        unidad,
+        subunidades,
+        estaciones,
+        organicos,
+        cedula_responsable: cedulaResponsable,
+        nombre_responsable: nombreResponsable,
+        grado,
+        rol,
+        novedades
+      })
     });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || data.mensaje || "No se pudieron guardar las novedades");
+      return;
+    }
+
+    alert(data.mensaje || "Novedades guardadas correctamente");
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
+    console.error(error);
+    alert("Error guardando novedades");
   }
-});
+}
 // =========================
 // VALIDAR SI EL PARTE ES OFICIAL O SOLO CONSULTA
 // =========================
