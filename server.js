@@ -1247,7 +1247,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
     const subunidadTexto = subunidades.join(", ");
     const estacionTexto = estaciones.join(", ");
 
-    // 🔥 NOVEDADES
+    // 🔥 GUARDAR NOVEDADES
     if (Array.isArray(novedades) && novedades.length > 0) {
       const horario = validarHorarioParte();
 
@@ -1259,52 +1259,55 @@ app.post("/guardar-parte-pdf", async (req, res) => {
       for (const n of novedades) {
         if (!n.cedula || !n.tipo) continue;
 
-        const consecutivoResult = await pool.query(
-  `SELECT 'GPSE-' || LPAD(nextval('gpse_consecutivo_seq')::text, 6, '0') AS consecutivo`
-);
-
-const consecutivo = consecutivoResult.rows[0].consecutivo;
-
-const result = await pool.query(
-  `INSERT INTO partes (
-    consecutivo,
-    tipo,
-    unidad,
-    subunidad,
-    estacion,
-    grado_responsable,
-    nombre_responsable,
-    cedula_responsable,
-    telefono_responsable,
-    texto_parte
-  )
-  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-  RETURNING *`,
-  [
-    consecutivo,
-    tipo || null,
-    unidad || null,
-    subunidadTexto || null,
-    estacionTexto || null,
-    grado_responsable || null,
-    nombre_responsable || null,
-    cedula_responsable || null,
-    telefono_responsable || null,
-    texto_parte || null
-  ]
-);
-
-return res.json({
-  ok: true,
-  data: result.rows[0],
-  consecutivo
-});
+        await pool.query(
+          `INSERT INTO novedades (
+            cedula,
+            estacion,
+            tipo_novedad,
+            fecha,
+            actualizado_por_cedula,
+            actualizado_por_nombre,
+            hora_registro,
+            franja
+          )
+          VALUES (
+            $1,$2,$3,
+            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date,
+            $4,$5,
+            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
+            $6
+          )
+          ON CONFLICT (cedula, fecha)
+          DO UPDATE SET
+            estacion = EXCLUDED.estacion,
+            tipo_novedad = EXCLUDED.tipo_novedad,
+            actualizado_por_cedula = EXCLUDED.actualizado_por_cedula,
+            actualizado_por_nombre = EXCLUDED.actualizado_por_nombre,
+            hora_registro = EXCLUDED.hora_registro,
+            franja = EXCLUDED.franja`,
+          [
+            n.cedula,
+            estacionTexto || null,
+            n.tipo,
+            cedula_responsable,
+            nombre_responsable,
+            franja
+          ]
+        );
       }
     }
 
-    // 🔥 PARTE
+    // 🔥 GENERAR CONSECUTIVO GPSE
+    const consecutivoResult = await pool.query(
+      `SELECT 'GPSE-' || LPAD(nextval('gpse_consecutivo_seq')::text, 6, '0') AS consecutivo`
+    );
+
+    const consecutivo = consecutivoResult.rows[0].consecutivo;
+
+    // 🔥 GUARDAR PARTE
     const result = await pool.query(
       `INSERT INTO partes (
+        consecutivo,
         tipo,
         unidad,
         subunidad,
@@ -1315,9 +1318,10 @@ return res.json({
         telefono_responsable,
         texto_parte
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       RETURNING *`,
       [
+        consecutivo,
         tipo || null,
         unidad || null,
         subunidadTexto || null,
@@ -1332,7 +1336,8 @@ return res.json({
 
     return res.json({
       ok: true,
-      data: result.rows[0]
+      data: result.rows[0],
+      consecutivo
     });
 
   } catch (error) {
