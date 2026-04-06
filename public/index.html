@@ -2304,52 +2304,83 @@ async function cerrarParteModulo12() {
       return `UBICACION PARTE\nESTACION: ${estacion}\nLAT: ${lat}\nLNG: ${lng}\nFECHA: ${fecha}`;
     }
 
-    async function procesarFotoConSello() {
-      const input = document.getElementById("foto_parte");
-      if (!input.files.length) return "";
+// =========================
+// PROCESAR FOTO CON SELLO
+// =========================
+async function procesarFotoConSello() {
+  const input = document.getElementById("foto_parte");
+  if (!input || !input.files.length) return "";
 
-      const file = input.files[0];
-      const img = new Image();
-      const reader = new FileReader();
+  const file = input.files[0];
+  const img = new Image();
+  const reader = new FileReader();
 
-      return new Promise((resolve) => {
-        reader.onload = function (e) {
-          img.src = e.target.result;
-        };
+  return new Promise((resolve) => {
+    reader.onload = function (e) {
+      img.src = e.target.result;
+    };
 
-        img.onload = function () {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
 
-          const estacion = document.getElementById("estacion_select").value;
-          const lat = document.getElementById("latitud").value || "N/A";
-          const lng = document.getElementById("longitud").value || "N/A";
+      const unidad = document.getElementById("unidad_select")?.value || "";
+      const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+      const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+      const organicos = obtenerChecksMarcados("checks_organico_parte");
 
-          const fecha = new Date().toLocaleString("es-CO", {
-            timeZone: "America/Bogota",
-            hour12: false
-          });
+      const subunidadTexto = subunidades.length ? subunidades.join(", ") : "TODAS";
+      const estacionTexto = estaciones.length ? estaciones.join(", ") : "TODAS";
+      const organicoTexto = organicos.length ? organicos.join(", ") : "TODOS";
 
-          ctx.fillStyle = "rgba(0,0,0,0.6)";
-          ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
+      const lat = document.getElementById("latitud")?.value || "N/A";
+      const lng = document.getElementById("longitud")?.value || "N/A";
 
-          ctx.fillStyle = "#00FF00";
-          ctx.font = "20px Arial";
-          ctx.fillText(`ESTACION: ${estacion}`, 20, canvas.height - 80);
-          ctx.fillText(`FECHA: ${fecha}`, 20, canvas.height - 50);
-          ctx.fillText(`LAT: ${lat}  LNG: ${lng}`, 20, canvas.height - 20);
-
-          resolve(canvas.toDataURL("image/jpeg", 0.9));
-        };
-
-        reader.readAsDataURL(file);
+      const fecha = new Date().toLocaleString("es-CO", {
+        timeZone: "America/Bogota",
+        hour12: false
       });
-    }
 
+      const altoSello = 170;
+
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillRect(0, canvas.height - altoSello, canvas.width, altoSello);
+
+      ctx.fillStyle = "#00FF00";
+      ctx.font = "20px Arial";
+
+      let y = canvas.height - 130;
+      ctx.fillText(`UNIDAD: ${unidad}`, 20, y);
+      y += 28;
+      ctx.fillText(`SUBUNIDAD(ES): ${subunidadTexto}`, 20, y);
+      y += 28;
+      ctx.fillText(`ESTACIÓN(ES)/GRUPO(S): ${estacionTexto}`, 20, y);
+      y += 28;
+      ctx.fillText(`ORGÁNICO(S): ${organicoTexto}`, 20, y);
+      y += 28;
+      ctx.fillText(`FECHA: ${fecha}`, 20, y);
+      y += 28;
+      ctx.fillText(`LAT: ${lat}  LNG: ${lng}`, 20, y);
+
+      resolve(canvas.toDataURL("image/jpeg", 0.9));
+    };
+
+    img.onerror = function () {
+      resolve("");
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+// =========================
+// DESCARGAR PDF
+// =========================
+  
    async function descargarPDF() {
   const resultado = document.getElementById("resultado");
   let contenido = resultado?.innerText?.trim() || "";
