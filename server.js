@@ -656,11 +656,31 @@ app.post("/personal-filtrado", async (req, res) => {
 // GUARDAR NOVEDADES
 // =========================
 app.post("/guardar-novedades", async (req, res) => {
-  const { novedades, estacion, grado = "", rol = "", responsable_cedula = "", responsable_nombre = "" } = req.body;
+  const {
+    unidad,
+    subunidades = [],
+    estaciones = [],
+    organicos = [],
+    novedades = [],
+    grado = "",
+    rol = "",
+    cedula_responsable = "",
+    nombre_responsable = ""
+  } = req.body;
 
   try {
-    if (!novedades || !Array.isArray(novedades)) {
-      return res.status(400).json({ ok: false, error: "Datos inválidos" });
+    if (!unidad) {
+      return res.status(400).json({
+        ok: false,
+        error: "La unidad es obligatoria"
+      });
+    }
+
+    if (!Array.isArray(novedades)) {
+      return res.status(400).json({
+        ok: false,
+        error: "Datos inválidos"
+      });
     }
 
     const gradoLimpio = String(grado).toUpperCase().trim().replace(/\s+/g, "");
@@ -672,73 +692,77 @@ app.post("/guardar-novedades", async (req, res) => {
     const { estado, esMediodia } = validarHorarioParte();
 
     const config = await pool.query(
-  "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
-);
+      "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
+    );
 
-const parteExtraGlobal =
-  config.rows.length > 0 && config.rows[0].valor === "true";
+    const parteExtraGlobal =
+      config.rows.length > 0 && config.rows[0].valor === "true";
 
-   if (!esExento && !parteExtraGlobal) {
-  if (!esMediodia && estado === "bloqueado") {
-    return res.json({
-      ok: false,
-      mensaje: "⚠️ Fuera de horario. Solo puedes trabajar en modo consulta, sin guardar novedades."
-    });
-  }
-}
+    if (!esExento && !parteExtraGlobal) {
+      if (!esMediodia && estado === "bloqueado") {
+        return res.json({
+          ok: false,
+          mensaje: "⚠️ Fuera de horario. Solo puedes trabajar en modo consulta, sin guardar novedades."
+        });
+      }
+    }
 
-const horario = validarHorarioParte();
-let franja = "general";
+    const horario = validarHorarioParte();
+    let franja = "general";
 
-if (horario.esMediodia) {
-  franja = "mediodia";
-} else if (horario.tipo === "mañana") {
-  franja = "mañana";
-} else if (horario.tipo === "noche") {
-  franja = "noche";
-}
-    
+    if (horario.esMediodia) {
+      franja = "mediodia";
+    } else if (horario.tipo === "mañana") {
+      franja = "mañana";
+    } else if (horario.tipo === "noche") {
+      franja = "noche";
+    }
+
+    const estacionTexto = Array.isArray(estaciones) ? estaciones.join(", ") : "";
+    const subunidadTexto = Array.isArray(subunidades) ? subunidades.join(", ") : "";
+    const organicoTexto = Array.isArray(organicos) ? organicos.join(", ") : "";
+
     for (const n of novedades) {
       if (!n.cedula || !n.tipo) continue;
 
       await pool.query(
-  `INSERT INTO novedades (
-      cedula,
-      estacion,
-      tipo_novedad,
-      fecha,
-      actualizado_por_cedula,
-      actualizado_por_nombre,
-      hora_registro,
-      franja
-   )
-   VALUES (
-      $1,
-      $2,
-      $3,
-      (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date,
-      $4,
-      $5,
-      (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
-      $6
-   )
-   ON CONFLICT (cedula, fecha)
-   DO UPDATE SET
-      estacion = EXCLUDED.estacion,
-      tipo_novedad = EXCLUDED.tipo_novedad,
-      actualizado_por_cedula = EXCLUDED.actualizado_por_cedula,
-      actualizado_por_nombre = EXCLUDED.actualizado_por_nombre,
-      hora_registro = EXCLUDED.hora_registro,
-      franja = EXCLUDED.franja`,
-  [
-    n.cedula,
-    estacion,
-    n.tipo,
-    responsable_cedula,
-    responsable_nombre,
-    franja
-  ]
-);
+        `INSERT INTO novedades (
+          cedula,
+          estacion,
+          tipo_novedad,
+          fecha,
+          actualizado_por_cedula,
+          actualizado_por_nombre,
+          hora_registro,
+          franja
+        )
+        VALUES (
+          $1,
+          $2,
+          $3,
+          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date,
+          $4,
+          $5,
+          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
+          $6
+        )
+        ON CONFLICT (cedula, fecha)
+        DO UPDATE SET
+          estacion = EXCLUDED.estacion,
+          tipo_novedad = EXCLUDED.tipo_novedad,
+          actualizado_por_cedula = EXCLUDED.actualizado_por_cedula,
+          actualizado_por_nombre = EXCLUDED.actualizado_por_nombre,
+          hora_registro = EXCLUDED.hora_registro,
+          franja = EXCLUDED.franja`,
+        [
+          n.cedula,
+          estacionTexto || subunidadTexto || organicoTexto || null,
+          n.tipo,
+          cedula_responsable,
+          nombre_responsable,
+          franja
+        ]
+      );
     }
 
     return res.json({
@@ -748,10 +772,12 @@ if (horario.esMediodia) {
         : "Novedades guardadas correctamente ✅"
     });
   } catch (error) {
-    return res.status(500).json({ ok: false, error: error.message });
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
   }
 });
-
 // =========================
 // VALIDAR SI EL PARTE ES OFICIAL O SOLO CONSULTA
 // =========================
