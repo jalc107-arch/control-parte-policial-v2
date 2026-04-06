@@ -1363,8 +1363,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
       ok: false,
       error: error.message
     });
-  }
-});
+
 // ===========================
 // 🔥 GENERAR CONSECUTIVO GPSE
 // ===========================
