@@ -2273,37 +2273,32 @@ async function cerrarParteModulo12() {
     alert("Error guardando novedades");
   }
 }
+  
+// =========================
+// CONSTRUIR TEXTO QR UBICACION
+// =========================
+function construirTextoQRUbicacion() {
+  const unidad = document.getElementById("unidad_select")?.value || "";
+  const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+  const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+  const organicos = obtenerChecksMarcados("checks_organico_parte");
 
-    function construirTextoQRUbicacion() {
-      let lat = document.getElementById("latitud").value || "";
-      let lng = document.getElementById("longitud").value || "";
-      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
+  const lat = document.getElementById("latitud")?.value || "";
+  const lng = document.getElementById("longitud")?.value || "";
 
-      const fecha = new Date().toLocaleString("es-CO", {
-        timeZone: "America/Bogota",
-        hour12: false
-      });
+  const subunidadTexto = subunidades.length ? subunidades.join(", ") : "TODAS";
+  const estacionTexto = estaciones.length ? estaciones.join(", ") : "TODAS";
+  const organicoTexto = organicos.length ? organicos.join(", ") : "TODOS";
 
-      const mapaEstaciones = {
-        "CIUDAD BOLIVAR": { lat: "4.532", lng: "-74.155" },
-        "CANDELARIA": { lat: "4.597", lng: "-74.073" },
-        "SANTA FE": { lat: "4.609", lng: "-74.083" },
-        "BOSA": { lat: "4.613", lng: "-74.185" },
-        "KENNEDY": { lat: "4.627", lng: "-74.153" }
-      };
-
-      if (!lat || !lng) {
-        if (mapaEstaciones[estacion]) {
-          lat = mapaEstaciones[estacion].lat;
-          lng = mapaEstaciones[estacion].lng;
-        } else {
-          return "";
-        }
-      }
-
-      return `UBICACION PARTE\nESTACION: ${estacion}\nLAT: ${lat}\nLNG: ${lng}\nFECHA: ${fecha}`;
-    }
-
+  return [
+    `UNIDAD: ${unidad}`,
+    `SUBUNIDAD(ES): ${subunidadTexto}`,
+    `ESTACIÓN(ES)/GRUPO(S): ${estacionTexto}`,
+    `ORGÁNICO(S): ${organicoTexto}`,
+    `LAT: ${lat || "N/A"}`,
+    `LNG: ${lng || "N/A"}`
+  ].join(" | ");
+}
 // =========================
 // PROCESAR FOTO CON SELLO
 // =========================
