@@ -2401,7 +2401,7 @@ async function procesarFotoConSello() {
   `);
   ventana.document.close();
 
-let consecutivoGPSE = "GPSE-PENDIENTE";
+let consecutivoGPSE = "";
 
 try {
   const gradoUsuario = document.getElementById("grado")?.value?.trim()?.toUpperCase() || "";
@@ -2429,30 +2429,39 @@ try {
     novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
   });
 
-  if (dataVal.guardarOficial) {
-    const resGuardar = await fetch("/guardar-parte-pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tipo: dataVal.tipo || null,
-        unidad,
-        subunidades,
-        estaciones,
-        grado_responsable: grado,
-        nombre_responsable: nombre,
-        cedula_responsable: cedula,
-        telefono_responsable: telefono,
-        texto_parte: contenido,
-        novedades: novedadesSeleccionadas
-      })
-    });
+if (dataVal.guardarOficial) {
+  const resGuardar = await fetch("/guardar-parte-pdf", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tipo: dataVal.tipo || null,
+      unidad,
+      subunidades,
+      estaciones,
+      grado_responsable: grado,
+      nombre_responsable: nombre,
+      cedula_responsable: cedula,
+      telefono_responsable: telefono,
+      texto_parte: contenido,
+      novedades: novedadesSeleccionadas
+    })
+  });
 
-    const dataGuardar = await resGuardar.json();
+  const dataGuardar = await resGuardar.json();
 
-    if (dataGuardar?.consecutivo) {
-      consecutivoGPSE = dataGuardar.consecutivo;
-    }
+  if (!resGuardar.ok || !dataGuardar?.ok) {
+    throw new Error(dataGuardar?.mensaje || dataGuardar?.error || "No se pudo guardar el parte");
   }
+
+  if (!dataGuardar?.consecutivo) {
+    throw new Error("El servidor guardó el parte pero no devolvió el consecutivo");
+  }
+
+  consecutivoGPSE = dataGuardar.consecutivo;
+} else {
+  consecutivoGPSE = "";
+}
+  
 } catch (e) {
   console.warn("No se pudo obtener consecutivo real:", e);
 }
@@ -2558,7 +2567,7 @@ const horaPDF = (partesFecha[1] || "").trim();
   </div>
   <div style="font-size:12px; line-height:1.5;">
     <div><b>Sistema:</b> Gestión de Partes y Servicios Extraordinarios</div>
-    <div><b>Consecutivo:</b> ${consecutivoGPSE}</div>
+    ${consecutivoGPSE ? `<div><b>Consecutivo:</b> ${consecutivoGPSE}</div>` : ""}
     <div><b>Fecha:</b> ${fechaPDF}</div>
     <div><b>Hora:</b> ${horaPDF}</div>
   </div>
