@@ -1160,7 +1160,157 @@ app.post("/parte-texto", async (req, res) => {
 // ==============================
 // GUARDA PARTE PDF
 // ==============================
+app.post("/guardar-parte-pdf", async (req, res) => {
+  const {
+    tipo,
+    unidad,
+    subunidades = [],
+    estaciones = [],
+    grado_responsable,
+    nombre_responsable,
+    cedula_responsable,
+    telefono_responsable,
+    texto_parte,
+    novedades = []
+  } = req.body;
 
+  const grado = (grado_responsable || "").toUpperCase().trim().replace(/\s+/g, "");
+  const esOficial = esGradoOficial(grado);
+
+  try {
+    const { estado, esMediodia } = validarHorarioParte();
+
+    const config = await pool.query(
+      "SELECT valor FROM configuracion_sistema WHERE clave = 'parte_extra_global' LIMIT 1"
+    );
+
+    const parteExtraGlobal =
+      config.rows.length > 0 && config.rows[0].valor === "true";
+
+    if (!esOficial && !parteExtraGlobal) {
+      if (esMediodia) {
+        return res.json({
+          ok: false,
+          mensaje: "⛔ Al mediodía solo se registran novedades. No se guarda parte."
+        });
+      }
+
+      if (estado === "bloqueado") {
+        return res.json({
+          ok: false,
+          mensaje: "⛔ Fuera de horario. No se puede guardar el parte."
+        });
+      }
+    }
+
+    if (!tipo && !esOficial) {
+      return res.json({
+        ok: false,
+        mensaje: "⛔ No hay tipo de parte válido para guardar."
+      });
+    }
+
+    if (!unidad) {
+      return res.json({
+        ok: false,
+        mensaje: "⛔ La unidad es obligatoria."
+      });
+    }
+
+    const subunidadTexto = subunidades.join(", ");
+    const estacionTexto = estaciones.join(", ");
+
+    // 🔥 NOVEDADES
+    if (Array.isArray(novedades) && novedades.length > 0) {
+      const horario = validarHorarioParte();
+
+      let franja = "general";
+      if (horario.esMediodia) franja = "mediodia";
+      else if (horario.tipo === "mañana") franja = "mañana";
+      else if (horario.tipo === "noche") franja = "noche";
+
+      for (const n of novedades) {
+        if (!n.cedula || !n.tipo) continue;
+
+        await pool.query(
+          `INSERT INTO novedades (
+            cedula,
+            estacion,
+            tipo_novedad,
+            fecha,
+            actualizado_por_cedula,
+            actualizado_por_nombre,
+            hora_registro,
+            franja
+          )
+          VALUES (
+            $1,$2,$3,
+            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date,
+            $4,$5,
+            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
+            $6
+          )
+          ON CONFLICT (cedula, fecha)
+          DO UPDATE SET
+            estacion = EXCLUDED.estacion,
+            tipo_novedad = EXCLUDED.tipo_novedad,
+            actualizado_por_cedula = EXCLUDED.actualizado_por_cedula,
+            actualizado_por_nombre = EXCLUDED.actualizado_por_nombre,
+            hora_registro = EXCLUDED.hora_registro,
+            franja = EXCLUDED.franja`,
+          [
+            n.cedula,
+            estacionTexto || null,
+            n.tipo,
+            cedula_responsable,
+            nombre_responsable,
+            franja
+          ]
+        );
+      }
+    }
+
+    // 🔥 PARTE
+    const result = await pool.query(
+      `INSERT INTO partes (
+        tipo,
+        unidad,
+        subunidad,
+        estacion,
+        grado_responsable,
+        nombre_responsable,
+        cedula_responsable,
+        telefono_responsable,
+        texto_parte
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING *`,
+      [
+        tipo || null,
+        unidad || null,
+        subunidadTexto || null,
+        estacionTexto || null,
+        grado_responsable || null,
+        nombre_responsable || null,
+        cedula_responsable || null,
+        telefono_responsable || null,
+        texto_parte || null
+      ]
+    );
+
+    return res.json({
+      ok: true,
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error("ERROR /guardar-parte-pdf:", error);
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
 // =========================
 // CONSULTA GENERAL DE NOVEDADES (SOLO OFICIALES Y ADMIN)
 // =========================
