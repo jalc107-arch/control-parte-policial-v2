@@ -2862,66 +2862,95 @@ const jefePmu = window.seleccionServicio.pmu;
   renderizarExtraordinario(window.listaExtra);
   renderizarConsultaDesdeMemoria();
 }
-    async function generarParte() {
-      const estacion = document.getElementById("estacion_select").value.trim().toUpperCase();
-      const unidad = document.getElementById("unidad_select").value;
-      const grado = document.getElementById("grado").value.trim();
-      const nombre = document.getElementById("nombre_elabora").value.trim();
-      const cedula = document.getElementById("cedula_elabora").value.trim();
-      const telefono = document.getElementById("telefono_elabora").value.trim();
-      const organico = document.getElementById("organico_select").value;
-      const resultado = document.getElementById("resultado");
 
-      if (!estacion && !organico) {
-        resultado.innerText = "Debes seleccionar estación u orgánico.";
-        return;
-      }
+  function generarParte() {
+  const cedula = document.getElementById("cedula_elabora")?.value || "";
+  const grado = document.getElementById("grado")?.value || "";
+  const nombre = document.getElementById("nombre_elabora")?.value || "";
+  const telefono = document.getElementById("telefono_elabora")?.value || "";
 
-      const gradoUsuario = document.getElementById("grado").value.trim().toUpperCase();
-      const rolUsuario = (document.getElementById("bloqueExcel").style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+  const unidad = document.getElementById("unidad_select")?.value || "";
+  const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+  const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+  const organicos = obtenerChecksMarcados("checks_organico_parte");
 
-      const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
-      const dataVal = await validar.json();
+  const resultado = document.getElementById("resultado");
+  const lista = document.getElementById("lista");
 
-      if (!dataVal.ok) {
-        alert(dataVal.mensaje);
-        return;
-      }
+  if (!unidad) {
+    alert("Debes seleccionar la unidad");
+    return;
+  }
 
-      const personas = document.querySelectorAll(".persona");
-      const novedadesSeleccionadas = [];
+  if (!lista) {
+    alert("No hay listado de personal");
+    return;
+  }
 
-      personas.forEach(p => {
-        const select = p.querySelector("select");
-        const cedulaPersona = select.id.replace("novedad-", "");
-        const tipo = select.value || "";
-        novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
+  const personas = [...lista.querySelectorAll(".persona")];
+
+  if (!personas.length) {
+    alert("No hay personal cargado");
+    return;
+  }
+
+  const conteos = {};
+  const detalleNovedades = {};
+
+  personas.forEach(persona => {
+    const cedulaSpan = persona.querySelector(".persona-cc");
+    const select = persona.querySelector("select");
+
+    if (!cedulaSpan || !select) return;
+
+    const textoCedula = cedulaSpan.innerText || "";
+    const cedulaPersona = textoCedula.replace("CC", "").trim();
+
+    const nombreTexto = persona.querySelector("b")?.childNodes?.[0]?.textContent?.trim() || "";
+    const novedad = (select.value || "DISPONIBLE").trim().toUpperCase();
+
+    if (!conteos[novedad]) conteos[novedad] = 0;
+    conteos[novedad]++;
+
+    if (!detalleNovedades[novedad]) detalleNovedades[novedad] = [];
+    detalleNovedades[novedad].push(`${nombreTexto} - CC ${cedulaPersona}`);
+  });
+
+  const total = personas.length;
+  const disponibles = conteos["DISPONIBLE"] || 0;
+  const novedades = total - disponibles;
+
+  let texto = "";
+  texto += `PARTE DE PERSONAL\n`;
+  texto += `Responsable: ${grado} ${nombre}\n`;
+  texto += `Cédula: ${cedula}\n`;
+  texto += `Teléfono: ${telefono}\n`;
+  texto += `Unidad: ${unidad}\n`;
+  texto += `Subunidad(es): ${subunidades.length ? subunidades.join(", ") : "TODAS"}\n`;
+  texto += `Estación(es)/Grupo(s): ${estaciones.length ? estaciones.join(", ") : "TODAS"}\n`;
+  texto += `Orgánico(s): ${organicos.length ? organicos.join(", ") : "TODOS"}\n`;
+  texto += `\n`;
+  texto += `FUERZA EFECTIVA: ${total}\n`;
+  texto += `FUERZA DISPONIBLE: ${disponibles}\n`;
+  texto += `NOVEDADES: ${novedades}\n`;
+  texto += `\n`;
+
+  Object.keys(conteos)
+    .filter(k => k !== "DISPONIBLE")
+    .sort()
+    .forEach(tipo => {
+      texto += `${tipo}: ${conteos[tipo]}\n`;
+      detalleNovedades[tipo].forEach(item => {
+        texto += ` - ${item}\n`;
       });
+      texto += `\n`;
+    });
 
-      try {
-        const url = `/parte-texto?estacion=${encodeURIComponent(estacion)}&organico=${encodeURIComponent(organico)}&unidad=${encodeURIComponent(unidad)}&grado=${encodeURIComponent(grado)}&nombre=${encodeURIComponent(nombre)}&cedula=${encodeURIComponent(cedula)}&telefono=${encodeURIComponent(telefono)}`;
-
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ novedades: novedadesSeleccionadas })
-        });
-
-        const data = await res.json();
-
-        if (!data.ok) {
-          resultado.innerText = "Error: " + (data.error || "No se pudo generar el parte");
-          return;
-        }
-
-        resultado.style.color = dataVal.extemporaneo ? "red" : "black";
-        resultado.innerText = dataVal.extemporaneo ? "⚠️ REPORTE EXTEMPORÁNEO\n\n" + data.texto : data.texto;
-      } catch (error) {
-        console.error(error);
-        resultado.innerText = "Error conectando con el servidor";
-      }
-    }
-
+  if (resultado) {
+    resultado.innerText = texto;
+  }
+}
+  
     async function consultarNovedades() {
       const unidad = document.getElementById("consulta_unidad").value;
       const subunidades = obtenerValoresChecks("checks_subunidad");
