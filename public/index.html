@@ -2401,12 +2401,77 @@ async function procesarFotoConSello() {
   `);
   ventana.document.close();
 
+let consecutivoGPSE = "GPSE-PENDIENTE";
+
+try {
+  const gradoUsuario = document.getElementById("grado")?.value?.trim()?.toUpperCase() || "";
+  const rolUsuario = (document.getElementById("bloqueExcel")?.style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+
+  const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
+  const dataVal = await validar.json();
+
+  const unidad = document.getElementById("unidad_select")?.value || "";
+  const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+  const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+  const grado = document.getElementById("grado")?.value?.trim() || "";
+  const nombre = document.getElementById("nombre_elabora")?.value?.trim() || "";
+  const cedula = document.getElementById("cedula_elabora")?.value?.trim() || "";
+  const telefono = document.getElementById("telefono_elabora")?.value?.trim() || "";
+
+  const personas = document.querySelectorAll(".persona");
+  const novedadesSeleccionadas = [];
+
+  personas.forEach(p => {
+    const select = p.querySelector("select");
+    if (!select) return;
+    const cedulaPersona = select.id.replace("novedad-", "");
+    const tipo = select.value || "";
+    novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
+  });
+
+  if (dataVal.guardarOficial) {
+    const resGuardar = await fetch("/guardar-parte-pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: dataVal.tipo || null,
+        unidad,
+        subunidades,
+        estaciones,
+        grado_responsable: grado,
+        nombre_responsable: nombre,
+        cedula_responsable: cedula,
+        telefono_responsable: telefono,
+        texto_parte: contenido,
+        novedades: novedadesSeleccionadas
+      })
+    });
+
+    const dataGuardar = await resGuardar.json();
+
+    if (dataGuardar?.consecutivo) {
+      consecutivoGPSE = dataGuardar.consecutivo;
+    }
+  }
+} catch (e) {
+  console.warn("No se pudo obtener consecutivo real:", e);
+}
+     
   const fotoBase64 = await procesarFotoConSello();
   const qrTexto = construirTextoQRUbicacion();
   const qrUrl = qrTexto
     ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
     : "";
 
+const ahoraBogota = new Date().toLocaleString("es-CO", {
+  timeZone: "America/Bogota",
+  hour12: false
+});
+
+const partesFecha = ahoraBogota.split(",");
+const fechaPDF = (partesFecha[0] || "").trim();
+const horaPDF = (partesFecha[1] || "").trim();
+     
   ventana.document.open();
   ventana.document.write(`
     <html>
@@ -2487,7 +2552,17 @@ async function procesarFotoConSello() {
         <div class="marca-agua">DOCUMENTO NO CONTROLADO</div>
 
         <div class="encabezado">
-          <div class="titulo">REGISTRO DEL PARTE</div>
+          <div class="titulo">
+  <div style="font-size:20px; font-weight:bold; margin-bottom:8px;">
+    REGISTRO DEL PARTE
+  </div>
+  <div style="font-size:12px; line-height:1.5;">
+    <div><b>Sistema:</b> Gestión de Partes y Servicios Extraordinarios</div>
+    <div><b>Consecutivo:</b> ${consecutivoGPSE}</div>
+    <div><b>Fecha:</b> ${fechaPDF}</div>
+    <div><b>Hora:</b> ${horaPDF}</div>
+  </div>
+</div>
           <div class="lado-derecho">
             ${qrUrl ? `<div class="qr-box"><img src="${qrUrl}" /><div class="label">Ubicación</div></div>` : ""}
             ${fotoBase64 ? `<div class="foto-box"><img src="${fotoBase64}" /><div class="label">Evidencia</div></div>` : ""}
