@@ -1296,57 +1296,73 @@ app.post("/guardar-parte-pdf", async (req, res) => {
         );
       }
     }
+// ===========================
+// 🔥 GENERAR CONSECUTIVO GPSE
+// ===========================
+const fechaHoy = await pool.query(`
+  SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date AS fecha
+`);
 
-    // 🔥 GENERAR CONSECUTIVO GPSE
-    const consecutivoResult = await pool.query(
-      `SELECT 'GPSE-' || LPAD(nextval('gpse_consecutivo_seq')::text, 6, '0') AS consecutivo`
-    );
+const fecha = fechaHoy.rows[0].fecha;
 
-    const consecutivo = consecutivoResult.rows[0].consecutivo;
+// formato YYYYMMDD
+const fechaTexto = fecha.toISOString().slice(0, 10).replace(/-/g, "");
 
-    // 🔥 GUARDAR PARTE
-    const result = await pool.query(
-      `INSERT INTO partes (
-        consecutivo,
-        tipo,
-        unidad,
-        subunidad,
-        estacion,
-        grado_responsable,
-        nombre_responsable,
-        cedula_responsable,
-        telefono_responsable,
-        texto_parte
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-      RETURNING *`,
-      [
-        consecutivo,
-        tipo || null,
-        unidad || null,
-        subunidadTexto || null,
-        estacionTexto || null,
-        grado_responsable || null,
-        nombre_responsable || null,
-        cedula_responsable || null,
-        telefono_responsable || null,
-        texto_parte || null
-      ]
-    );
+// limpiar unidad
+const unidadLimpia = String(unidad || "").toUpperCase().replace(/\s+/g, "");
 
-    return res.json({
-      ok: true,
-      data: result.rows[0],
-      consecutivo
-    });
+// obtener siguiente consecutivo por unidad + día
+const consecutivoDiaResult = await pool.query(
+  `
+  SELECT COALESCE(MAX(consecutivo_dia), 0) + 1 AS siguiente
+  FROM partes
+  WHERE DATE(fecha) = $1
+    AND unidad = $2
+  `,
+  [fecha, unidad]
+);
 
-  } catch (error) {
-    console.error("ERROR /guardar-parte-pdf:", error);
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
+const numero = parseInt(consecutivoDiaResult.rows[0].siguiente, 10) || 1;
+
+// armar consecutivo final
+const consecutivo = `GPSE-${unidadLimpia}-${fechaTexto}-${String(numero).padStart(4, "0")}`;
+
+// 🔥 GUARDAR PARTE
+const result = await pool.query(
+  `INSERT INTO partes (
+    consecutivo,
+    consecutivo_dia,
+    tipo,
+    unidad,
+    subunidad,
+    estacion,
+    grado_responsable,
+    nombre_responsable,
+    cedula_responsable,
+    telefono_responsable,
+    texto_parte
+  )
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+  RETURNING *`,
+  [
+    consecutivo,
+    numero,
+    tipo || null,
+    unidad || null,
+    subunidadTexto || null,
+    estacionTexto || null,
+    grado_responsable || null,
+    nombre_responsable || null,
+    cedula_responsable || null,
+    telefono_responsable || null,
+    texto_parte || null
+  ]
+);
+
+return res.json({
+  ok: true,
+  data: result.rows[0],
+  consecutivo
 });
 // =========================
 // CONSULTA GENERAL DE NOVEDADES (SOLO OFICIALES Y ADMIN)
