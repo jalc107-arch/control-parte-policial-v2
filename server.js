@@ -2691,6 +2691,17 @@ app.get("/debug-columnas-partes", async (req, res) => {
     res.json({ error: error.message });
   }
 });
+
+app.get("/debug-gpse", async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT 'GPSE-' || LPAD(nextval('gpse_consecutivo_seq')::text, 6, '0') AS consecutivo`
+    );
+    res.json({ ok: true, consecutivo: r.rows[0].consecutivo });
+  } catch (error) {
+    res.json({ ok: false, error: error.message });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
