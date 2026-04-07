@@ -994,31 +994,31 @@
   <div id="panelModulo11" class="panel-contenido">
 
     <div class="campo-corto">
-<input type="date" id="m11_fecha" onchange="cargarServiciosModulo11()" />
+      <input type="date" id="m11_fecha" onchange="cargarServiciosModulo11()" />
     </div>
 
     <div class="campo-corto">
-<select id="m11_unidad" onchange="cargarServiciosModulo11()">
-  <option value="">Seleccionar UNIDAD</option>
+      <select id="m11_unidad" onchange="cargarServiciosModulo11()">
+        <option value="">Seleccionar UNIDAD</option>
       </select>
     </div>
 
     <div class="campo-corto">
-  <select id="m11_servicio">
-    <option value="">Seleccionar SERVICIO EXTRAORDINARIO</option>
-  </select>
-</div>
+      <select id="m11_servicio">
+        <option value="">Seleccionar SERVICIO EXTRAORDINARIO</option>
+      </select>
+    </div>
 
     <div class="acciones-inline">
       <button type="button" onclick="consultarModulo11()">Consultar tablero</button>
       <button type="button" onclick="descargarPDFTotalModulo11()">Descargar PDF total</button>
+      <button type="button" onclick="cerrarServicioExtraordinario()">Finalizar servicio</button>
     </div>
 
     <div id="m11_tablero" style="margin-top:20px;"></div>
 
     <div id="m11_responsable" class="sub-card" style="display:none;"></div>
 
-   
     <div id="m11_detalle" style="display:none; margin-top:18px;">
       <div class="sub-card">
         <h3 id="m11_detalle_titulo">Detalle</h3>
@@ -1027,9 +1027,8 @@
           <button type="button" onclick="volverTableroModulo11()">Volver al tablero</button>
           <button type="button" onclick="descargarPDFUnidadModulo11()">Descargar PDF unidad</button>
           <button type="button" onclick="guardarControlModulo11()">Guardar parte</button>
-          </div>
+        </div>
 
-       
         <div id="m11_detalle_tabla"></div>
       </div>
     </div>
@@ -6599,12 +6598,17 @@ async function limpiarPruebaServicioExtra() {
 }
 
 async function cerrarServicioExtraordinario() {
-  const fecha = document.getElementById("m11_fecha").value;
-  const unidad = document.getElementById("m11_unidad").value;
-  const servicio = document.getElementById("m11_servicio")?.value;
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
 
   if (!fecha || !unidad || !servicio) {
     alert("Debe seleccionar fecha, unidad y servicio");
+    return;
+  }
+
+  if (!window.responsable) {
+    alert("No se identificó el responsable");
     return;
   }
 
@@ -6620,28 +6624,27 @@ async function cerrarServicioExtraordinario() {
         fecha,
         unidad,
         servicio,
-        subunidad: "TODAS", // 🔥 cierre general
-        responsable_cedula: document.getElementById("cedula_responsable")?.value || null,
-        responsable_nombre: document.getElementById("nombre_elabora")?.value || null,
-        responsable_cargo: "CIERRE SERVICIO"
+        responsable_cedula: window.responsable.cedula || "",
+        responsable_nombre: window.responsable.nombre || "",
+        responsable_cargo: window.responsable.grado || "RESPONSABLE"
       })
     });
 
     const data = await res.json();
 
     if (!data.ok) {
-      alert(data.error || "Error cerrando servicio");
+      alert(data.error || "No se pudo cerrar el servicio");
       return;
     }
 
     alert("Servicio finalizado correctamente ✅");
-    cargarServiciosModulo11();
+    consultarModulo11();
 
   } catch (error) {
     console.error(error);
-    alert("Error en servidor");
+    alert("Error cerrando servicio");
   }
-}  
+}
 </script>
 
 <!-- LIBRERÍA PARA EXCEL -->
