@@ -250,7 +250,7 @@ function obtenerGrupoPorGrado(grado = "") {
   if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIALES";
   if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
   if (["PT", "PP"].includes(g)) return "PATRULLEROS";
-  if (["AUX"].includes(g)) return "AUXILIARES";
+  if (["AXP"].includes(g)) return "AUXILIARES";
   return "OTROS";
 }
 
@@ -260,7 +260,7 @@ function obtenerNivelJerarquico(grado = "") {
   if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIAL";
   if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
   if (["PT", "PP"].includes(g)) return "PATRULLERO";
-  if (["AUX"].includes(g)) return "AUXILIAR";
+  if (["AXP"].includes(g)) return "AUXILIAR";
 
   return "OTRO";
 }
@@ -270,7 +270,7 @@ function contarGrupoLista(lista) {
     oficiales: lista.filter(p => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((p.grado || "").toUpperCase())).length,
     ejecutivo: lista.filter(p => ["CM", "SC", "IJ", "IT", "SI"].includes((p.grado || "").toUpperCase())).length,
     patrulleros: lista.filter(p => ["PT", "PP"].includes((p.grado || "").toUpperCase())).length,
-    auxiliares: lista.filter(p => ["AUX"].includes((p.grado || "").toUpperCase())).length
+    auxiliares: lista.filter(p => ["AXP"].includes((p.grado || "").toUpperCase())).length
   };
 }
 
@@ -1074,7 +1074,7 @@ app.post("/parte-texto", async (req, res) => {
     const esOficialG = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
     const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
     const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
-    const esAuxiliar = (g) => ["AUX"].includes((g || "").toUpperCase());
+    const esAuxiliar = (g) => ["AXP"].includes((g || "").toUpperCase());
 
     function contarGrupo(lista) {
       return {
@@ -1464,7 +1464,7 @@ app.post("/consulta-novedades", async (req, res) => {
     const esOficialG = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
     const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
     const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
-    const esAuxiliar = (g) => ["AUX"].includes((g || "").toUpperCase());
+    const esAuxiliar = (g) => ["AXP"].includes((g || "").toUpperCase());
 
     function contarGrupo(lista) {
       return {
@@ -2523,7 +2523,7 @@ function grupo4Servidor(grado = "") {
   if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
   if (["CM","SC","IJ","IT","SI"].includes(g)) return [0,1,0,0];
   if (["PT","PP"].includes(g)) return [0,0,1,0];
-  if (["AUX"].includes(g)) return [0,0,0,1];
+  if (["AXP"].includes(g)) return [0,0,0,1];
 
   return [0,0,0,0];
 }
