@@ -677,8 +677,8 @@
         <div class="filtro-box">
           <div class="filtro-titulo">Subunidad</div>
           <div class="filtro-botones">
-            <button type="button" onclick="seleccionarTodasChecks('checks_subunidad')">Seleccionar todas</button>
-            <button type="button" onclick="limpiarChecks('checks_subunidad')">Limpiar</button> 
+            <button type="button" onclick="seleccionarTodasSubunidades()">Seleccionar todas</button>
+            <button type="button" onclick="limpiarSubunidades()">Limpiar</button>
           </div>
           
           <div id="checks_subunidad" class="checks-contenedor"></div>
@@ -689,8 +689,8 @@
         <div class="filtro-box">
           <div class="filtro-titulo">Estaciones</div>
           <div class="filtro-botones">
-            <button type="button" onclick="seleccionarTodasChecks('checks_estacion')">Seleccionar todas</button>
-            <button type="button" onclick="limpiarChecks('checks_estacion')">Limpiar</button>
+            <button type="button" onclick="seleccionarTodasEstaciones()">Seleccionar todas</button>
+            <button type="button" onclick="limpiarEstaciones()">Limpiar</button>
           </div>
           <div id="checks_estacion" class="checks-contenedor"></div>
           <div class="ayuda">Si no marcas ninguna, consulta todas.</div>
@@ -2665,10 +2665,13 @@ const horaPDF = (partesFecha[1] || "").trim();
     }
 
     function obtenerValoresChecks(idContenedor) {
-      const contenedor = document.getElementById(idContenedor);
-      if (!contenedor) return [];
-      return Array.from(contenedor.querySelectorAll('input[type="checkbox"]:checked')).map(ch => ch.value).filter(Boolean);
-    }
+  const contenedor = document.getElementById(idContenedor);
+  if (!contenedor) return [];
+
+  return Array.from(
+    contenedor.querySelectorAll('input[type="checkbox"]:checked')
+  ).map(ch => ch.value).filter(Boolean);
+}
 
     function seleccionarTodasChecks(idContenedor) {
       const contenedor = document.getElementById(idContenedor);
@@ -2752,7 +2755,7 @@ const horaPDF = (partesFecha[1] || "").trim();
       ]);
     }
 
-  function cargarConsultaDependencias() {
+function cargarConsultaDependencias() {
   const unidad = document.getElementById("consulta_unidad")?.value || "";
 
   pintarChecks("checks_subunidad", []);
@@ -2813,7 +2816,7 @@ function cargarConsultaEstacionesYOrganicos() {
 
   cargarConsultaOrganicos();
 }
-  
+
 function cargarConsultaOrganicos() {
   const unidad = document.getElementById("consulta_unidad")?.value || "";
   const subunidadesMarcadas = obtenerValoresChecks("checks_subunidad");
@@ -2846,6 +2849,38 @@ function cargarConsultaOrganicos() {
   pintarChecks("checks_organico", organicos);
 }
 
+function seleccionarTodasSubunidades() {
+  document.querySelectorAll('#checks_subunidad input[type="checkbox"]').forEach(ch => {
+    ch.checked = true;
+  });
+
+  cargarConsultaEstacionesYOrganicos();
+}
+
+function limpiarSubunidades() {
+  document.querySelectorAll('#checks_subunidad input[type="checkbox"]').forEach(ch => {
+    ch.checked = false;
+  });
+
+  cargarConsultaEstacionesYOrganicos();
+}
+
+function seleccionarTodasEstaciones() {
+  document.querySelectorAll('#checks_estacion input[type="checkbox"]').forEach(ch => {
+    ch.checked = true;
+  });
+
+  cargarConsultaOrganicos();
+}
+
+function limpiarEstaciones() {
+  document.querySelectorAll('#checks_estacion input[type="checkbox"]').forEach(ch => {
+    ch.checked = false;
+  });
+
+  cargarConsultaOrganicos();
+}
+  
   function seleccionarTodasSubunidades() {
   document.querySelectorAll('#checks_subunidad input[type="checkbox"]').forEach(ch => {
     ch.checked = true;
