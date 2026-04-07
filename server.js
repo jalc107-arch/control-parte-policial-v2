@@ -481,7 +481,9 @@ app.post("/subir-excel", upload.single("archivo"), async (req, res) => {
       );
 
       const payload = [
-        String(row["GRADO"] || "").trim(),
+        String(row["GRADO"] || "").trim().toUpperCase() === "AUX"
+        ? "AXP"
+        : String(row["GRADO"] || "").trim().toUpperCase(),
         String(row["APELLIDOS"] || "").trim(),
         String(row["NOMBRES"] || "").trim(),
         cedula,
