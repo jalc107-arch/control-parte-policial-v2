@@ -1768,11 +1768,16 @@ app.get("/modulo11-servicios", async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT DISTINCT
-        COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') AS titulo_servicio
+      SELECT
+        COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') AS titulo_servicio,
+        COALESCE(cerrado, false) AS cerrado,
+        MAX(fecha_cierre) AS fecha_cierre
       FROM servicios_extraordinarios
       WHERE fecha = $1
         AND unidad = $2
+      GROUP BY
+        COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO'),
+        COALESCE(cerrado, false)
       ORDER BY titulo_servicio
       `,
       [fecha, unidad]
@@ -1782,7 +1787,9 @@ app.get("/modulo11-servicios", async (req, res) => {
       ok: true,
       data: result.rows.map(r => ({
         id: r.titulo_servicio,
-        titulo_servicio: r.titulo_servicio
+        titulo_servicio: r.titulo_servicio,
+        cerrado: r.cerrado,
+        fecha_cierre: r.fecha_cierre
       }))
     });
   } catch (error) {
