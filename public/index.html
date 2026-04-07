@@ -2752,18 +2752,101 @@ const horaPDF = (partesFecha[1] || "").trim();
       ]);
     }
 
-    function cargarConsultaDependencias() {
-      const unidad = document.getElementById("consulta_unidad").value;
-      let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+  function cargarConsultaDependencias() {
+  const unidad = document.getElementById("consulta_unidad")?.value || "";
 
-      const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))];
-      const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))];
-      const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))];
+  pintarChecks("checks_subunidad", []);
+  pintarChecks("checks_estacion", []);
+  pintarChecks("checks_organico", []);
 
-      pintarChecks("checks_subunidad", subunidades);
-      pintarChecks("checks_estacion", estaciones);
-      pintarChecks("checks_organico", organicos);
-    }
+  if (!unidad) return;
+
+  const baseUnidad = estructuraGlobal.filter(x =>
+    String(x.unidad || "").trim() === unidad
+  );
+
+  const subunidades = [...new Set(
+    baseUnidad.map(x => String(x.subunidad || "").trim()).filter(Boolean)
+  )].sort();
+
+  pintarChecks("checks_subunidad", subunidades);
+
+  // Cada vez que cambie subunidad, recalcula estaciones y orgánicos
+  document.querySelectorAll('#checks_subunidad input[type="checkbox"]').forEach(ch => {
+    ch.onchange = () => {
+      cargarConsultaEstacionesYOrganicos();
+    };
+  });
+
+  // Primera carga vacía controlada
+  cargarConsultaEstacionesYOrganicos();
+}
+
+  function cargarConsultaEstacionesYOrganicos() {
+  const unidad = document.getElementById("consulta_unidad")?.value || "";
+  const subunidadesMarcadas = obtenerValoresChecks("checks_subunidad");
+
+  pintarChecks("checks_estacion", []);
+  pintarChecks("checks_organico", []);
+
+  if (!unidad) return;
+
+  let base = estructuraGlobal.filter(x =>
+    String(x.unidad || "").trim() === unidad
+  );
+
+  if (subunidadesMarcadas.length) {
+    base = base.filter(x =>
+      subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    );
+  }
+
+  const estaciones = [...new Set(
+    base.map(x => String(x.estacion || "").trim()).filter(Boolean)
+  )].sort();
+
+  pintarChecks("checks_estacion", estaciones);
+
+  document.querySelectorAll('#checks_estacion input[type="checkbox"]').forEach(ch => {
+    ch.onchange = () => {
+      cargarConsultaOrganicos();
+    };
+  });
+
+  cargarConsultaOrganicos();
+}
+
+  function cargarConsultaOrganicos() {
+  const unidad = document.getElementById("consulta_unidad")?.value || "";
+  const subunidadesMarcadas = obtenerValoresChecks("checks_subunidad");
+  const estacionesMarcadas = obtenerValoresChecks("checks_estacion");
+
+  pintarChecks("checks_organico", []);
+
+  if (!unidad) return;
+
+  let base = estructuraGlobal.filter(x =>
+    String(x.unidad || "").trim() === unidad
+  );
+
+  if (subunidadesMarcadas.length) {
+    base = base.filter(x =>
+      subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    );
+  }
+
+  if (estacionesMarcadas.length) {
+    base = base.filter(x =>
+      estacionesMarcadas.includes(String(x.estacion || "").trim())
+    );
+  }
+
+  const organicos = [...new Set(
+    base.map(x => String(x.organico || "").trim()).filter(Boolean)
+  )].sort();
+
+  pintarChecks("checks_organico", organicos);
+}
 
     function cargarChecksGruposExtra() {
       pintarChecks("checks_extra_oficiales", ["CR", "TC", "MY", "CT", "TE", "ST"]);
