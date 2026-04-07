@@ -4913,9 +4913,9 @@ async function consultarModulo11() {
   }
 
   if (!servicio) {
-  alert("Debes seleccionar el servicio extraordinario");
-  return;
-}
+    alert("Debes seleccionar el servicio extraordinario");
+    return;
+  }
 
   if (!unidad) {
     alert("Debes seleccionar la unidad");
@@ -4923,23 +4923,48 @@ async function consultarModulo11() {
   }
 
   try {
-    const res = await fetch(`/modulo11-parte-extra?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}`);
-    const data = await res.json();
+    const [resParte, resServicios] = await Promise.all([
+      fetch(`/modulo11-parte-extra?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}`),
+      fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`)
+    ]);
 
-    if (!data.ok) {
-      alert(data.error || "No se pudo consultar");
+    const dataParte = await resParte.json();
+    const dataServicios = await resServicios.json();
+
+    if (!dataParte.ok) {
+      alert(dataParte.error || "No se pudo consultar");
       return;
     }
 
-    window.m11Resumen = data.resumen || [];
-    window.m11ResponsableParte = data.responsable || null;
+    if (!dataServicios.ok) {
+      alert(dataServicios.error || "No se pudo consultar el estado del servicio");
+      return;
+    }
+
+    const servicioActual = (dataServicios.data || []).find(
+      s => String(s.titulo_servicio || "").trim() === String(servicio || "").trim()
+    );
+
+    window.m11Resumen = dataParte.resumen || [];
+    window.m11ResponsableParte = dataParte.responsable || null;
+    window.m11ServicioEstado = {
+      cerrado: !!servicioActual?.cerrado,
+      fecha_cierre: servicioActual?.fecha_cierre || null
+    };
+
+    const btnCerrar = document.getElementById("btnFinalizarServicioM11");
+    if (btnCerrar) {
+      btnCerrar.style.display = window.m11ServicioEstado.cerrado ? "none" : "inline-block";
+    }
 
     renderizarTableroModulo11();
+
   } catch (error) {
     console.error(error);
     alert("Error consultando módulo 11");
   }
 }
+  
 function renderizarTableroModulo11() {
   const boxResp = document.getElementById("m11_responsable");
   const box = document.getElementById("m11_tablero");
