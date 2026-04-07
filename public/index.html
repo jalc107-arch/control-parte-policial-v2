@@ -503,10 +503,10 @@
   cursor: pointer;
 }    
 
-.fila-distribucion-extra {
+.fila-distribucion-extra-horizontal {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
   align-items: end;
 }
 
@@ -531,6 +531,26 @@
   color: #98a2b3;
   cursor: not-allowed;
 }
+
+    .item-distribucion-extra {
+  align-items: center;
+  text-align: center;
+}
+
+.item-distribucion-extra label {
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.ayuda-disponible {
+  font-size: 10px;
+  margin-bottom: 4px;
+}
+
+    .item-distribucion-extra input {
+  border: 2px solid #0B1F3A;
+}
+    
     
 </style>
 </head>
@@ -6310,9 +6330,9 @@ bloque.innerHTML = `
     ${dep.unidad} - ${dep.subunidad} - ${dep.estacion}
   </h4>
 
-  <div class="fila-distribucion-extra">
+  <div class="fila-distribucion-extra-horizontal">
     <div class="item-distribucion-extra">
-      <label>Oficiales</label>
+      <label>OF.</label>
       <div class="ayuda-disponible">Disp: ${disp.oficiales}</div>
       <input
         id="extra_${claveBase}_CR"
@@ -6327,7 +6347,7 @@ bloque.innerHTML = `
     </div>
 
     <div class="item-distribucion-extra">
-      <label>Nivel ejecutivo</label>
+      <label>NE.</label>
       <div class="ayuda-disponible">Disp: ${disp.ejecutivo}</div>
       <input
         id="extra_${claveBase}_CM"
@@ -6342,7 +6362,7 @@ bloque.innerHTML = `
     </div>
 
     <div class="item-distribucion-extra">
-      <label>Patrulleros</label>
+      <label>PT.</label>
       <div class="ayuda-disponible">Disp: ${disp.patrulleros}</div>
       <input
         id="extra_${claveBase}_PT"
@@ -6357,7 +6377,7 @@ bloque.innerHTML = `
     </div>
 
     <div class="item-distribucion-extra">
-      <label>Patrulleros de Policía</label>
+      <label>PP.</label>
       <div class="ayuda-disponible">Disp: ${disp.patrullerosPolicia}</div>
       <input
         id="extra_${claveBase}_PP"
@@ -6372,7 +6392,7 @@ bloque.innerHTML = `
     </div>
 
     <div class="item-distribucion-extra">
-      <label>Auxiliares</label>
+      <label>AXP.</label>
       <div class="ayuda-disponible">Disp: ${disp.auxiliares}</div>
       <input
         id="extra_${claveBase}_AUX"
