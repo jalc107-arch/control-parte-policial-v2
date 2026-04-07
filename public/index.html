@@ -1039,6 +1039,31 @@
    <!-- ========================= -->
 <!-- MODULO 12 -->
 <!-- ========================= -->
+async function validarServicioCerradoM11() {
+  const fecha = document.getElementById("m12_fecha")?.value || "";
+  const unidad = document.getElementById("m12_unidad")?.value || "";
+  const servicio = document.getElementById("m12_servicio")?.value || "";
+
+  if (!fecha || !unidad || !servicio) return false;
+
+  try {
+    const res = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
+    const data = await res.json();
+
+    if (!data.ok) return false;
+
+    const actual = (data.data || []).find(
+      x => String(x.titulo_servicio || "").trim() === String(servicio || "").trim()
+    );
+
+    return !!actual?.cerrado;
+
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+    
 <section id="bloqueModulo12" class="bloque-app" style="display:none;">
   <div class="card-app">
     <button class="panel-toggle" onclick="togglePanel('panelModulo12')">
@@ -1960,7 +1985,7 @@ function renderizarPersonalModulo12() {
         <td>${ced}</td>
         <td>${p.telefono || ""}</td>
         <td>
-          <select id="m12_estado_${ced}" onchange="mostrarFormularioReemplazoModulo12('${ced}')">
+          <select id="m12_estado_${ced}" ${window.m11ServicioEstado?.cerrado ? "disabled" : ""}>
             <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
             <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
             <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
@@ -1971,7 +1996,7 @@ function renderizarPersonalModulo12() {
           </select>
         </td>
         <td>
-          <input id="m12_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación">
+          <input id="m12_obs_${ced}" ${window.m11ServicioEstado?.cerrado ? "disabled" : ""}>
         </td>
       </tr>
     `;
@@ -2124,6 +2149,10 @@ function obtenerResponsableModulo12() {
 }
 
 async function iniciarParteModulo12() {
+  if (await validarServicioCerradoM11()) {
+  alert("Este servicio ya fue cerrado en el módulo 11");
+  return;
+}
   try {
     const fecha = document.getElementById("m12_fecha")?.value || "";
     const unidad = document.getElementById("m12_unidad")?.value || "";
@@ -2167,6 +2196,10 @@ async function iniciarParteModulo12() {
 }
 
 async function guardarParteModulo12() {
+  if (await validarServicioCerradoM11()) {
+  alert("Este servicio ya fue cerrado en el módulo 11");
+  return;
+}
   try {
     const fecha = document.getElementById("m12_fecha")?.value || "";
     const unidad = document.getElementById("m12_unidad")?.value || "";
@@ -2225,6 +2258,10 @@ async function guardarParteModulo12() {
 }
 
 async function cerrarParteModulo12() {
+  if (await validarServicioCerradoM11()) {
+  alert("Este servicio ya fue cerrado en el módulo 11");
+  return;
+}
   try {
     const fecha = document.getElementById("m12_fecha")?.value || "";
     const unidad = document.getElementById("m12_unidad")?.value || "";
