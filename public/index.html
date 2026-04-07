@@ -3034,24 +3034,24 @@ function limpiarEstaciones() {
       return "OTROS";
     }
 
-    async function aplicarServicioExtraordinarioPorGrupos() {
+async function aplicarServicioExtraordinarioPorGrupos() {
   if (window.listaExtra && window.listaExtra.length) {
-  const confirmar = confirm("Ya hay personal asignado en pantalla. ¿Deseas reemplazar la prueba actual?");
-  if (!confirmar) return;
+    const confirmar = confirm("El servicio ya tiene personal asignado en pantalla. ¿Deseas reemplazarlo?");
+    if (!confirmar) return;
 
-  window.listaExtra = [];
-  window.ultimosSeleccionadosExtra = [];
+    window.listaExtra = [];
+    window.ultimosSeleccionadosExtra = [];
+
+    const resultadoExtra = document.getElementById("resultado_extra");
+    if (resultadoExtra) resultadoExtra.innerText = "";
+
+    if (typeof renderizarExtraordinario === "function") {
+      renderizarExtraordinario([]);
+    }
+  }
 
   const resultadoExtra = document.getElementById("resultado_extra");
   if (resultadoExtra) resultadoExtra.innerText = "";
-
-  if (typeof renderizarExtraordinario === "function") {
-    renderizarExtraordinario([]);
-  }
-}
-
-  const resultadoExtra = document.getElementById("resultado_extra");
-  resultadoExtra.innerText = "";
 
   const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
   if (!fechaServicio) {
@@ -3059,18 +3059,14 @@ function limpiarEstaciones() {
     return;
   }
 
-  const supervisor = window.seleccionServicio.supervisor;
-const jefe = window.seleccionServicio.jefe;
-const jefePmu = window.seleccionServicio.pmu;
+  const supervisor = window.seleccionServicio?.supervisor;
+  const jefe = window.seleccionServicio?.jefe;
+  const jefePmu = window.seleccionServicio?.pmu;
 
   if (!supervisor || !jefe || !jefePmu) {
-  console.log("Supervisor:", supervisor);
-  console.log("Jefe:", jefe);
-  console.log("PMU:", jefePmu);
-
-  alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
-  return;
-}
+    alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
+    return;
+  }
 
   if (supervisor === jefe || supervisor === jefePmu || jefe === jefePmu) {
     alert("No puedes asignar la misma persona a múltiples cargos.");
@@ -3081,15 +3077,8 @@ const jefePmu = window.seleccionServicio.pmu;
   const jefeCedula = String(jefe).trim();
   const jefePmuCedula = String(jefePmu).trim();
 
-  let subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
-  if (!subunidades.length) {
-    seleccionarTodasChecks("checks_subunidad_apoyo_extra");
-    subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
-  }
-
-  const disponibles = extraerDisponiblesConsulta();
-  if (!disponibles.length) {
-    alert("Primero debes consultar novedades y tener personal disponible en el resultado.");
+  if (!Array.isArray(window.ultimoResultadoConsulta) || !window.ultimoResultadoConsulta.length) {
+    alert("Primero debes consultar novedades en el módulo 6.");
     return;
   }
 
@@ -3105,31 +3094,63 @@ const jefePmu = window.seleccionServicio.pmu;
     return;
   }
 
-  const grados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AUX"];
+  const historial = await obtenerHistorialServicios();
   const seleccionadosFinales = [];
   const usados = new Set();
-  const historial = await obtenerHistorialServicios();
 
-  subunidades.forEach(subunidad => {
-    grados.forEach(grado => {
-      const input = document.getElementById(`extra_${subunidad}_${grado}`);
-      const cantidad = parseInt(input?.value || "0", 10);
+  const tarjetas = Array.from(document.querySelectorAll("#contenedor_distribucion_extra .sub-card"));
 
-      if (!cantidad || cantidad <= 0) return;
+  if (!tarjetas.length) {
+    alert("Primero debes generar la distribución por dependencia.");
+    return;
+  }
 
-      const candidatos = disponibles.filter(p => {
+  for (const tarjeta of tarjetas) {
+    const titulo = tarjeta.querySelector("h4")?.innerText?.trim() || "";
+    if (!titulo) continue;
+
+    const partes = titulo.split(" - ").map(x => String(x || "").trim());
+    const unidadDep = partes[0] || "";
+    const subunidadDep = partes[1] || "";
+    const estacionDep = partes.slice(2).join(" - ").trim();
+
+    if (!unidadDep || !subunidadDep || !estacionDep) continue;
+
+    const claveBase = `${subunidadDep}__${estacionDep}`;
+
+    const distribucion = [
+      { grado: "CR", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CR`)?.value || "0", 10), cargo: "OFICIALES" },
+      { grado: "CM", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CM`)?.value || "0", 10), cargo: "EJECUTIVO" },
+      { grado: "PT", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PT`)?.value || "0", 10), cargo: "PATRULLEROS" },
+      { grado: "PP", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PP`)?.value || "0", 10), cargo: "PATRULLEROS DE POLICIA" },
+      { grado: "AUX", cantidad: parseInt(document.getElementById(`extra_${claveBase}_AUX`)?.value || "0", 10), cargo: "AUXILIARES" }
+    ];
+
+    for (const item of distribucion) {
+      const cantidad = isNaN(item.cantidad) ? 0 : item.cantidad;
+      if (cantidad <= 0) continue;
+
+      const candidatos = window.ultimoResultadoConsulta.filter(p => {
         const ced = String(p.cedula || "").trim();
-        const gradoPersona = String(p.grado || "").toUpperCase().trim();
-        const subunidadPersona = String(p.subunidad || "").trim();
+        const unidadP = String(p.unidad || "").trim();
+        const subunidadP = String(p.subunidad || "").trim();
+        const estacionP = String(p.estacion || "").trim();
+        const gradoP = String(p.grado || "").trim().toUpperCase();
+        const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
+        const aptitud = String(p.aptitud || "").trim().toUpperCase();
 
         return (
+          unidadP === unidadDep &&
+          subunidadP === subunidadDep &&
+          estacionP === estacionDep &&
           !usados.has(ced) &&
           !ocupadosSet.has(ced) &&
           ced !== supervisorCedula &&
           ced !== jefeCedula &&
           ced !== jefePmuCedula &&
-          subunidadPersona === subunidad &&
-          gradoPersona === grado
+          (novedad === "" || novedad === "DISPONIBLE") &&
+          aptitud === "APTO" &&
+          gradoP === item.grado
         );
       });
 
@@ -3138,11 +3159,15 @@ const jefePmu = window.seleccionServicio.pmu;
         const vecesB = historial[String(b.cedula || "").trim()] || 0;
 
         if (vecesA !== vecesB) return vecesA - vecesB;
-
         return Math.random() - 0.5;
       });
 
       const elegidos = candidatosOrdenados.slice(0, cantidad);
+
+      if (elegidos.length < cantidad) {
+        alert(`No hay suficientes ${item.cargo} disponibles en ${unidadDep} - ${subunidadDep} - ${estacionDep}. Solicitaste ${cantidad} y solo hay ${elegidos.length}.`);
+        return;
+      }
 
       elegidos.forEach(p => {
         const ced = String(p.cedula || "").trim();
@@ -3151,23 +3176,24 @@ const jefePmu = window.seleccionServicio.pmu;
         seleccionadosFinales.push({
           ...p,
           tipo_novedad: "SERVICIO EXTRAORDINARIO",
-          subunidad_origen: subunidad,
-          grado_requerido: grado,
           tipoAsignacion: "AUTOMATICO",
-          estadoExtra: "SI"
+          estadoExtra: "SI",
+          cargoServicio: ""
         });
       });
-    });
-  });
+    }
+  }
 
-  const base = [...ultimoResultadoConsulta];
+  const base = [...window.ultimoResultadoConsulta];
 
   const sup = base.find(p => String(p.cedula || "").trim() === supervisorCedula);
   const jefeObj = base.find(p => String(p.cedula || "").trim() === jefeCedula);
   const pmuObj = base.find(p => String(p.cedula || "").trim() === jefePmuCedula);
 
+  const listaFinal = [];
+
   if (sup) {
-    seleccionadosFinales.unshift({
+    listaFinal.push({
       ...sup,
       cargoServicio: "SUPERVISOR",
       tipoAsignacion: "FIJO",
@@ -3176,7 +3202,7 @@ const jefePmu = window.seleccionServicio.pmu;
   }
 
   if (jefeObj) {
-    seleccionadosFinales.unshift({
+    listaFinal.push({
       ...jefeObj,
       cargoServicio: "JEFE DE SERVICIO",
       tipoAsignacion: "FIJO",
@@ -3185,7 +3211,7 @@ const jefePmu = window.seleccionServicio.pmu;
   }
 
   if (pmuObj) {
-    seleccionadosFinales.unshift({
+    listaFinal.push({
       ...pmuObj,
       cargoServicio: "JEFE DE PMU",
       tipoAsignacion: "FIJO",
@@ -3193,49 +3219,36 @@ const jefePmu = window.seleccionServicio.pmu;
     });
   }
 
-  if (!seleccionadosFinales.length) {
-    alert("No hubo personal disponible que cumpliera con la distribución solicitada.");
+  listaFinal.push(...seleccionadosFinales);
+
+  if (!listaFinal.length) {
+    alert("No se pudo generar personal.");
     return;
   }
 
-  ultimosSeleccionadosExtra = seleccionadosFinales.map(p => ({
+  window.ultimosSeleccionadosExtra = listaFinal.map(p => ({
     ...p,
     estadoExtra: "SI"
   }));
 
   window.listaExtra = ordenarListaExtraPorGrado(
-    seleccionadosFinales.map(p => ({
+    listaFinal.map(p => ({
       ...p,
       estadoExtra: "SI"
     }))
   );
 
   let texto = "";
-  texto += `SERVICIO EXTRAORDINARIO GENERADO\n\n`;
-  texto += `FECHA: ${fechaServicio}\n`;
-  texto += `SUBUNIDADES: ${subunidades.join(", ")}\n`;
-  texto += `ASIGNADOS: ${seleccionadosFinales.length}\n`;
-  texto += `BLOQUEADOS POR USO PREVIO EN EL DÍA: ${cedulasOcupadas.length}\n\n`;
+  texto += `SERVICIO EXTRAORDINARIO AJUSTADO\n\n`;
+  texto += `ASIGNADOS: ${window.listaExtra.length}\n\n`;
 
-  const agrupados = {};
-  seleccionadosFinales.forEach(p => {
-    const clave = p.subunidad || "SIN SUBUNIDAD";
-    if (!agrupados[clave]) agrupados[clave] = [];
-    agrupados[clave].push(p);
+  window.listaExtra.forEach((p, i) => {
+    texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}${p.cargoServicio ? " - " + p.cargoServicio : ""}\n`;
   });
 
-  Object.keys(agrupados).forEach(sub => {
-    texto += `${sub}\n`;
-    texto += `${"-".repeat(40)}\n`;
-
-    ordenarListaExtraPorGrado(agrupados[sub]).forEach((p, i) => {
-      texto += `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""}${p.cargoServicio ? " - " + p.cargoServicio : ""}\n`;
-    });
-
-    texto += `\n`;
-  });
-
-  resultadoExtra.innerText = texto;
+  if (resultadoExtra) {
+    resultadoExtra.innerText = texto;
+  }
 
   renderizarExtraordinario(window.listaExtra);
   renderizarConsultaDesdeMemoria();
