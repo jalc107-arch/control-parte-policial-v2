@@ -2771,18 +2771,16 @@ const horaPDF = (partesFecha[1] || "").trim();
 
   pintarChecks("checks_subunidad", subunidades);
 
-  // Cada vez que cambie subunidad, recalcula estaciones y orgánicos
   document.querySelectorAll('#checks_subunidad input[type="checkbox"]').forEach(ch => {
     ch.onchange = () => {
       cargarConsultaEstacionesYOrganicos();
     };
   });
 
-  // Primera carga vacía controlada
   cargarConsultaEstacionesYOrganicos();
 }
 
-  function cargarConsultaEstacionesYOrganicos() {
+function cargarConsultaEstacionesYOrganicos() {
   const unidad = document.getElementById("consulta_unidad")?.value || "";
   const subunidadesMarcadas = obtenerValoresChecks("checks_subunidad");
 
@@ -2815,8 +2813,8 @@ const horaPDF = (partesFecha[1] || "").trim();
 
   cargarConsultaOrganicos();
 }
-
-  function cargarConsultaOrganicos() {
+  
+function cargarConsultaOrganicos() {
   const unidad = document.getElementById("consulta_unidad")?.value || "";
   const subunidadesMarcadas = obtenerValoresChecks("checks_subunidad");
   const estacionesMarcadas = obtenerValoresChecks("checks_estacion");
@@ -2848,6 +2846,38 @@ const horaPDF = (partesFecha[1] || "").trim();
   pintarChecks("checks_organico", organicos);
 }
 
+  function seleccionarTodasSubunidades() {
+  document.querySelectorAll('#checks_subunidad input[type="checkbox"]').forEach(ch => {
+    ch.checked = true;
+  });
+
+  cargarConsultaEstacionesYOrganicos();
+}
+
+function limpiarSubunidades() {
+  document.querySelectorAll('#checks_subunidad input[type="checkbox"]').forEach(ch => {
+    ch.checked = false;
+  });
+
+  cargarConsultaEstacionesYOrganicos();
+}
+
+function seleccionarTodasEstaciones() {
+  document.querySelectorAll('#checks_estacion input[type="checkbox"]').forEach(ch => {
+    ch.checked = true;
+  });
+
+  cargarConsultaOrganicos();
+}
+
+function limpiarEstaciones() {
+  document.querySelectorAll('#checks_estacion input[type="checkbox"]').forEach(ch => {
+    ch.checked = false;
+  });
+
+  cargarConsultaOrganicos();
+}
+  
     function cargarChecksGruposExtra() {
       pintarChecks("checks_extra_oficiales", ["CR", "TC", "MY", "CT", "TE", "ST"]);
       pintarChecks("checks_extra_ejecutivo", ["CM", "SC", "IJ", "IT", "SI"]);
