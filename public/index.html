@@ -6605,9 +6605,10 @@ async function limpiarPruebaServicioExtra() {
 async function cerrarServicioExtraordinario() {
   const fecha = document.getElementById("m11_fecha").value;
   const unidad = document.getElementById("m11_unidad").value;
+  const servicio = document.getElementById("m11_servicio")?.value;
 
-  if (!fecha || !unidad) {
-    alert("Debe seleccionar fecha y unidad");
+  if (!fecha || !unidad || !servicio) {
+    alert("Debe seleccionar fecha, unidad y servicio");
     return;
   }
 
@@ -6619,25 +6620,32 @@ async function cerrarServicioExtraordinario() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ fecha, unidad })
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        servicio,
+        subunidad: "TODAS", // 🔥 cierre general
+        responsable_cedula: document.getElementById("cedula_responsable")?.value || null,
+        responsable_nombre: document.getElementById("nombre_elabora")?.value || null,
+        responsable_cargo: "CIERRE SERVICIO"
+      })
     });
 
     const data = await res.json();
 
     if (!data.ok) {
-      alert("Error cerrando servicio");
+      alert(data.error || "Error cerrando servicio");
       return;
     }
 
-    alert("Servicio finalizado correctamente");
+    alert("Servicio finalizado correctamente ✅");
     cargarServiciosModulo11();
 
   } catch (error) {
     console.error(error);
     alert("Error en servidor");
   }
-}
-  
+}  
 </script>
 
 <!-- LIBRERÍA PARA EXCEL -->
