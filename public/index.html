@@ -502,6 +502,36 @@
   margin-bottom: 8px;
   cursor: pointer;
 }    
+
+.fila-distribucion-extra {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.item-distribucion-extra {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-distribucion-extra label {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.ayuda-disponible {
+  font-size: 12px;
+  color: #667085;
+  margin-bottom: 6px;
+}
+
+.item-distribucion-extra input[disabled] {
+  background: #f2f4f7;
+  color: #98a2b3;
+  cursor: not-allowed;
+}
+    
 </style>
 </head>
 <body>
@@ -3043,6 +3073,16 @@ const jefePmu = window.seleccionServicio.pmu;
   // =========================
   // FUNCIONES AUX
   // =========================
+function controlarMaximoExtra(input, maximo) {
+  let valor = parseInt(input.value || "0", 10);
+
+  if (isNaN(valor) || valor < 0) valor = 0;
+  if (valor > maximo) valor = maximo;
+
+  input.value = valor;
+}
+
+    
   function grupo(grado = "") {
     const g = grado.toUpperCase().trim();
     if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
@@ -5848,6 +5888,33 @@ function actualizarRutaApoyoExtra() {
     : `Unidad seleccionada: <b>${unidad}</b>`;
 }
 
+  function contarDisponiblesPorDependencia(unidad, subunidad, estacion) {
+  const base = Array.isArray(ultimoResultadoConsulta) ? ultimoResultadoConsulta : [];
+
+  const filtrados = base.filter(p => {
+    const unidadP = String(p.unidad || "").trim();
+    const subunidadP = String(p.subunidad || "").trim();
+    const estacionP = String(p.estacion || "").trim();
+    const aptitud = String(p.aptitud || "").trim().toUpperCase();
+    const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
+
+    return (
+      unidadP === unidad &&
+      subunidadP === subunidad &&
+      estacionP === estacion &&
+      aptitud === "APTO" &&
+      (novedad === "" || novedad === "DISPONIBLE")
+    );
+  });
+
+  return {
+    oficiales: filtrados.filter(p => ["CR", "TC", "MY", "CT", "TE", "ST"].includes(String(p.grado || "").toUpperCase().trim())).length,
+    ejecutivo: filtrados.filter(p => ["CM", "SC", "IJ", "IT", "SI"].includes(String(p.grado || "").toUpperCase().trim())).length,
+    patrulleros: filtrados.filter(p => ["PT", "PP"].includes(String(p.grado || "").toUpperCase().trim())).length,
+    auxiliares: filtrados.filter(p => ["AUX"].includes(String(p.grado || "").toUpperCase().trim())).length
+  };
+}
+
 function generarDistribucionExtraPorDependencia() {
   const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
   const subunidades = obtenerChecksMarcados("checks_subunidad_apoyo_extra");
@@ -5870,6 +5937,11 @@ function generarDistribucionExtraPorDependencia() {
     return;
   }
 
+  if (!Array.isArray(ultimoResultadoConsulta) || !ultimoResultadoConsulta.length) {
+    alert("Primero debes consultar novedades para tener base real de disponibles.");
+    return;
+  }
+
   let dependenciasUnicas = [];
 
   if (estacionesMarcadas.length) {
@@ -5882,14 +5954,26 @@ function generarDistribucionExtraPorDependencia() {
       };
     }).filter(d => d.subunidad && d.estacion);
   } else {
-    dependenciasUnicas = subunidades.map(sub => ({
-      unidad,
-      subunidad: sub,
-      estacion: ""
-    }));
+    dependenciasUnicas = estructuraGlobal
+      .filter(x =>
+        String(x.unidad || "").trim() === unidad &&
+        subunidades.includes(String(x.subunidad || "").trim())
+      )
+      .map(x => ({
+        unidad: String(x.unidad || "").trim(),
+        subunidad: String(x.subunidad || "").trim(),
+        estacion: String(x.estacion || "").trim()
+      }))
+      .filter(d => d.subunidad && d.estacion);
   }
 
-  dependenciasUnicas.sort((a, b) => {
+  const mapa = new Map();
+  dependenciasUnicas.forEach(dep => {
+    const key = `${dep.unidad}|||${dep.subunidad}|||${dep.estacion}`;
+    if (!mapa.has(key)) mapa.set(key, dep);
+  });
+
+  dependenciasUnicas = [...mapa.values()].sort((a, b) => {
     const sa = `${a.subunidad} ${a.estacion}`;
     const sb = `${b.subunidad} ${b.estacion}`;
     return sa.localeCompare(sb, "es");
@@ -5901,7 +5985,8 @@ function generarDistribucionExtraPorDependencia() {
   }
 
   dependenciasUnicas.forEach(dep => {
-    const claveBase = `${dep.subunidad}__${dep.estacion || "SIN_ESTACION"}`;
+    const claveBase = `${dep.subunidad}__${dep.estacion}`;
+    const disp = contarDisponiblesPorDependencia(dep.unidad, dep.subunidad, dep.estacion);
 
     const bloque = document.createElement("div");
     bloque.className = "sub-card";
@@ -5909,28 +5994,64 @@ function generarDistribucionExtraPorDependencia() {
 
     bloque.innerHTML = `
       <h4 style="margin-bottom:10px;">
-        ${dep.unidad} - ${dep.subunidad}${dep.estacion ? " - " + dep.estacion : ""}
+        ${dep.unidad} - ${dep.subunidad} - ${dep.estacion}
       </h4>
 
-      <div class="grid-extra">
-        <div>
+      <div class="fila-distribucion-extra">
+        <div class="item-distribucion-extra">
           <label>Oficiales</label>
-          <input id="extra_${claveBase}_CR" type="number" min="0" value="0" oninput="validarDistribucionExtra()" />
+          <div class="ayuda-disponible">Disp: ${disp.oficiales}</div>
+          <input
+            id="extra_${claveBase}_CR"
+            type="number"
+            min="0"
+            max="${disp.oficiales}"
+            value="0"
+            ${disp.oficiales === 0 ? "disabled" : ""}
+            oninput="controlarMaximoExtra(this, ${disp.oficiales}); validarDistribucionExtra();"
+          />
         </div>
 
-        <div>
+        <div class="item-distribucion-extra">
           <label>Nivel ejecutivo</label>
-          <input id="extra_${claveBase}_CM" type="number" min="0" value="0" oninput="validarDistribucionExtra()" />
+          <div class="ayuda-disponible">Disp: ${disp.ejecutivo}</div>
+          <input
+            id="extra_${claveBase}_CM"
+            type="number"
+            min="0"
+            max="${disp.ejecutivo}"
+            value="0"
+            ${disp.ejecutivo === 0 ? "disabled" : ""}
+            oninput="controlarMaximoExtra(this, ${disp.ejecutivo}); validarDistribucionExtra();"
+          />
         </div>
 
-        <div>
+        <div class="item-distribucion-extra">
           <label>Patrulleros</label>
-          <input id="extra_${claveBase}_PT" type="number" min="0" value="0" oninput="validarDistribucionExtra()" />
+          <div class="ayuda-disponible">Disp: ${disp.patrulleros}</div>
+          <input
+            id="extra_${claveBase}_PT"
+            type="number"
+            min="0"
+            max="${disp.patrulleros}"
+            value="0"
+            ${disp.patrulleros === 0 ? "disabled" : ""}
+            oninput="controlarMaximoExtra(this, ${disp.patrulleros}); validarDistribucionExtra();"
+          />
         </div>
 
-        <div>
+        <div class="item-distribucion-extra">
           <label>Auxiliares</label>
-          <input id="extra_${claveBase}_AUX" type="number" min="0" value="0" oninput="validarDistribucionExtra()" />
+          <div class="ayuda-disponible">Disp: ${disp.auxiliares}</div>
+          <input
+            id="extra_${claveBase}_AUX"
+            type="number"
+            min="0"
+            max="${disp.auxiliares}"
+            value="0"
+            ${disp.auxiliares === 0 ? "disabled" : ""}
+            oninput="controlarMaximoExtra(this, ${disp.auxiliares}); validarDistribucionExtra();"
+          />
         </div>
       </div>
     `;
