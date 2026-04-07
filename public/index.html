@@ -3071,15 +3071,41 @@ const jefePmu = window.seleccionServicio.pmu;
   if (!personas.length) return alert("No hay personal");
 
   // =========================
-  // FUNCIONES AUX
+  // FUNCIONES AUXILIARES
   // =========================
+
+function refrescarDependenciasApoyoExtra() {
+  cargarSubunidadesApoyoExtraDependiente();
+  cargarEstacionesApoyoExtraDependiente();
+  actualizarRutaApoyoExtra();
+
+  const contenedor = document.getElementById("contenedor_distribucion_extra");
+  const validacion = document.getElementById("validacion_distribucion_extra");
+
+  if (contenedor) contenedor.innerHTML = "";
+  if (validacion) validacion.innerText = "Sin validar";
+}
+    
 function controlarMaximoExtra(input, maximo) {
   let valor = parseInt(input.value || "0", 10);
 
   if (isNaN(valor) || valor < 0) valor = 0;
-  if (valor > maximo) valor = maximo;
+  if (valor > maximo) {
+    valor = maximo;
+    alert(`No puedes solicitar más de ${maximo} disponibles para este campo.`);
+  }
 
   input.value = valor;
+}
+    function bloquearTecladoExtra(input, maximo) {
+  setTimeout(() => {
+    let valor = parseInt(input.value || "0", 10);
+
+    if (isNaN(valor) || valor < 0) valor = 0;
+    if (valor > maximo) valor = maximo;
+
+    input.value = valor;
+  }, 0);
 }
 
     
@@ -5765,12 +5791,47 @@ function cargarSubunidadesApoyoExtraDependiente() {
     return;
   }
 
+  const base = Array.isArray(ultimoResultadoConsulta) ? ultimoResultadoConsulta : [];
+
+  if (!base.length) {
+    contenedor.innerHTML = `<div class="ayuda">Primero debes consultar novedades en el módulo 6.</div>`;
+    actualizarRutaApoyoExtra();
+    return;
+  }
+
+  const supervisorCedula = String(window.seleccionServicio?.supervisor || "").trim();
+  const jefeCedula = String(window.seleccionServicio?.jefe || "").trim();
+  const pmuCedula = String(window.seleccionServicio?.pmu || "").trim();
+
+  const bloqueados = new Set(
+    [supervisorCedula, jefeCedula, pmuCedula].filter(Boolean)
+  );
+
   const subunidades = [...new Set(
-    estructuraGlobal
-      .filter(x => String(x.unidad || "").trim() === unidad)
-      .map(x => String(x.subunidad || "").trim())
-      .filter(Boolean)
+    base
+      .filter(p => {
+        const unidadP = String(p.unidad || "").trim();
+        const subunidadP = String(p.subunidad || "").trim();
+        const aptitud = String(p.aptitud || "").trim().toUpperCase();
+        const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
+        const cedulaP = String(p.cedula || "").trim();
+
+        return (
+          unidadP === unidad &&
+          subunidadP &&
+          aptitud === "APTO" &&
+          (novedad === "" || novedad === "DISPONIBLE") &&
+          !bloqueados.has(cedulaP)
+        );
+      })
+      .map(p => String(p.subunidad || "").trim())
   )].sort();
+
+  if (!subunidades.length) {
+    contenedor.innerHTML = `<div class="ayuda">No hay subunidades disponibles según la consulta general.</div>`;
+    actualizarRutaApoyoExtra();
+    return;
+  }
 
   subunidades.forEach(sub => {
     const label = document.createElement("label");
@@ -5807,16 +5868,38 @@ function cargarEstacionesApoyoExtraDependiente() {
     return;
   }
 
-  const dependencias = estructuraGlobal
-    .filter(x =>
-      String(x.unidad || "").trim() === unidad &&
-      subunidades.includes(String(x.subunidad || "").trim())
-    )
-    .map(x => ({
-      subunidad: String(x.subunidad || "").trim(),
-      estacion: String(x.estacion || "").trim()
-    }))
-    .filter(x => x.subunidad && x.estacion);
+  const base = Array.isArray(ultimoResultadoConsulta) ? ultimoResultadoConsulta : [];
+
+  const supervisorCedula = String(window.seleccionServicio?.supervisor || "").trim();
+  const jefeCedula = String(window.seleccionServicio?.jefe || "").trim();
+  const pmuCedula = String(window.seleccionServicio?.pmu || "").trim();
+
+  const bloqueados = new Set(
+    [supervisorCedula, jefeCedula, pmuCedula].filter(Boolean)
+  );
+
+  const dependencias = base
+    .filter(p => {
+      const unidadP = String(p.unidad || "").trim();
+      const subunidadP = String(p.subunidad || "").trim();
+      const estacionP = String(p.estacion || "").trim();
+      const aptitud = String(p.aptitud || "").trim().toUpperCase();
+      const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
+      const cedulaP = String(p.cedula || "").trim();
+
+      return (
+        unidadP === unidad &&
+        subunidades.includes(subunidadP) &&
+        estacionP &&
+        aptitud === "APTO" &&
+        (novedad === "" || novedad === "DISPONIBLE") &&
+        !bloqueados.has(cedulaP)
+      );
+    })
+    .map(p => ({
+      subunidad: String(p.subunidad || "").trim(),
+      estacion: String(p.estacion || "").trim()
+    }));
 
   const unicasMap = new Map();
 
@@ -5888,8 +5971,16 @@ function actualizarRutaApoyoExtra() {
     : `Unidad seleccionada: <b>${unidad}</b>`;
 }
 
-  function contarDisponiblesPorDependencia(unidad, subunidad, estacion) {
+function contarDisponiblesPorDependencia(unidad, subunidad, estacion) {
   const base = Array.isArray(ultimoResultadoConsulta) ? ultimoResultadoConsulta : [];
+
+  const supervisorCedula = String(window.seleccionServicio?.supervisor || "").trim();
+  const jefeCedula = String(window.seleccionServicio?.jefe || "").trim();
+  const pmuCedula = String(window.seleccionServicio?.pmu || "").trim();
+
+  const bloqueados = new Set(
+    [supervisorCedula, jefeCedula, pmuCedula].filter(Boolean)
+  );
 
   const filtrados = base.filter(p => {
     const unidadP = String(p.unidad || "").trim();
@@ -5897,13 +5988,15 @@ function actualizarRutaApoyoExtra() {
     const estacionP = String(p.estacion || "").trim();
     const aptitud = String(p.aptitud || "").trim().toUpperCase();
     const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
+    const cedulaP = String(p.cedula || "").trim();
 
     return (
       unidadP === unidad &&
       subunidadP === subunidad &&
       estacionP === estacion &&
       aptitud === "APTO" &&
-      (novedad === "" || novedad === "DISPONIBLE")
+      (novedad === "" || novedad === "DISPONIBLE") &&
+      !bloqueados.has(cedulaP)
     );
   });
 
