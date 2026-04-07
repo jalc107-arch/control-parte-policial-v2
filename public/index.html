@@ -5167,6 +5167,10 @@ function renderizarTableroModulo11() {
 }
   
 async function verDetalleModulo11(subunidad) {
+  if (window.m11ServicioEstado?.cerrado) {
+  alert("El servicio está cerrado. No se permite modificar información.");
+  return;
+}
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
   const servicio = document.getElementById("m11_servicio")?.value || "";
@@ -5583,6 +5587,10 @@ function agregarReemplazoModulo11() {
 }
 
 async function guardarControlModulo11() {
+  if (window.m11ServicioEstado?.cerrado) {
+  alert("Este servicio ya fue cerrado y no se puede modificar");
+  return;
+}
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
   const subunidad = window.m11SubunidadActual || "";
