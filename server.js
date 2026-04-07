@@ -2719,6 +2719,40 @@ app.get("/debug-gpse", async (req, res) => {
     res.json({ ok: false, error: error.message });
   }
 });
+
+app.post("/limpiar-prueba-servicio-extra", async (req, res) => {
+  try {
+    const { fecha, unidad, titulo_servicio } = req.body;
+
+    if (!fecha || !unidad || !titulo_servicio) {
+      return res.status(400).json({
+        ok: false,
+        error: "Fecha, unidad y titulo_servicio son obligatorios"
+      });
+    }
+
+    const result = await pool.query(
+      `
+      DELETE FROM servicios_extraordinarios
+      WHERE fecha = $1
+        AND unidad = $2
+        AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
+      `,
+      [fecha, unidad, titulo_servicio]
+    );
+
+    return res.json({
+      ok: true,
+      eliminados: result.rowCount || 0
+    });
+  } catch (error) {
+    console.error("ERROR /limpiar-prueba-servicio-extra:", error);
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
