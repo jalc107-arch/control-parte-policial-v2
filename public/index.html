@@ -4571,14 +4571,15 @@ function validarDistribucionExtra() {
   const reqOficiales = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
   const reqEjecutivo = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
   const reqPatrulleros = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
-  const reqPP = parseInt(document.getElementById("total_pp_extra")?.value || "0", 10);
   const reqAuxiliares = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
 
-  const inputs = Array.from(document.querySelectorAll('#contenedor_distribucion_extra input[type="number"]'));
+  const inputs = Array.from(
+    document.querySelectorAll('#contenedor_distribucion_extra input[type="number"]')
+  );
 
   let sumOficiales = 0;
   let sumEjecutivo = 0;
-  let sumPatrulleros = 0;
+  let sumPT = 0;
   let sumPP = 0;
   let sumAuxiliares = 0;
 
@@ -4588,31 +4589,32 @@ function validarDistribucionExtra() {
 
     if (input.id.endsWith("_CR")) sumOficiales += valor;
     else if (input.id.endsWith("_CM")) sumEjecutivo += valor;
-    else if (input.id.endsWith("_PT")) sumPatrulleros += valor;
+    else if (input.id.endsWith("_PT")) sumPT += valor;
     else if (input.id.endsWith("_PP")) sumPP += valor;
     else if (input.id.endsWith("_AUX")) sumAuxiliares += valor;
   });
 
+  const sumPatrullerosTotal = sumPT + sumPP;
+
+  const solicitadoTexto = `${reqOficiales}-${reqEjecutivo}-${reqPatrulleros}-${reqAuxiliares} = ${reqOficiales + reqEjecutivo + reqPatrulleros + reqAuxiliares}`;
+  const distribuidoTexto = `${sumOficiales}-${sumEjecutivo}-${sumPatrullerosTotal}-${sumAuxiliares} = ${sumOficiales + sumEjecutivo + sumPatrullerosTotal + sumAuxiliares}`;
+
   const validacion = document.getElementById("validacion_distribucion_extra");
   if (!validacion) return;
-
-  const solicitadoTexto = `${reqOficiales}-${reqEjecutivo}-${reqPatrulleros}-${reqPP}-${reqAuxiliares} = ${reqOficiales + reqEjecutivo + reqPatrulleros + reqPP + reqAuxiliares}`;
-  const distribuidoTexto = `${sumOficiales}-${sumEjecutivo}-${sumPatrulleros}-${sumPP}-${sumAuxiliares} = ${sumOficiales + sumEjecutivo + sumPatrulleros + sumPP + sumAuxiliares}`;
 
   const coincide =
     sumOficiales === reqOficiales &&
     sumEjecutivo === reqEjecutivo &&
-    sumPatrulleros === reqPatrulleros &&
-    sumPP === reqPP &&
+    sumPatrullerosTotal === reqPatrulleros &&
     sumAuxiliares === reqAuxiliares;
 
   if (coincide) {
     validacion.innerText =
-      `Distribución correcta\nSolicitado: ${solicitadoTexto}\nDistribuido: ${distribuidoTexto}`;
+      `Distribución correcta\nSolicitado: ${solicitadoTexto}\nDistribuido: ${distribuidoTexto}\n(PT: ${sumPT} | PP: ${sumPP})`;
     validacion.style.color = "green";
   } else {
     validacion.innerText =
-      `Distribución no coincide\nSolicitado: ${solicitadoTexto}\nDistribuido: ${distribuidoTexto}`;
+      `Distribución no coincide\nSolicitado: ${solicitadoTexto}\nDistribuido: ${distribuidoTexto}\n(PT: ${sumPT} | PP: ${sumPP})`;
     validacion.style.color = "red";
   }
 }
@@ -4632,12 +4634,9 @@ function controlarLimiteSolicitadoExtra(input) {
   } else if (input.id.endsWith("_CM")) {
     selector = '#contenedor_distribucion_extra input[id$="_CM"]';
     totalSolicitado = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
-  } else if (input.id.endsWith("_PT")) {
-    selector = '#contenedor_distribucion_extra input[id$="_PT"]';
+  } else if (input.id.endsWith("_PT") || input.id.endsWith("_PP")) {
+    selector = '#contenedor_distribucion_extra input[id$="_PT"], #contenedor_distribucion_extra input[id$="_PP"]';
     totalSolicitado = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
-  } else if (input.id.endsWith("_PP")) {
-    selector = '#contenedor_distribucion_extra input[id$="_PP"]';
-    totalSolicitado = parseInt(document.getElementById("total_pp_extra")?.value || "0", 10);
   } else if (input.id.endsWith("_AUX")) {
     selector = '#contenedor_distribucion_extra input[id$="_AUX"]';
     totalSolicitado = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
@@ -4654,7 +4653,6 @@ function controlarLimiteSolicitadoExtra(input) {
   });
 
   const maxPermitidoParaEsteCampo = Math.max(0, totalSolicitado - sumaOtros);
-
   const maxDisponible = parseInt(input.max || "0", 10);
   const maxFinal = Math.min(maxPermitidoParaEsteCampo, isNaN(maxDisponible) ? maxPermitidoParaEsteCampo : maxDisponible);
 
@@ -4664,7 +4662,7 @@ function controlarLimiteSolicitadoExtra(input) {
 
   input.value = valor;
   validarDistribucionExtra();
-}  
+} 
   
   // 👇 PEGA AQUÍ LA FUNCIÓN
 async function cargarResponsablesServicioExtra() {
