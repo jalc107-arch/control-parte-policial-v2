@@ -2293,6 +2293,51 @@ app.get("/modulo11-parte-extra", async (req, res) => {
     return res.status(500).json({ ok: false, error: error.message });
   }
 });
+
+app.post("/modulo11-cerrar-servicio", async (req, res) => {
+  try {
+    const {
+      fecha,
+      unidad,
+      servicio,
+      responsable_cedula,
+      responsable_nombre,
+      responsable_cargo
+    } = req.body;
+
+    if (!fecha || !unidad || !servicio) {
+      return res.json({ ok: false, error: "Faltan datos" });
+    }
+
+    const { data, error } = await supabase
+      .from("servicios_extraordinarios")
+      .update({
+        estado: "CERRADO",
+        fecha_cierre: new Date().toISOString(),
+        responsable_cierre: responsable_nombre,
+        cedula_responsable: responsable_cedula
+      })
+      .eq("fecha", fecha)
+      .eq("unidad", unidad)
+      .eq("nombre_servicio", servicio)
+      .select();
+
+    if (error) {
+      console.error("ERROR BD:", error);
+      return res.json({ ok: false, error: "Error en base de datos" });
+    }
+
+    if (!data || data.length === 0) {
+      return res.json({ ok: false, error: "No se encontró el servicio" });
+    }
+
+    return res.json({ ok: true });
+
+  } catch (err) {
+    console.error("ERROR SERVIDOR:", err);
+    return res.json({ ok: false, error: "Error servidor" });
+  }
+});
 // =========================
 // DETALLE MODULO 11
 // =========================
