@@ -2710,50 +2710,35 @@ const horaPDF = (partesFecha[1] || "").trim();
       if (check) check.checked = true;
     }
 
-    function cargarFiltrosConsulta() {
-      const unidadSelect = document.getElementById("consulta_unidad");
-      if (!unidadSelect) return;
+function cargarFiltrosConsulta() {
+  const unidadSelect = document.getElementById("consulta_unidad");
+  if (!unidadSelect) return;
 
-      unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
-      const unidades = [...new Set(estructuraGlobal.map(x => x.unidad).filter(Boolean))];
+  unidadSelect.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
 
-      unidades.forEach(unidad => {
-        const option = document.createElement("option");
-        option.value = unidad;
-        option.textContent = unidad;
-        unidadSelect.appendChild(option);
-      });
+  const unidades = [...new Set(
+    estructuraGlobal.map(x => x.unidad).filter(Boolean)
+  )].sort();
 
-      pintarChecks("checks_subunidad", []);
-      pintarChecks("checks_estacion", []);
-      pintarChecks("checks_organico", []);
-      pintarChecks("checks_tipo", [
-        "DISPONIBLE",
-        "SERVICIO",
-        "SERVICIO EXTRAORDINARIO",
-        "COMISION DE SERVICIO",
-        "COMISION EXTERIOR",
-        "PLAN ELECTORAL",
-        "PERMISO",
-        "PERMISO EXTRAORDINARIOS",
-        "PERMISO NAVIDEÑO",
-        "PERMISO SEMANA SANTA",
-        "VACACIONES",
-        "EXCUSADOS",
-        "SUSPENDIDOS",
-        "FRANQUICIA",
-        "LICENCIA LUTO",
-        "LICENCIA MATERNIDAD",
-        "HOSPITALIZADO",
-        "CITA MEDICA",
-        "CURSO ASCENSO",
-        "RETARDADOS DE LA FORMACION",
-        "FUERA DE LA FORMACION",
-        "HORARIO FLEXIBLE",
-        "CUMPLE FUNCIONES DIFERENTES DE POLCO",
-        "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
-      ]);
-    }
+  unidades.forEach(unidad => {
+    const option = document.createElement("option");
+    option.value = unidad;
+    option.textContent = unidad;
+    unidadSelect.appendChild(option);
+  });
+
+  document.getElementById("checks_subunidad").innerHTML =
+    '<div class="mensaje-vacio">Primero selecciona una unidad.</div>';
+
+  document.getElementById("checks_estacion").innerHTML =
+    '<div class="mensaje-vacio">Primero selecciona una unidad.</div>';
+
+  document.getElementById("checks_organico").innerHTML =
+    '<div class="mensaje-vacio">Primero selecciona una unidad.</div>';
+
+  document.getElementById("checks_tipo").innerHTML =
+    '<div class="mensaje-vacio">Primero selecciona una unidad.</div>';
+}
 
 function cargarConsultaDependencias() {
   const unidad = document.getElementById("consulta_unidad")?.value || "";
@@ -2761,6 +2746,7 @@ function cargarConsultaDependencias() {
   pintarChecks("checks_subunidad", []);
   pintarChecks("checks_estacion", []);
   pintarChecks("checks_organico", []);
+  pintarChecks("checks_tipo", []);
 
   if (!unidad) return;
 
@@ -2779,6 +2765,33 @@ function cargarConsultaDependencias() {
       cargarConsultaEstacionesYOrganicos();
     };
   });
+
+  pintarChecks("checks_tipo", [
+    "DISPONIBLE",
+    "SERVICIO",
+    "SERVICIO EXTRAORDINARIO",
+    "COMISION DE SERVICIO",
+    "COMISION EXTERIOR",
+    "PLAN ELECTORAL",
+    "PERMISO",
+    "PERMISO EXTRAORDINARIOS",
+    "PERMISO NAVIDEÑO",
+    "PERMISO SEMANA SANTA",
+    "VACACIONES",
+    "EXCUSADOS",
+    "SUSPENDIDOS",
+    "FRANQUICIA",
+    "LICENCIA LUTO",
+    "LICENCIA MATERNIDAD",
+    "HOSPITALIZADO",
+    "CITA MEDICA",
+    "CURSO ASCENSO",
+    "RETARDADOS DE LA FORMACION",
+    "FUERA DE LA FORMACION",
+    "HORARIO FLEXIBLE",
+    "CUMPLE FUNCIONES DIFERENTES DE POLCO",
+    "NO ES DE POLCO PERO CUMPLE FUNCIONES DE POLCO"
+  ]);
 
   cargarConsultaEstacionesYOrganicos();
 }
@@ -2816,7 +2829,7 @@ function cargarConsultaEstacionesYOrganicos() {
 
   cargarConsultaOrganicos();
 }
-
+  
 function cargarConsultaOrganicos() {
   const unidad = document.getElementById("consulta_unidad")?.value || "";
   const subunidadesMarcadas = obtenerValoresChecks("checks_subunidad");
