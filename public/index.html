@@ -1003,6 +1003,12 @@
       </select>
     </div>
 
+    <div class="acciones-inline">
+  <button type="button" onclick="cerrarServicioExtraordinario()">
+    Finalizar servicio
+  </button>
+</div>
+
     <div class="campo-corto">
   <select id="m11_servicio">
     <option value="">Seleccionar SERVICIO EXTRAORDINARIO</option>
@@ -6593,6 +6599,42 @@ async function limpiarPruebaServicioExtra() {
   } catch (error) {
     console.error("ERROR limpiarPruebaServicioExtra:", error);
     alert("Error limpiando la prueba.");
+  }
+}
+
+async function cerrarServicioExtraordinario() {
+  const fecha = document.getElementById("m11_fecha").value;
+  const unidad = document.getElementById("m11_unidad").value;
+
+  if (!fecha || !unidad) {
+    alert("Debe seleccionar fecha y unidad");
+    return;
+  }
+
+  if (!confirm("¿Seguro que desea finalizar este servicio?")) return;
+
+  try {
+    const res = await fetch("/modulo11-cerrar-servicio", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ fecha, unidad })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert("Error cerrando servicio");
+      return;
+    }
+
+    alert("Servicio finalizado correctamente");
+    cargarServiciosModulo11();
+
+  } catch (error) {
+    console.error(error);
+    alert("Error en servidor");
   }
 }
   
