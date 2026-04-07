@@ -5767,27 +5767,43 @@ function cargarEstacionesApoyoExtraDependiente() {
     return;
   }
 
-  const estaciones = [...new Set(
-    estructuraGlobal
-      .filter(x =>
-        String(x.unidad || "").trim() === unidad &&
-        subunidades.includes(String(x.subunidad || "").trim())
-      )
-      .map(x => String(x.estacion || "").trim())
-      .filter(Boolean)
-  )].sort();
+  const dependencias = estructuraGlobal
+    .filter(x =>
+      String(x.unidad || "").trim() === unidad &&
+      subunidades.includes(String(x.subunidad || "").trim())
+    )
+    .map(x => ({
+      subunidad: String(x.subunidad || "").trim(),
+      estacion: String(x.estacion || "").trim()
+    }))
+    .filter(x => x.subunidad && x.estacion);
 
-  estaciones.forEach(est => {
+  const unicasMap = new Map();
+
+  dependencias.forEach(dep => {
+    const key = `${dep.subunidad}|||${dep.estacion}`;
+    if (!unicasMap.has(key)) {
+      unicasMap.set(key, dep);
+    }
+  });
+
+  const dependenciasUnicas = [...unicasMap.values()].sort((a, b) => {
+    const ta = `${a.subunidad} - ${a.estacion}`;
+    const tb = `${b.subunidad} - ${b.estacion}`;
+    return ta.localeCompare(tb, "es");
+  });
+
+  dependenciasUnicas.forEach(dep => {
     const label = document.createElement("label");
     label.className = "check-item";
 
     const input = document.createElement("input");
     input.type = "checkbox";
-    input.value = est;
+    input.value = `${dep.subunidad}|||${dep.estacion}`;
     input.onchange = () => actualizarRutaApoyoExtra();
 
     label.appendChild(input);
-    label.appendChild(document.createTextNode(est));
+    label.appendChild(document.createTextNode(`${dep.subunidad} - ${dep.estacion}`));
     contenedor.appendChild(label);
   });
 
@@ -5800,7 +5816,7 @@ function actualizarRutaApoyoExtra() {
 
   const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
   const subunidades = obtenerChecksMarcados("checks_subunidad_apoyo_extra");
-  const estaciones = obtenerChecksMarcados("checks_estacion_apoyo_extra");
+  const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_apoyo_extra");
 
   if (!unidad) {
     box.innerHTML = "Selecciona una unidad.";
@@ -5814,16 +5830,11 @@ function actualizarRutaApoyoExtra() {
 
   const rutas = [];
 
-  if (estaciones.length) {
-    estaciones.forEach(est => {
-      const fila = estructuraGlobal.find(x =>
-        String(x.unidad || "").trim() === unidad &&
-        subunidades.includes(String(x.subunidad || "").trim()) &&
-        String(x.estacion || "").trim() === est
-      );
-
-      if (fila) {
-        rutas.push(`${unidad} - ${fila.subunidad} - ${fila.estacion}`);
+  if (estacionesMarcadas.length) {
+    estacionesMarcadas.forEach(valor => {
+      const [subunidad, estacion] = String(valor).split("|||");
+      if (subunidad && estacion) {
+        rutas.push(`${unidad} - ${subunidad} - ${estacion}`);
       }
     });
   } else {
@@ -5840,7 +5851,7 @@ function actualizarRutaApoyoExtra() {
 function generarDistribucionExtraPorDependencia() {
   const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
   const subunidades = obtenerChecksMarcados("checks_subunidad_apoyo_extra");
-  const estaciones = obtenerChecksMarcados("checks_estacion_apoyo_extra");
+  const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_apoyo_extra");
 
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
@@ -5859,43 +5870,26 @@ function generarDistribucionExtraPorDependencia() {
     return;
   }
 
-  let dependencias = [];
+  let dependenciasUnicas = [];
 
-  if (estaciones.length) {
-    dependencias = estructuraGlobal
-      .filter(x =>
-        String(x.unidad || "").trim() === unidad &&
-        subunidades.includes(String(x.subunidad || "").trim()) &&
-        estaciones.includes(String(x.estacion || "").trim())
-      )
-      .map(x => ({
-        unidad: String(x.unidad || "").trim(),
-        subunidad: String(x.subunidad || "").trim(),
-        estacion: String(x.estacion || "").trim()
-      }));
+  if (estacionesMarcadas.length) {
+    dependenciasUnicas = estacionesMarcadas.map(valor => {
+      const [subunidad, estacion] = String(valor).split("|||");
+      return {
+        unidad,
+        subunidad: subunidad || "",
+        estacion: estacion || ""
+      };
+    }).filter(d => d.subunidad && d.estacion);
   } else {
-    dependencias = estructuraGlobal
-      .filter(x =>
-        String(x.unidad || "").trim() === unidad &&
-        subunidades.includes(String(x.subunidad || "").trim())
-      )
-      .map(x => ({
-        unidad: String(x.unidad || "").trim(),
-        subunidad: String(x.subunidad || "").trim(),
-        estacion: String(x.estacion || "").trim()
-      }));
+    dependenciasUnicas = subunidades.map(sub => ({
+      unidad,
+      subunidad: sub,
+      estacion: ""
+    }));
   }
 
-  const unicasMap = new Map();
-
-  dependencias.forEach(d => {
-    const key = `${d.unidad}|||${d.subunidad}|||${d.estacion}`;
-    if (!unicasMap.has(key)) {
-      unicasMap.set(key, d);
-    }
-  });
-
-  const dependenciasUnicas = [...unicasMap.values()].sort((a, b) => {
+  dependenciasUnicas.sort((a, b) => {
     const sa = `${a.subunidad} ${a.estacion}`;
     const sb = `${b.subunidad} ${b.estacion}`;
     return sa.localeCompare(sb, "es");
@@ -5907,7 +5901,7 @@ function generarDistribucionExtraPorDependencia() {
   }
 
   dependenciasUnicas.forEach(dep => {
-    const claveBase = `${dep.subunidad}__${dep.estacion}`;
+    const claveBase = `${dep.subunidad}__${dep.estacion || "SIN_ESTACION"}`;
 
     const bloque = document.createElement("div");
     bloque.className = "sub-card";
@@ -5915,7 +5909,7 @@ function generarDistribucionExtraPorDependencia() {
 
     bloque.innerHTML = `
       <h4 style="margin-bottom:10px;">
-        ${dep.unidad} - ${dep.subunidad} - ${dep.estacion}
+        ${dep.unidad} - ${dep.subunidad}${dep.estacion ? " - " + dep.estacion : ""}
       </h4>
 
       <div class="grid-extra">
@@ -5947,7 +5941,7 @@ function generarDistribucionExtraPorDependencia() {
   if (validacion) {
     validacion.innerText = "Distribución generada. Pendiente validar.";
   }
-}  
+}
   
 </script>
 
