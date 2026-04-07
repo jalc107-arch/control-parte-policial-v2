@@ -2471,55 +2471,50 @@ app.post("/modulo11-guardar-control", async (req, res) => {
 // CERRAR SERVICIO MODULO 11
 // =========================
 
-app.post("/modulo11-cerrar-servicio", async (req, res) => {
-  try {
-    const {
-  fecha,
-  unidad,
-  subunidad,
-  servicio,
-  responsable_cedula,
-  responsable_nombre,
-  responsable_cargo
-} = req.body;
+async function cerrarServicioExtraordinario() {
+  const fecha = document.getElementById("m11_fecha").value;
+  const unidad = document.getElementById("m11_unidad").value;
+  const servicio = document.getElementById("m11_servicio")?.value;
 
-    if (!fecha || !unidad || !subunidad || !servicio) {
-      return res.json({ ok: false, error: "Fecha, unidad, subunidad y servicio son obligatorios" });
+  if (!fecha || !unidad || !servicio) {
+    alert("Debe seleccionar fecha, unidad y servicio");
+    return;
+  }
+
+  if (!confirm("¿Seguro que desea finalizar este servicio?")) return;
+
+  try {
+    const res = await fetch("/modulo11-cerrar-servicio", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        servicio,
+        subunidad: "TODAS", // 🔥 cierre general
+        responsable_cedula: document.getElementById("cedula_responsable")?.value || null,
+        responsable_nombre: document.getElementById("nombre_elabora")?.value || null,
+        responsable_cargo: "CIERRE SERVICIO"
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "Error cerrando servicio");
+      return;
     }
 
-    await pool.query(
-      `
-      UPDATE servicios_extraordinarios
-     SET
-  cerrado = true,
-  fecha_cierre = NOW(),
-  fin_real_servicio = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
-  cerrado_por_cedula = $5,
-  cerrado_por_nombre = $6,
-  cerrado_por_cargo = $7
-        WHERE fecha = $1
-        AND unidad = $2
-        AND subunidad = $3
-        AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $4
-      `,
-  [
-  fecha,
-  unidad,
-  subunidad,
-  servicio,
-  responsable_cedula || null,
-  responsable_nombre || null,
-  responsable_cargo || null
-]
-    );
-
-    return res.json({ ok: true });
+    alert("Servicio finalizado correctamente ✅");
+    cargarServiciosModulo11();
 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ ok: false, error: error.message });
+    alert("Error en servidor");
   }
-});
+}
 // =========================
 // FUNCIONES AUXILIARES
 // =========================
