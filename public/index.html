@@ -775,7 +775,7 @@
       <option value="OFICIALES">OFICIALES</option>
       <option value="EJECUTIVO">EJECUTIVO</option>
       <option value="PATRULLEROS">PATRULLEROS</option>
-      <option value="AUXILIARES">AUXILIARES</option>
+      <option value="AXP">AUXILIARES</option>
       <option value="TODOS">TODOS</option>
     </select>
 
@@ -785,7 +785,7 @@
       <option value="OFICIALES">OFICIALES</option>
       <option value="EJECUTIVO">EJECUTIVO</option>
       <option value="PATRULLEROS">PATRULLEROS</option>
-      <option value="AUXILIARES">AUXILIARES</option>
+      <option value="AXP">AUXILIARES</option>
       <option value="TODOS">TODOS</option>
     </select>
 
@@ -795,7 +795,7 @@
       <option value="OFICIALES">OFICIALES</option>
       <option value="EJECUTIVO">EJECUTIVO</option>
       <option value="PATRULLEROS">PATRULLEROS</option>
-      <option value="AUXILIARES">AUXILIARES</option>
+      <option value="AXP">AUXILIARES</option>
       <option value="TODOS">TODOS</option>
     </select>
   </div>
@@ -1102,7 +1102,7 @@
   if (["CR","TC","MY","CT","TE","ST"].includes(g)) return "OFICIALES";
   if (["CM","SC","IJ","IT","SI"].includes(g)) return "EJECUTIVO";
   if (["PT","PP"].includes(g)) return "PATRULLEROS";
-  if (["AUX"].includes(g)) return "AUXILIARES";
+  if (["AXP"].includes(g)) return "AUXILIARES";
 
   return "OTROS";
 }
@@ -1611,7 +1611,7 @@ async function cargarPersonal() {
     document.getElementById("bloqueNovedades").style.display = "block";
     document.getElementById("bloqueParte").style.display = "block";
 
-    const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+    const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AXP"];
 
     data.data.sort((a, b) => {
       const ga = (a.grado || "").toUpperCase();
@@ -2950,7 +2950,7 @@ function limpiarEstaciones() {
       pintarChecks("checks_extra_oficiales", ["CR", "TC", "MY", "CT", "TE", "ST"]);
       pintarChecks("checks_extra_ejecutivo", ["CM", "SC", "IJ", "IT", "SI"]);
       pintarChecks("checks_extra_patrulleros", ["PT", "PP"]);
-      pintarChecks("checks_extra_auxiliares", ["AUX"]);
+      pintarChecks("checks_extra_auxiliares", ["AXP"]);
     }
 
   function cargarChecksSubunidadApoyoExtra() {
@@ -2988,7 +2988,7 @@ function limpiarEstaciones() {
     }
 
     function ordenarPorGrado(lista) {
-      const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+      const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AXP"];
 
       return [...lista].sort((a, b) => {
         const ga = (a.grado || "").toUpperCase();
@@ -3030,7 +3030,7 @@ function limpiarEstaciones() {
       if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIALES";
       if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
       if (["PT", "PP"].includes(g)) return "PATRULLEROS";
-      if (["AUX"].includes(g)) return "AUXILIARES";
+      if (["AXP"].includes(g)) return "AUXILIARES";
       return "OTROS";
     }
 
@@ -3112,7 +3112,7 @@ async function aplicarServicioExtraordinarioPorGrupos() {
     if (grupo === "NE") return ["CM", "SC", "IJ", "IT", "SI"].includes(g);
     if (grupo === "PT") return g === "PT";
     if (grupo === "PP") return g === "PP";
-    if (grupo === "AUX") return g === "AUX";
+    if (grupo === "AXP") return g === "AXP";
 
     return false;
   }
@@ -3135,7 +3135,7 @@ async function aplicarServicioExtraordinarioPorGrupos() {
       { grupo: "NE", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CM`)?.value || "0", 10), cargo: "EJECUTIVO" },
       { grupo: "PT", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PT`)?.value || "0", 10), cargo: "PATRULLEROS" },
       { grupo: "PP", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PP`)?.value || "0", 10), cargo: "PATRULLEROS DE POLICIA" },
-      { grupo: "AUX", cantidad: parseInt(document.getElementById(`extra_${claveBase}_AUX`)?.value || "0", 10), cargo: "AUXILIARES" }
+      { grupo: "AXP", cantidad: parseInt(document.getElementById(`extra_${claveBase}_AXP`)?.value || "0", 10), cargo: "AUXILIARES" }
     ];
 
     for (const item of distribucion) {
@@ -3327,7 +3327,7 @@ function controlarMaximoExtra(input, maximo) {
     if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
     if (["CM","SC","IJ","IT","SI"].includes(g)) return [0,1,0,0];
     if (["PT","PP"].includes(g)) return [0,0,1,0];
-    if (["AUX"].includes(g)) return [0,0,0,1];
+    if (["AXP"].includes(g)) return [0,0,0,1];
     return [0,0,0,0];
   }
 
@@ -3591,7 +3591,7 @@ function controlarMaximoExtra(input, maximo) {
       const esOficialG = (g) => ["CR", "TC", "MY", "CT", "TE", "ST"].includes((g || "").toUpperCase());
       const esEjecutivo = (g) => ["CM", "SC", "IJ", "IT", "SI"].includes((g || "").toUpperCase());
       const esPatrullero = (g) => ["PT", "PP"].includes((g || "").toUpperCase());
-      const esAuxiliar = (g) => ["AUX"].includes((g || "").toUpperCase());
+      const esAuxiliar = (g) => ["AXP"].includes((g || "").toUpperCase());
 
       function contarGrupo(lista) {
         return {
@@ -3943,7 +3943,7 @@ function descargarServicioExtraordinario() {
 }
   
 function ordenarListaExtraPorGrado(lista) {
-  const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+  const orden = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AXP"];
 
   return [...lista].sort((a, b) => {
     const ga = String(a.grado || "").toUpperCase().trim();
@@ -4078,7 +4078,7 @@ async function reemplazarExtra(index) {
     if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "OFICIAL";
     if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "EJECUTIVO";
     if (["PT", "PP"].includes(g)) return "PATRULLERO";
-    if (["AUX"].includes(g)) return "AUXILIAR";
+    if (["AXP"].includes(g)) return "AUXILIAR";
 
     return "OTRO";
   }
@@ -4113,7 +4113,7 @@ async function reemplazarExtra(index) {
     const mapa = {
       "CR": 1, "TC": 2, "MY": 3, "CT": 4, "TE": 5, "ST": 6,
       "CM": 7, "SC": 8, "IJ": 9, "IT": 10, "SI": 11,
-      "PT": 12, "PP": 13, "AUX": 14
+      "PT": 12, "PP": 13, "AXP": 14
     };
     return mapa[String(g || "").toUpperCase()] || 99;
   }
@@ -4377,7 +4377,7 @@ if (!subunidades.length) {
     return;
   }
 
-  const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AUX"];
+  const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AXP"];
   let seGeneroAlMenosUno = false;
 
   subunidades.forEach(subunidad => {
@@ -4492,7 +4492,7 @@ function actualizarResumenSubunidadExtra(subunidad) {
   const oficialesSet = new Set(["CR","TC","MY","CT","TE","ST"]);
   const ejecutivoSet = new Set(["CM","SC","IJ","IT","SI"]);
   const patrullerosSet = new Set(["PT","PP"]);
-  const auxiliaresSet = new Set(["AUX"]);
+  const auxiliaresSet = new Set(["AXP"]);
 
   let oficiales = 0;
   let ejecutivo = 0;
@@ -4547,7 +4547,7 @@ function actualizarResumenGlobalExtra() {
   const disponiblesOficiales = filtrados.filter(p => ["CR","TC","MY","CT","TE","ST"].includes((p.grado || "").toUpperCase().trim())).length;
   const disponiblesEjecutivo = filtrados.filter(p => ["CM","SC","IJ","IT","SI"].includes((p.grado || "").toUpperCase().trim())).length;
   const disponiblesPatrulleros = filtrados.filter(p => ["PT","PP"].includes((p.grado || "").toUpperCase().trim())).length;
-  const disponiblesAuxiliares = filtrados.filter(p => ["AUX"].includes((p.grado || "").toUpperCase().trim())).length;
+  const disponiblesAuxiliares = filtrados.filter(p => ["AXP"].includes((p.grado || "").toUpperCase().trim())).length;
 
   // 🔥 LIMITAR MAX
   oficialesInput.max = disponiblesOficiales;
@@ -4616,7 +4616,7 @@ function validarDistribucionExtra() {
     else if (input.id.endsWith("_CM")) sumEjecutivo += valor;
     else if (input.id.endsWith("_PT")) sumPT += valor;
     else if (input.id.endsWith("_PP")) sumPP += valor;
-    else if (input.id.endsWith("_AUX")) sumAuxiliares += valor;
+    else if (input.id.endsWith("_AXP")) sumAuxiliares += valor;
   });
 
   const sumPatrullerosTotal = sumPT + sumPP;
@@ -4662,8 +4662,8 @@ function controlarLimiteSolicitadoExtra(input) {
   } else if (input.id.endsWith("_PT") || input.id.endsWith("_PP")) {
     selector = '#contenedor_distribucion_extra input[id$="_PT"], #contenedor_distribucion_extra input[id$="_PP"]';
     totalSolicitado = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
-  } else if (input.id.endsWith("_AUX")) {
-    selector = '#contenedor_distribucion_extra input[id$="_AUX"]';
+  } else if (input.id.endsWith("_AXP")) {
+    selector = '#contenedor_distribucion_extra input[id$="_AXP"]';
     totalSolicitado = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
   }
 
@@ -4747,7 +4747,7 @@ async function cargarResponsablesServicioExtra() {
     if (["CR","TC","MY","CT","TE","ST"].includes(g)) return "OFICIALES";
     if (["CM","SC","IJ","IT","SI"].includes(g)) return "EJECUTIVO";
     if (["PT","PP"].includes(g)) return "PATRULLEROS";
-    if (["AUX"].includes(g)) return "AUXILIARES";
+    if (["AXP"].includes(g)) return "AUXILIARES";
     return "OTROS";
   }
 
@@ -4859,7 +4859,7 @@ function grupo4(grado = "") {
   if (["CR","TC","MY","CT","TE","ST"].includes(g)) return [1,0,0,0];
   if (["CM","SC","IJ","IT","SI"].includes(g)) return [0,1,0,0];
   if (["PT","PP"].includes(g)) return [0,0,1,0];
-  if (["AUX"].includes(g)) return [0,0,0,1];
+  if (["AXP"].includes(g)) return [0,0,0,1];
   return [0,0,0,0];
 }
 
@@ -6467,7 +6467,7 @@ bloque.innerHTML = `
       <label>AXP.</label>
       <div class="ayuda-disponible">Disp: ${disp.auxiliares}</div>
       <input
-        id="extra_${claveBase}_AUX"
+        id="extra_${claveBase}_AXP"
         type="number"
         min="0"
         max="${disp.auxiliares}"
