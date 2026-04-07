@@ -1888,8 +1888,7 @@ async function consultarEstadoModulo12() {
 
     window.m12EstadoActual = data.estado_parte || "NO HAN DADO PARTE";
 
-    // 🔥 TRAER ESTADO DEL SERVICIO (MÓDULO 11)
-try {
+    try {
   const resServ = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
   const dataServ = await resServ.json();
 
@@ -1899,9 +1898,12 @@ try {
     );
 
     window.m11ServicioEstado = actual || {};
+  } else {
+    window.m11ServicioEstado = {};
   }
 } catch (e) {
   console.error("Error obteniendo estado servicio M11", e);
+  window.m11ServicioEstado = {};
 }
 
     const rp = data.responsable_parte;
