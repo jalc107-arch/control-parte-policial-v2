@@ -6363,68 +6363,90 @@ function bloquearTecladoExtra(input, maximo) {
   }, 0);
 }
 
-  function limpiarPruebaServicioExtra() {
-  if (!confirm("¿Deseas limpiar la prueba actual del servicio extraordinario?")) {
-    return;
+async function limpiarPruebaServicioExtra() {
+  const confirmar = confirm("¿Deseas limpiar la prueba actual del servicio extraordinario?");
+  if (!confirmar) return;
+
+  try {
+    const fecha = document.getElementById("fecha_servicio_extra")?.value || "";
+    const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
+    const titulo_servicio =
+      document.getElementById("titulo_servicio_extra")?.value?.trim() ||
+      "SERVICIO EXTRAORDINARIO";
+
+    if (fecha && unidad && titulo_servicio) {
+      const res = await fetch("/limpiar-prueba-servicio-extra", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fecha,
+          unidad,
+          titulo_servicio
+        })
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        alert(data.error || "No se pudo limpiar la prueba en base de datos.");
+        return;
+      }
+    }
+
+    window.listaExtra = [];
+    window.ultimosSeleccionadosExtra = [];
+    window.seleccionServicio = {
+      supervisor: "",
+      jefe: "",
+      pmu: ""
+    };
+
+    const supervisor = document.getElementById("supervisor_servicio");
+    const jefe = document.getElementById("jefe_servicio");
+    const pmu = document.getElementById("jefe_pmu");
+
+    if (supervisor) supervisor.value = "";
+    if (jefe) jefe.value = "";
+    if (pmu) pmu.value = "";
+
+    const totalOficiales = document.getElementById("total_oficiales_extra");
+    const totalEjecutivo = document.getElementById("total_ejecutivo_extra");
+    const totalPatrulleros = document.getElementById("total_patrulleros_extra");
+    const totalAuxiliares = document.getElementById("total_auxiliares_extra");
+    const resumenTotales = document.getElementById("resumen_totales_extra");
+
+    if (totalOficiales) totalOficiales.value = 0;
+    if (totalEjecutivo) totalEjecutivo.value = 0;
+    if (totalPatrulleros) totalPatrulleros.value = 0;
+    if (totalAuxiliares) totalAuxiliares.value = 0;
+    if (resumenTotales) resumenTotales.value = "0-0-0-0 = 0";
+
+    limpiarChecks("checks_subunidad_apoyo_extra");
+    limpiarChecks("checks_estacion_apoyo_extra");
+
+    const ruta = document.getElementById("ruta_apoyo_extra");
+    if (ruta) ruta.innerHTML = "";
+
+    const contenedorDistribucion = document.getElementById("contenedor_distribucion_extra");
+    const validacionDistribucion = document.getElementById("validacion_distribucion_extra");
+
+    if (contenedorDistribucion) contenedorDistribucion.innerHTML = "";
+    if (validacionDistribucion) validacionDistribucion.innerText = "Sin validar";
+
+    const resultadoExtra = document.getElementById("resultado_extra");
+    if (resultadoExtra) resultadoExtra.innerText = "";
+
+    if (typeof renderizarExtraordinario === "function") {
+      renderizarExtraordinario([]);
+    }
+
+    alert("Prueba limpiada correctamente.");
+  } catch (error) {
+    console.error("ERROR limpiarPruebaServicioExtra:", error);
+    alert("Error limpiando la prueba.");
   }
-
-  // variables principales
-  window.listaExtra = [];
-  window.ultimosSeleccionadosExtra = [];
-  window.ultimoResultadoConsulta = window.ultimoResultadoConsulta || [];
-  window.seleccionServicio = {
-    supervisor: "",
-    jefe: "",
-    pmu: ""
-  };
-
-  // limpiar selects de responsables
-  const supervisor = document.getElementById("supervisor_servicio");
-  const jefe = document.getElementById("jefe_servicio");
-  const pmu = document.getElementById("jefe_pmu");
-
-  if (supervisor) supervisor.value = "";
-  if (jefe) jefe.value = "";
-  if (pmu) pmu.value = "";
-
-  // limpiar totales requeridos
-  const totalOficiales = document.getElementById("total_oficiales_extra");
-  const totalEjecutivo = document.getElementById("total_ejecutivo_extra");
-  const totalPatrulleros = document.getElementById("total_patrulleros_extra");
-  const totalAuxiliares = document.getElementById("total_auxiliares_extra");
-  const resumenTotales = document.getElementById("resumen_totales_extra");
-
-  if (totalOficiales) totalOficiales.value = 0;
-  if (totalEjecutivo) totalEjecutivo.value = 0;
-  if (totalPatrulleros) totalPatrulleros.value = 0;
-  if (totalAuxiliares) totalAuxiliares.value = 0;
-  if (resumenTotales) resumenTotales.value = "0-0-0-0 = 0";
-
-  // limpiar checks de dependencias que apoyan
-  limpiarChecks("checks_subunidad_apoyo_extra");
-  limpiarChecks("checks_estacion_apoyo_extra");
-
-  // limpiar ruta / vista de apoyo
-  const ruta = document.getElementById("ruta_apoyo_extra");
-  if (ruta) ruta.innerHTML = "";
-
-  // limpiar distribución
-  const contenedorDistribucion = document.getElementById("contenedor_distribucion_extra");
-  const validacionDistribucion = document.getElementById("validacion_distribucion_extra");
-
-  if (contenedorDistribucion) contenedorDistribucion.innerHTML = "";
-  if (validacionDistribucion) validacionDistribucion.innerText = "Sin validar";
-
-  // limpiar resultado visual del servicio
-  const resultadoExtra = document.getElementById("resultado_extra");
-  if (resultadoExtra) resultadoExtra.innerText = "";
-
-  // limpiar render si existe la función
-  if (typeof renderizarExtraordinario === "function") {
-    renderizarExtraordinario([]);
-  }
-
-  alert("Prueba limpiada correctamente.");
 }
   
 </script>
