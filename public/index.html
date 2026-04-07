@@ -3074,6 +3074,14 @@ const jefePmu = window.seleccionServicio.pmu;
   // FUNCIONES AUXILIARES
   // =========================
 
+    function validarBaseModulo6() {
+  if (!Array.isArray(ultimoResultadoConsulta) || !ultimoResultadoConsulta.length) {
+    mostrarAlertaModulo7();
+    return false;
+  }
+  return true;
+}
+
 function refrescarDependenciasApoyoExtra() {
   cargarSubunidadesApoyoExtraDependiente();
   cargarEstacionesApoyoExtraDependiente();
