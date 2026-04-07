@@ -6196,7 +6196,11 @@ function contarDisponiblesPorDependencia(unidad, subunidad, estacion) {
     ).length,
 
     patrulleros: base.filter(p =>
-      ["PT", "PP"].includes(String(p.grado || "").trim().toUpperCase())
+      ["PT"].includes(String(p.grado || "").trim().toUpperCase())
+    ).length,
+
+    patrullerosPolicia: base.filter(p =>
+      ["PP"].includes(String(p.grado || "").trim().toUpperCase())
     ).length,
 
     auxiliares: base.filter(p =>
@@ -6301,73 +6305,88 @@ function generarDistribucionExtraPorDependencia() {
     bloque.className = "sub-card";
     bloque.style.marginBottom = "12px";
 
-    bloque.innerHTML = `
-      <h4 style="margin-bottom:10px;">
-        ${dep.unidad} - ${dep.subunidad} - ${dep.estacion}
-      </h4>
+bloque.innerHTML = `
+  <h4 style="margin-bottom:10px;">
+    ${dep.unidad} - ${dep.subunidad} - ${dep.estacion}
+  </h4>
 
-      <div class="fila-distribucion-extra">
-        <div class="item-distribucion-extra">
-          <label>Oficiales</label>
-          <div class="ayuda-disponible">Disp: ${disp.oficiales}</div>
-          <input
-            id="extra_${claveBase}_CR"
-            type="number"
-            min="0"
-            max="${disp.oficiales}"
-            value="0"
-            class="input-cantidad-extra"
-            ${disp.oficiales === 0 ? "disabled" : ""}
-            oninput="controlarMaximoExtra(this, ${disp.oficiales}); validarDistribucionExtra();"
-          />
-        </div>
+  <div class="fila-distribucion-extra">
+    <div class="item-distribucion-extra">
+      <label>Oficiales</label>
+      <div class="ayuda-disponible">Disp: ${disp.oficiales}</div>
+      <input
+        id="extra_${claveBase}_CR"
+        type="number"
+        min="0"
+        max="${disp.oficiales}"
+        value="0"
+        class="input-cantidad-extra"
+        ${disp.oficiales === 0 ? "disabled" : ""}
+        oninput="controlarMaximoExtra(this, ${disp.oficiales}); validarDistribucionExtra();"
+      />
+    </div>
 
-        <div class="item-distribucion-extra">
-          <label>Nivel ejecutivo</label>
-          <div class="ayuda-disponible">Disp: ${disp.ejecutivo}</div>
-          <input
-            id="extra_${claveBase}_CM"
-            type="number"
-            min="0"
-            max="${disp.ejecutivo}"
-            value="0"
-            class="input-cantidad-extra"
-            ${disp.ejecutivo === 0 ? "disabled" : ""}
-            oninput="controlarMaximoExtra(this, ${disp.ejecutivo}); validarDistribucionExtra();"
-          />
-        </div>
+    <div class="item-distribucion-extra">
+      <label>Nivel ejecutivo</label>
+      <div class="ayuda-disponible">Disp: ${disp.ejecutivo}</div>
+      <input
+        id="extra_${claveBase}_CM"
+        type="number"
+        min="0"
+        max="${disp.ejecutivo}"
+        value="0"
+        class="input-cantidad-extra"
+        ${disp.ejecutivo === 0 ? "disabled" : ""}
+        oninput="controlarMaximoExtra(this, ${disp.ejecutivo}); validarDistribucionExtra();"
+      />
+    </div>
 
-        <div class="item-distribucion-extra">
-          <label>Patrulleros</label>
-          <div class="ayuda-disponible">Disp: ${disp.patrulleros}</div>
-          <input
-            id="extra_${claveBase}_PT"
-            type="number"
-            min="0"
-            max="${disp.patrulleros}"
-            value="0"
-            class="input-cantidad-extra"
-            ${disp.patrulleros === 0 ? "disabled" : ""}
-            oninput="controlarMaximoExtra(this, ${disp.patrulleros}); validarDistribucionExtra();"
-          />
-        </div>
+    <div class="item-distribucion-extra">
+      <label>Patrulleros</label>
+      <div class="ayuda-disponible">Disp: ${disp.patrulleros}</div>
+      <input
+        id="extra_${claveBase}_PT"
+        type="number"
+        min="0"
+        max="${disp.patrulleros}"
+        value="0"
+        class="input-cantidad-extra"
+        ${disp.patrulleros === 0 ? "disabled" : ""}
+        oninput="controlarMaximoExtra(this, ${disp.patrulleros}); validarDistribucionExtra();"
+      />
+    </div>
 
-        <div class="item-distribucion-extra">
-          <label>Auxiliares</label>
-          <div class="ayuda-disponible">Disp: ${disp.auxiliares}</div>
-          <input
-            id="extra_${claveBase}_AUX"
-            type="number"
-            min="0"
-            max="${disp.auxiliares}"
-            value="0"
-            class="input-cantidad-extra"
-            ${disp.auxiliares === 0 ? "disabled" : ""}
-            oninput="controlarMaximoExtra(this, ${disp.auxiliares}); validarDistribucionExtra();"
-          />
-        </div>
-      </div>
-    `;
+    <div class="item-distribucion-extra">
+      <label>Patrulleros de Policía</label>
+      <div class="ayuda-disponible">Disp: ${disp.patrullerosPolicia}</div>
+      <input
+        id="extra_${claveBase}_PP"
+        type="number"
+        min="0"
+        max="${disp.patrullerosPolicia}"
+        value="0"
+        class="input-cantidad-extra"
+        ${disp.patrullerosPolicia === 0 ? "disabled" : ""}
+        oninput="controlarMaximoExtra(this, ${disp.patrullerosPolicia}); validarDistribucionExtra();"
+      />
+    </div>
+
+    <div class="item-distribucion-extra">
+      <label>Auxiliares</label>
+      <div class="ayuda-disponible">Disp: ${disp.auxiliares}</div>
+      <input
+        id="extra_${claveBase}_AUX"
+        type="number"
+        min="0"
+        max="${disp.auxiliares}"
+        value="0"
+        class="input-cantidad-extra"
+        ${disp.auxiliares === 0 ? "disabled" : ""}
+        oninput="controlarMaximoExtra(this, ${disp.auxiliares}); validarDistribucionExtra();"
+      />
+    </div>
+  </div>
+`;
 
     contenedor.appendChild(bloque);
   });
