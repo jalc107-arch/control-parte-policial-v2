@@ -2474,13 +2474,14 @@ app.post("/modulo11-guardar-control", async (req, res) => {
 app.post("/modulo11-cerrar-servicio", async (req, res) => {
   try {
     const {
-      fecha,
-      unidad,
-      subunidad,
-      servicio,
-      responsable_cedula,
-      responsable_nombre
-    } = req.body;
+  fecha,
+  unidad,
+  subunidad,
+  servicio,
+  responsable_cedula,
+  responsable_nombre,
+  responsable_cargo
+} = req.body;
 
     if (!fecha || !unidad || !subunidad || !servicio) {
       return res.json({ ok: false, error: "Fecha, unidad, subunidad y servicio son obligatorios" });
@@ -2489,26 +2490,27 @@ app.post("/modulo11-cerrar-servicio", async (req, res) => {
     await pool.query(
       `
       UPDATE servicios_extraordinarios
-      SET
+     SET
   cerrado = true,
   fecha_cierre = NOW(),
   fin_real_servicio = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
   cerrado_por_cedula = $5,
-  cerrado_por_nombre = $6
-        
-      WHERE fecha = $1
+  cerrado_por_nombre = $6,
+  cerrado_por_cargo = $7
+        WHERE fecha = $1
         AND unidad = $2
         AND subunidad = $3
         AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $4
       `,
-      [
-        fecha,
-        unidad,
-        subunidad,
-        servicio,
-        responsable_cedula || null,
-        responsable_nombre || null
-      ]
+  [
+  fecha,
+  unidad,
+  subunidad,
+  servicio,
+  responsable_cedula || null,
+  responsable_nombre || null,
+  responsable_cargo || null
+]
     );
 
     return res.json({ ok: true });
