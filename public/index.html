@@ -4964,11 +4964,12 @@ async function consultarModulo11() {
     alert("Error consultando módulo 11");
   }
 }
-  
-function renderizarTableroModulo11() {
+
+  function renderizarTableroModulo11() {
   const boxResp = document.getElementById("m11_responsable");
   const box = document.getElementById("m11_tablero");
   const detalle = document.getElementById("m11_detalle");
+  const btnFinalizar = document.getElementById("btnFinalizarServicioM11");
 
   if (detalle) detalle.style.display = "none";
   if (box) box.innerHTML = "";
@@ -4988,6 +4989,10 @@ function renderizarTableroModulo11() {
   const resumen = Array.isArray(window.m11Resumen) ? window.m11Resumen : [];
   const servicioCerrado = !!window.m11ServicioEstado?.cerrado;
   const fechaCierreServicio = window.m11ServicioEstado?.fecha_cierre || "";
+
+  if (btnFinalizar) {
+    btnFinalizar.style.display = servicioCerrado ? "none" : "inline-block";
+  }
 
   if (!resumen.length) {
     box.innerHTML = `<div class="sub-card">No hay información para esa fecha/unidad.</div>`;
