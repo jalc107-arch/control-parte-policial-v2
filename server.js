@@ -1619,6 +1619,93 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
       responsable_nombre
     }));
 
+    // ===============================
+    // 🔒 VALIDACIÓN SEGURIDAD BACKEND
+    // ===============================
+
+    // 1. Traer ocupados ese día
+    const ocupadosResult = await pool.query(
+      `
+      SELECT cedula
+      FROM servicios_extraordinarios
+      WHERE fecha = $1
+        AND COALESCE(cerrado, false) = false
+      `,
+      [fechaFinal]
+    );
+
+    const ocupadosSet = new Set(
+      ocupadosResult.rows.map(r => String(r.cedula).trim())
+    );
+
+    // 2. Validar cada funcionario antes de guardar
+    for (const r of registros) {
+      const ced = String(r.cedula || "").trim();
+
+      // 🚫 Ya está en otro servicio
+      if (ocupadosSet.has(ced)) {
+        return res.status(400).json({
+          ok: false,
+          error: `El funcionario ${ced} ya está asignado a otro servicio ese día`
+        });
+      }
+
+      // 🔍 Validar que exista y esté activo
+      const per = await pool.query(
+        `
+        SELECT aptitud
+        FROM personal
+        WHERE cedula = $1
+          AND activo = true
+        LIMIT 1
+        `,
+        [ced]
+      );
+
+      if (per.rows.length === 0) {
+        return res.status(400).json({
+          ok: false,
+          error: `Funcionario ${ced} no existe o no está activo`
+        });
+      }
+
+      const aptitud = String(per.rows[0].aptitud || "").toUpperCase();
+
+      // 🚫 No apto
+      if (aptitud !== "APTO") {
+        return res.status(400).json({
+          ok: false,
+          error: `Funcionario ${ced} NO está APTO`
+        });
+      }
+
+      // 🔍 Validar novedad del día
+      const nov = await pool.query(
+        `
+        SELECT tipo_novedad
+        FROM novedades
+        WHERE cedula = $1
+          AND fecha = $2
+        LIMIT 1
+        `,
+        [ced, fechaFinal]
+      );
+
+      const tipo = String(nov.rows[0]?.tipo_novedad || "").toUpperCase();
+
+      // 🚫 No disponible
+      if (tipo && tipo !== "DISPONIBLE") {
+        return res.status(400).json({
+          ok: false,
+          error: `Funcionario ${ced} tiene novedad (${tipo})`
+        });
+      }
+    }
+
+    // ===============================
+    // 🔥 GUARDAR SERVICIO
+    // ===============================
+
     for (const r of registros) {
       await pool.query(
         `
@@ -1667,6 +1754,7 @@ app.post("/guardar-servicio-extraordinario", async (req, res) => {
     res.json({ ok: false, error: err.message });
   }
 });
+
 // =========================
 app.get("/modulo11-servicios", async (req, res) => {
   try {
