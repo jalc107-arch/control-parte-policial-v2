@@ -3272,9 +3272,12 @@ function controlarMaximoExtra(input, maximo) {
         }
 
         ultimoResultadoConsulta = Array.isArray(data.personalCompleto) ? data.personalCompleto : [];
-window.ultimoResultadoConsulta = ultimoResultadoConsulta;
-renderizarConsultaDesdeRespuesta(data);
-cargarResponsablesServicioExtra();
+        window.ultimoResultadoConsulta = ultimoResultadoConsulta;
+        renderizarConsultaDesdeRespuesta(data);
+        cargarResponsablesServicioExtra();
+        refrescarDependenciasApoyoExtra();
+
+        
       } catch (error) {
         console.error(error);
         alert("Error consultando novedades");
@@ -4544,6 +4547,8 @@ if (name === "jefe_pmu" && window.seleccionServicio.pmu === p.cedula) {
   pintar(boxSupervisor, filtrar(personal, gradoSup), "supervisor_servicio");
   pintar(boxJefe, filtrar(personal, gradoJefe), "jefe_servicio");
   pintar(boxPmu, filtrar(personal, gradoPmu), "jefe_pmu");
+
+  refrescarDependenciasApoyoExtra();
 
 window.seleccionServicio = window.seleccionServicio || {
   supervisor: "",
@@ -6046,26 +6051,35 @@ function generarDistribucionExtraPorDependencia() {
   let dependenciasUnicas = [];
 
   if (estacionesMarcadas.length) {
-    dependenciasUnicas = estacionesMarcadas.map(valor => {
-      const [subunidad, estacion] = String(valor).split("|||");
-      return {
-        unidad,
-        subunidad: subunidad || "",
-        estacion: estacion || ""
-      };
-    }).filter(d => d.subunidad && d.estacion);
-  } else {
-    dependenciasUnicas = estructuraGlobal
-      .filter(x =>
-        String(x.unidad || "").trim() === unidad &&
-        subunidades.includes(String(x.subunidad || "").trim())
-      )
-      .map(x => ({
-        unidad: String(x.unidad || "").trim(),
-        subunidad: String(x.subunidad || "").trim(),
-        estacion: String(x.estacion || "").trim()
-      }))
+    dependenciasUnicas = estacionesMarcadas
+      .map(valor => {
+        const [subunidad, estacion] = String(valor).split("|||");
+        return {
+          unidad,
+          subunidad: subunidad || "",
+          estacion: estacion || ""
+        };
+      })
       .filter(d => d.subunidad && d.estacion);
+  } else {
+    dependenciasUnicas = Array.from(
+      new Map(
+        ultimoResultadoConsulta
+          .filter(p =>
+            String(p.unidad || "").trim() === unidad &&
+            subunidades.includes(String(p.subunidad || "").trim()) &&
+            String(p.estacion || "").trim()
+          )
+          .map(p => {
+            const dep = {
+              unidad: String(p.unidad || "").trim(),
+              subunidad: String(p.subunidad || "").trim(),
+              estacion: String(p.estacion || "").trim()
+            };
+            return [`${dep.unidad}|||${dep.subunidad}|||${dep.estacion}`, dep];
+          })
+      ).values()
+    );
   }
 
   const mapa = new Map();
@@ -6110,6 +6124,8 @@ function generarDistribucionExtraPorDependencia() {
             value="0"
             ${disp.oficiales === 0 ? "disabled" : ""}
             oninput="controlarMaximoExtra(this, ${disp.oficiales}); validarDistribucionExtra();"
+            onchange="controlarMaximoExtra(this, ${disp.oficiales}); validarDistribucionExtra();"
+            onkeyup="bloquearTecladoExtra(this, ${disp.oficiales})"
           />
         </div>
 
@@ -6124,6 +6140,8 @@ function generarDistribucionExtraPorDependencia() {
             value="0"
             ${disp.ejecutivo === 0 ? "disabled" : ""}
             oninput="controlarMaximoExtra(this, ${disp.ejecutivo}); validarDistribucionExtra();"
+            onchange="controlarMaximoExtra(this, ${disp.ejecutivo}); validarDistribucionExtra();"
+            onkeyup="bloquearTecladoExtra(this, ${disp.ejecutivo})"
           />
         </div>
 
@@ -6138,6 +6156,8 @@ function generarDistribucionExtraPorDependencia() {
             value="0"
             ${disp.patrulleros === 0 ? "disabled" : ""}
             oninput="controlarMaximoExtra(this, ${disp.patrulleros}); validarDistribucionExtra();"
+            onchange="controlarMaximoExtra(this, ${disp.patrulleros}); validarDistribucionExtra();"
+            onkeyup="bloquearTecladoExtra(this, ${disp.patrulleros})"
           />
         </div>
 
@@ -6152,6 +6172,8 @@ function generarDistribucionExtraPorDependencia() {
             value="0"
             ${disp.auxiliares === 0 ? "disabled" : ""}
             oninput="controlarMaximoExtra(this, ${disp.auxiliares}); validarDistribucionExtra();"
+            onchange="controlarMaximoExtra(this, ${disp.auxiliares}); validarDistribucionExtra();"
+            onkeyup="bloquearTecladoExtra(this, ${disp.auxiliares})"
           />
         </div>
       </div>
@@ -6163,6 +6185,28 @@ function generarDistribucionExtraPorDependencia() {
   if (validacion) {
     validacion.innerText = "Distribución generada. Pendiente validar.";
   }
+}
+
+  function controlarMaximoExtra(input, maximo) {
+  let valor = parseInt(input.value || "0", 10);
+
+  if (isNaN(valor) || valor < 0) valor = 0;
+  if (valor > maximo) {
+    valor = maximo;
+  }
+
+  input.value = valor;
+}
+
+function bloquearTecladoExtra(input, maximo) {
+  setTimeout(() => {
+    let valor = parseInt(input.value || "0", 10);
+
+    if (isNaN(valor) || valor < 0) valor = 0;
+    if (valor > maximo) valor = maximo;
+
+    input.value = valor;
+  }, 0);
 }
   
 </script>
