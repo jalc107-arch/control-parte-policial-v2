@@ -2490,10 +2490,12 @@ app.post("/modulo11-cerrar-servicio", async (req, res) => {
       `
       UPDATE servicios_extraordinarios
       SET
-        cerrado = true,
-        fecha_cierre = NOW(),
-        cerrado_por_cedula = $5,
-        cerrado_por_nombre = $6
+  cerrado = true,
+  fecha_cierre = NOW(),
+  fin_real_servicio = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
+  cerrado_por_cedula = $5,
+  cerrado_por_nombre = $6
+        
       WHERE fecha = $1
         AND unidad = $2
         AND subunidad = $3
