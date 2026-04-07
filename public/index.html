@@ -1448,6 +1448,7 @@ if (document.getElementById("organico_select")) {
     cargarChecksGruposExtra();
     cargarChecksSubunidadApoyoExtra();
     cargarSubunidadesMultiple();
+    cargarUnidadApoyoExtra();
     
     // 🔥 ESTA ES LA LÍNEA MÁS IMPORTANTE
    
@@ -2645,15 +2646,22 @@ const horaPDF = (partesFecha[1] || "").trim();
       contenedor.querySelectorAll('input[type="checkbox"]').forEach(ch => { ch.checked = true; });
     }
 
-  function limpiarSubunidadesApoyoExtra() {
+ function limpiarSubunidadesApoyoExtra() {
   document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]')
     .forEach(cb => cb.checked = false);
 
+  document.querySelectorAll('#checks_estacion_apoyo_extra input[type="checkbox"]')
+    .forEach(cb => cb.checked = false);
+
+  const contenedorEst = document.getElementById("checks_estacion_apoyo_extra");
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
+  const ruta = document.getElementById("ruta_apoyo_extra");
 
+  if (contenedorEst) contenedorEst.innerHTML = "";
   if (contenedor) contenedor.innerHTML = "";
   if (validacion) validacion.innerText = "Sin validar";
+  if (ruta) ruta.innerHTML = "";
 }
   
     function limpiarChecks(idContenedor) {
@@ -5677,6 +5685,269 @@ function cargarOrganicosMultiple() {
   pintarChecks("checks_organico_parte", organicos, "actualizarRutaDependenciaParte();");
   actualizarRutaDependenciaParte();
 }
+
+function cargarUnidadApoyoExtra() {
+  const select = document.getElementById("unidad_apoyo_extra");
+  if (!select) return;
+
+  const unidades = [...new Set(
+    estructuraGlobal.map(x => String(x.unidad || "").trim()).filter(Boolean)
+  )].sort();
+
+  select.innerHTML = '<option value="">Seleccionar UNIDAD</option>';
+
+  unidades.forEach(unidad => {
+    const option = document.createElement("option");
+    option.value = unidad;
+    option.textContent = unidad;
+    select.appendChild(option);
+  });
+
+  if (unidades.includes("MEBOG")) {
+    select.value = "MEBOG";
+  }
+
+  cargarSubunidadesApoyoExtraDependiente();
+}
+
+function cargarSubunidadesApoyoExtraDependiente() {
+  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
+  const contenedor = document.getElementById("checks_subunidad_apoyo_extra");
+  const contenedorEstaciones = document.getElementById("checks_estacion_apoyo_extra");
+
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+  if (contenedorEstaciones) contenedorEstaciones.innerHTML = "";
+
+  if (!unidad) {
+    actualizarRutaApoyoExtra();
+    return;
+  }
+
+  const subunidades = [...new Set(
+    estructuraGlobal
+      .filter(x => String(x.unidad || "").trim() === unidad)
+      .map(x => String(x.subunidad || "").trim())
+      .filter(Boolean)
+  )].sort();
+
+  subunidades.forEach(sub => {
+    const label = document.createElement("label");
+    label.className = "check-item";
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = sub;
+    input.onchange = () => {
+      cargarEstacionesApoyoExtraDependiente();
+      actualizarRutaApoyoExtra();
+    };
+
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(sub));
+    contenedor.appendChild(label);
+  });
+
+  cargarEstacionesApoyoExtraDependiente();
+  actualizarRutaApoyoExtra();
+}
+
+function cargarEstacionesApoyoExtraDependiente() {
+  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
+  const subunidades = obtenerChecksMarcados("checks_subunidad_apoyo_extra");
+  const contenedor = document.getElementById("checks_estacion_apoyo_extra");
+
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+
+  if (!unidad || !subunidades.length) {
+    actualizarRutaApoyoExtra();
+    return;
+  }
+
+  const estaciones = [...new Set(
+    estructuraGlobal
+      .filter(x =>
+        String(x.unidad || "").trim() === unidad &&
+        subunidades.includes(String(x.subunidad || "").trim())
+      )
+      .map(x => String(x.estacion || "").trim())
+      .filter(Boolean)
+  )].sort();
+
+  estaciones.forEach(est => {
+    const label = document.createElement("label");
+    label.className = "check-item";
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = est;
+    input.onchange = () => actualizarRutaApoyoExtra();
+
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(est));
+    contenedor.appendChild(label);
+  });
+
+  actualizarRutaApoyoExtra();
+}
+
+function actualizarRutaApoyoExtra() {
+  const box = document.getElementById("ruta_apoyo_extra");
+  if (!box) return;
+
+  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
+  const subunidades = obtenerChecksMarcados("checks_subunidad_apoyo_extra");
+  const estaciones = obtenerChecksMarcados("checks_estacion_apoyo_extra");
+
+  if (!unidad) {
+    box.innerHTML = "Selecciona una unidad.";
+    return;
+  }
+
+  if (!subunidades.length) {
+    box.innerHTML = `Unidad seleccionada: <b>${unidad}</b>`;
+    return;
+  }
+
+  const rutas = [];
+
+  if (estaciones.length) {
+    estaciones.forEach(est => {
+      const fila = estructuraGlobal.find(x =>
+        String(x.unidad || "").trim() === unidad &&
+        subunidades.includes(String(x.subunidad || "").trim()) &&
+        String(x.estacion || "").trim() === est
+      );
+
+      if (fila) {
+        rutas.push(`${unidad} - ${fila.subunidad} - ${fila.estacion}`);
+      }
+    });
+  } else {
+    subunidades.forEach(sub => {
+      rutas.push(`${unidad} - ${sub}`);
+    });
+  }
+
+  box.innerHTML = rutas.length
+    ? rutas.map(r => `<div>${r}</div>`).join("")
+    : `Unidad seleccionada: <b>${unidad}</b>`;
+}
+
+function generarDistribucionExtraPorDependencia() {
+  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
+  const subunidades = obtenerChecksMarcados("checks_subunidad_apoyo_extra");
+  const estaciones = obtenerChecksMarcados("checks_estacion_apoyo_extra");
+
+  const contenedor = document.getElementById("contenedor_distribucion_extra");
+  const validacion = document.getElementById("validacion_distribucion_extra");
+
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+
+  if (!unidad) {
+    alert("Debes seleccionar la unidad que apoya.");
+    return;
+  }
+
+  if (!subunidades.length) {
+    alert("Debes seleccionar al menos una subunidad que apoye.");
+    return;
+  }
+
+  let dependencias = [];
+
+  if (estaciones.length) {
+    dependencias = estructuraGlobal
+      .filter(x =>
+        String(x.unidad || "").trim() === unidad &&
+        subunidades.includes(String(x.subunidad || "").trim()) &&
+        estaciones.includes(String(x.estacion || "").trim())
+      )
+      .map(x => ({
+        unidad: String(x.unidad || "").trim(),
+        subunidad: String(x.subunidad || "").trim(),
+        estacion: String(x.estacion || "").trim()
+      }));
+  } else {
+    dependencias = estructuraGlobal
+      .filter(x =>
+        String(x.unidad || "").trim() === unidad &&
+        subunidades.includes(String(x.subunidad || "").trim())
+      )
+      .map(x => ({
+        unidad: String(x.unidad || "").trim(),
+        subunidad: String(x.subunidad || "").trim(),
+        estacion: String(x.estacion || "").trim()
+      }));
+  }
+
+  const unicasMap = new Map();
+
+  dependencias.forEach(d => {
+    const key = `${d.unidad}|||${d.subunidad}|||${d.estacion}`;
+    if (!unicasMap.has(key)) {
+      unicasMap.set(key, d);
+    }
+  });
+
+  const dependenciasUnicas = [...unicasMap.values()].sort((a, b) => {
+    const sa = `${a.subunidad} ${a.estacion}`;
+    const sb = `${b.subunidad} ${b.estacion}`;
+    return sa.localeCompare(sb, "es");
+  });
+
+  if (!dependenciasUnicas.length) {
+    alert("No se encontraron dependencias para generar la distribución.");
+    return;
+  }
+
+  dependenciasUnicas.forEach(dep => {
+    const claveBase = `${dep.subunidad}__${dep.estacion}`;
+
+    const bloque = document.createElement("div");
+    bloque.className = "sub-card";
+    bloque.style.marginBottom = "12px";
+
+    bloque.innerHTML = `
+      <h4 style="margin-bottom:10px;">
+        ${dep.unidad} - ${dep.subunidad} - ${dep.estacion}
+      </h4>
+
+      <div class="grid-extra">
+        <div>
+          <label>Oficiales</label>
+          <input id="extra_${claveBase}_CR" type="number" min="0" value="0" oninput="validarDistribucionExtra()" />
+        </div>
+
+        <div>
+          <label>Nivel ejecutivo</label>
+          <input id="extra_${claveBase}_CM" type="number" min="0" value="0" oninput="validarDistribucionExtra()" />
+        </div>
+
+        <div>
+          <label>Patrulleros</label>
+          <input id="extra_${claveBase}_PT" type="number" min="0" value="0" oninput="validarDistribucionExtra()" />
+        </div>
+
+        <div>
+          <label>Auxiliares</label>
+          <input id="extra_${claveBase}_AUX" type="number" min="0" value="0" oninput="validarDistribucionExtra()" />
+        </div>
+      </div>
+    `;
+
+    contenedor.appendChild(bloque);
+  });
+
+  if (validacion) {
+    validacion.innerText = "Distribución generada. Pendiente validar.";
+  }
+}  
   
 </script>
 
