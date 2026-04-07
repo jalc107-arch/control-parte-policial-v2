@@ -3082,18 +3082,7 @@ const jefePmu = window.seleccionServicio.pmu;
   return true;
 }
 
-function refrescarDependenciasApoyoExtra() {
-  cargarSubunidadesApoyoExtraDependiente();
-  cargarEstacionesApoyoExtraDependiente();
-  actualizarRutaApoyoExtra();
-
-  const contenedor = document.getElementById("contenedor_distribucion_extra");
-  const validacion = document.getElementById("validacion_distribucion_extra");
-
-  if (contenedor) contenedor.innerHTML = "";
-  if (validacion) validacion.innerText = "Sin validar";
-}
-    
+  
 function controlarMaximoExtra(input, maximo) {
   let valor = parseInt(input.value || "0", 10);
 
@@ -3235,6 +3224,23 @@ function controlarMaximoExtra(input, maximo) {
 
   resultado.innerText = txt;
 }
+
+  function refrescarDependenciasApoyoExtra() {
+  try {
+    cargarSubunidadesApoyoExtraDependiente();
+    cargarEstacionesApoyoExtraDependiente();
+    actualizarRutaApoyoExtra();
+
+    const contenedor = document.getElementById("contenedor_distribucion_extra");
+    const validacion = document.getElementById("validacion_distribucion_extra");
+
+    if (contenedor) contenedor.innerHTML = "";
+    if (validacion) validacion.innerText = "Sin validar";
+  } catch (error) {
+    console.warn("No se pudo refrescar módulo 7:", error);
+  }
+}
+  
     async function consultarNovedades() {
       const unidad = document.getElementById("consulta_unidad").value;
       const subunidades = obtenerValoresChecks("checks_subunidad");
