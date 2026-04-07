@@ -800,24 +800,53 @@
     </div>
 
     <div class="sub-card">
-      <h3>7.3 Subunidades que apoyan</h3>
+  <h3>7.3 Dependencias que apoyan</h3>
 
-      <div class="filtro-botones">
-        <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_apoyo_extra')">Seleccionar todas</button>
-        <button type="button" onclick="limpiarSubunidadesApoyoExtra()">Limpiar</button>
-      </div>
+  <div class="campo-corto">
+    <select id="unidad_apoyo_extra" onchange="cargarSubunidadesApoyoExtraDependiente()">
+      <option value="">Seleccionar UNIDAD</option>
+    </select>
+  </div>
 
-      <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
-
-      <div class="acciones-inline">
-        <button type="button" onclick="generarDistribucionExtraPorSubunidad()">Generar distribución por subunidad</button>
-      </div>
+  <div class="filtro-box">
+    <div class="filtro-titulo">Subunidad(es) que apoyan</div>
+    <div class="filtro-botones">
+      <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
+        Seleccionar todas
+      </button>
+      <button type="button" onclick="limpiarChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
+        Limpiar
+      </button>
     </div>
+    <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
+  </div>
+
+  <div class="filtro-box">
+    <div class="filtro-titulo">Estación(es) / Grupo(s) que apoyan</div>
+    <div class="filtro-botones">
+      <button type="button" onclick="seleccionarTodasChecks('checks_estacion_apoyo_extra'); actualizarRutaApoyoExtra();">
+        Seleccionar todas
+      </button>
+      <button type="button" onclick="limpiarChecks('checks_estacion_apoyo_extra'); actualizarRutaApoyoExtra();">
+        Limpiar
+      </button>
+    </div>
+    <div id="checks_estacion_apoyo_extra" class="checks-contenedor"></div>
+  </div>
+
+  <div class="ayuda" id="ruta_apoyo_extra"></div>
+
+  <div class="acciones-inline">
+    <button type="button" onclick="generarDistribucionExtraPorDependencia()">
+      Generar distribución por dependencia
+    </button>
+  </div>
+</div>
 
     <div class="sub-card">
-      <h3>7.4 Distribución por subunidad y grado</h3>
-      <div id="contenedor_distribucion_extra"></div>
-    </div>
+  <h3>7.4 Distribución por dependencia y grado</h3>
+  <div id="contenedor_distribucion_extra"></div>
+</div>
 
     <div class="sub-card">
       <h3>7.5 Validación de distribución</h3>
