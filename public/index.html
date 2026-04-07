@@ -5596,11 +5596,10 @@ async function guardarControlModulo11() {
 async function cerrarServicioModulo11() {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
-  const subunidad = window.m11SubunidadActual || "";
   const servicio = document.getElementById("m11_servicio")?.value || "";
 
-  if (!fecha || !unidad || !subunidad) {
-    alert("Falta fecha, unidad o subunidad");
+  if (!fecha || !unidad || !servicio) {
+    alert("Falta fecha, unidad o servicio");
     return;
   }
 
@@ -5616,10 +5615,10 @@ async function cerrarServicioModulo11() {
       body: JSON.stringify({
         fecha,
         unidad,
-        subunidad,
         servicio,
         responsable_cedula: window.responsable.cedula || "",
-        responsable_nombre: window.responsable.nombre || ""
+        responsable_nombre: window.responsable.nombre || "",
+        responsable_cargo: window.responsable.grado || "RESPONSABLE"
       })
     });
 
@@ -5631,8 +5630,12 @@ async function cerrarServicioModulo11() {
     }
 
     alert("Servicio cerrado correctamente ✅");
+
     consultarModulo11();
-    volverTableroModulo11();
+    if (typeof volverTableroModulo11 === "function") {
+      volverTableroModulo11();
+    }
+
   } catch (error) {
     console.error(error);
     alert("Error cerrando servicio");
