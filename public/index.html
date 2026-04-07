@@ -1703,6 +1703,7 @@ async function cargarPersonal() {
 
 window.m12DetalleActual = [];
 window.m12EstadoActual = "NO HAN DADO PARTE";
+window.m11ServicioEstado = {};
 
 function abrirModulo12() {
   ocultarTodosLosBloques();
@@ -1886,6 +1887,22 @@ async function consultarEstadoModulo12() {
     }
 
     window.m12EstadoActual = data.estado_parte || "NO HAN DADO PARTE";
+
+    // 🔥 TRAER ESTADO DEL SERVICIO (MÓDULO 11)
+try {
+  const resServ = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
+  const dataServ = await resServ.json();
+
+  if (dataServ.ok) {
+    const actual = (dataServ.data || []).find(
+      x => String(x.titulo_servicio || "").trim() === String(servicio || "").trim()
+    );
+
+    window.m11ServicioEstado = actual || {};
+  }
+} catch (e) {
+  console.error("Error obteniendo estado servicio M11", e);
+}
 
     const rp = data.responsable_parte;
     const color =
