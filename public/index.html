@@ -3003,9 +3003,19 @@ function limpiarEstaciones() {
 
     async function aplicarServicioExtraordinarioPorGrupos() {
   if (window.listaExtra && window.listaExtra.length) {
-    alert("El servicio ya tiene personal asignado. Si deseas cambiarlo, primero debes limpiar o crear uno nuevo.");
-    return;
+  const confirmar = confirm("Ya hay personal asignado en pantalla. ¿Deseas reemplazar la prueba actual?");
+  if (!confirmar) return;
+
+  window.listaExtra = [];
+  window.ultimosSeleccionadosExtra = [];
+
+  const resultadoExtra = document.getElementById("resultado_extra");
+  if (resultadoExtra) resultadoExtra.innerText = "";
+
+  if (typeof renderizarExtraordinario === "function") {
+    renderizarExtraordinario([]);
   }
+}
 
   const resultadoExtra = document.getElementById("resultado_extra");
   resultadoExtra.innerText = "";
@@ -6370,11 +6380,11 @@ async function limpiarPruebaServicioExtra() {
   try {
     const fecha = document.getElementById("fecha_servicio_extra")?.value || "";
     const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
-    const titulo_servicio =
+    const tituloServicio =
       document.getElementById("titulo_servicio_extra")?.value?.trim() ||
       "SERVICIO EXTRAORDINARIO";
 
-    if (fecha && unidad && titulo_servicio) {
+    if (fecha && unidad) {
       const res = await fetch("/limpiar-prueba-servicio-extra", {
         method: "POST",
         headers: {
@@ -6383,7 +6393,7 @@ async function limpiarPruebaServicioExtra() {
         body: JSON.stringify({
           fecha,
           unidad,
-          titulo_servicio
+          titulo_servicio: tituloServicio
         })
       });
 
