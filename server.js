@@ -2724,22 +2724,35 @@ app.post("/limpiar-prueba-servicio-extra", async (req, res) => {
   try {
     const { fecha, unidad, titulo_servicio } = req.body;
 
-    if (!fecha || !unidad || !titulo_servicio) {
+    if (!fecha || !unidad) {
       return res.status(400).json({
         ok: false,
-        error: "Fecha, unidad y titulo_servicio son obligatorios"
+        error: "Fecha y unidad son obligatorias"
       });
     }
 
-    const result = await pool.query(
-      `
-      DELETE FROM servicios_extraordinarios
-      WHERE fecha = $1
-        AND unidad = $2
-        AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
-      `,
-      [fecha, unidad, titulo_servicio]
-    );
+    let result;
+
+    if (titulo_servicio && String(titulo_servicio).trim() !== "") {
+      result = await pool.query(
+        `
+        DELETE FROM servicios_extraordinarios
+        WHERE fecha = $1
+          AND unidad = $2
+          AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
+        `,
+        [fecha, unidad, titulo_servicio]
+      );
+    } else {
+      result = await pool.query(
+        `
+        DELETE FROM servicios_extraordinarios
+        WHERE fecha = $1
+          AND unidad = $2
+        `,
+        [fecha, unidad]
+      );
+    }
 
     return res.json({
       ok: true,
