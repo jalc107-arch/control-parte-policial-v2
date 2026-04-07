@@ -238,7 +238,7 @@ function construirOrdenGradoSQL(alias = "") {
       WHEN 'SI' THEN 11
       WHEN 'PT' THEN 12
       WHEN 'PP' THEN 13
-      WHEN 'AUX' THEN 14
+      WHEN 'AXP' THEN 14
       ELSE 99
     END
   `;
