@@ -3105,6 +3105,18 @@ async function aplicarServicioExtraordinarioPorGrupos() {
     return;
   }
 
+  function perteneceAGrupo(grado, grupo) {
+    const g = String(grado || "").trim().toUpperCase();
+
+    if (grupo === "OF") return ["CR", "TC", "MY", "CT", "TE", "ST"].includes(g);
+    if (grupo === "NE") return ["CM", "SC", "IJ", "IT", "SI"].includes(g);
+    if (grupo === "PT") return g === "PT";
+    if (grupo === "PP") return g === "PP";
+    if (grupo === "AUX") return g === "AUX";
+
+    return false;
+  }
+
   for (const tarjeta of tarjetas) {
     const titulo = tarjeta.querySelector("h4")?.innerText?.trim() || "";
     if (!titulo) continue;
@@ -3119,11 +3131,11 @@ async function aplicarServicioExtraordinarioPorGrupos() {
     const claveBase = `${subunidadDep}__${estacionDep}`;
 
     const distribucion = [
-      { grado: "CR", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CR`)?.value || "0", 10), cargo: "OFICIALES" },
-      { grado: "CM", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CM`)?.value || "0", 10), cargo: "EJECUTIVO" },
-      { grado: "PT", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PT`)?.value || "0", 10), cargo: "PATRULLEROS" },
-      { grado: "PP", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PP`)?.value || "0", 10), cargo: "PATRULLEROS DE POLICIA" },
-      { grado: "AUX", cantidad: parseInt(document.getElementById(`extra_${claveBase}_AUX`)?.value || "0", 10), cargo: "AUXILIARES" }
+      { grupo: "OF", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CR`)?.value || "0", 10), cargo: "OFICIALES" },
+      { grupo: "NE", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CM`)?.value || "0", 10), cargo: "EJECUTIVO" },
+      { grupo: "PT", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PT`)?.value || "0", 10), cargo: "PATRULLEROS" },
+      { grupo: "PP", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PP`)?.value || "0", 10), cargo: "PATRULLEROS DE POLICIA" },
+      { grupo: "AUX", cantidad: parseInt(document.getElementById(`extra_${claveBase}_AUX`)?.value || "0", 10), cargo: "AUXILIARES" }
     ];
 
     for (const item of distribucion) {
@@ -3150,7 +3162,7 @@ async function aplicarServicioExtraordinarioPorGrupos() {
           ced !== jefePmuCedula &&
           (novedad === "" || novedad === "DISPONIBLE") &&
           aptitud === "APTO" &&
-          gradoP === item.grado
+          perteneceAGrupo(gradoP, item.grupo)
         );
       });
 
