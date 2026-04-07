@@ -2306,36 +2306,54 @@ app.post("/modulo11-cerrar-servicio", async (req, res) => {
     } = req.body;
 
     if (!fecha || !unidad || !servicio) {
-      return res.json({ ok: false, error: "Faltan datos" });
+      return res.json({
+        ok: false,
+        error: "Fecha, unidad y servicio son obligatorios"
+      });
     }
 
-    const { data, error } = await supabase
-      .from("servicios_extraordinarios")
-      .update({
-        estado: "CERRADO",
-        fecha_cierre: new Date().toISOString(),
-        responsable_cierre: responsable_nombre,
-        cedula_responsable: responsable_cedula
-      })
-      .eq("fecha", fecha)
-      .eq("unidad", unidad)
-      .eq("nombre_servicio", servicio)
-      .select();
+    const result = await pool.query(
+      `
+      UPDATE servicios_extraordinarios
+      SET
+        cerrado = true,
+        fecha_cierre = NOW(),
+        fin_real_servicio = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),
+        cerrado_por_cedula = $4,
+        cerrado_por_nombre = $5,
+        cerrado_por_cargo = $6
+      WHERE fecha = $1
+        AND unidad = $2
+        AND TRIM(COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO')) = TRIM($3)
+      `,
+      [
+        fecha,
+        unidad,
+        servicio,
+        responsable_cedula || null,
+        responsable_nombre || null,
+        responsable_cargo || null
+      ]
+    );
 
-    if (error) {
-      console.error("ERROR BD:", error);
-      return res.json({ ok: false, error: "Error en base de datos" });
+    if (!result.rowCount) {
+      return res.json({
+        ok: false,
+        error: "No se encontró el servicio para cerrar"
+      });
     }
 
-    if (!data || data.length === 0) {
-      return res.json({ ok: false, error: "No se encontró el servicio" });
-    }
+    return res.json({
+      ok: true,
+      mensaje: "Servicio finalizado correctamente"
+    });
 
-    return res.json({ ok: true });
-
-  } catch (err) {
-    console.error("ERROR SERVIDOR:", err);
-    return res.json({ ok: false, error: "Error servidor" });
+  } catch (error) {
+    console.error("ERROR /modulo11-cerrar-servicio:", error);
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
   }
 });
 // =========================
