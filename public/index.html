@@ -4568,55 +4568,104 @@ function actualizarResumenGlobalExtra() {
 }
   
 function validarDistribucionExtra() {
-  const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+  const reqOficiales = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
+  const reqEjecutivo = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
+  const reqPatrulleros = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
+  const reqPP = parseInt(document.getElementById("total_pp_extra")?.value || "0", 10);
+  const reqAuxiliares = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
 
-  const oficialesSet = new Set(["CR","TC","MY","CT","TE","ST"]);
-  const ejecutivoSet = new Set(["CM","SC","IJ","IT","SI"]);
-  const patrullerosSet = new Set(["PT","PP"]);
-  const auxiliaresSet = new Set(["AUX"]);
+  const inputs = Array.from(document.querySelectorAll('#contenedor_distribucion_extra input[type="number"]'));
 
-  let oficiales = 0;
-  let ejecutivo = 0;
-  let patrulleros = 0;
-  let auxiliares = 0;
+  let sumOficiales = 0;
+  let sumEjecutivo = 0;
+  let sumPatrulleros = 0;
+  let sumPP = 0;
+  let sumAuxiliares = 0;
 
-  subunidades.forEach(subunidad => {
-    const inputs = document.querySelectorAll(`[id^="extra_${subunidad}_"]`);
+  inputs.forEach(input => {
+    let valor = parseInt(input.value || "0", 10);
+    if (isNaN(valor) || valor < 0) valor = 0;
 
-    inputs.forEach(input => {
-      const partes = input.id.split("_");
-      const grado = partes[partes.length - 1];
-      const valor = parseInt(input.value || "0", 10);
-
-      if (oficialesSet.has(grado)) oficiales += valor;
-      else if (ejecutivoSet.has(grado)) ejecutivo += valor;
-      else if (patrullerosSet.has(grado)) patrulleros += valor;
-      else if (auxiliaresSet.has(grado)) auxiliares += valor;
-    });
+    if (input.id.endsWith("_CR")) sumOficiales += valor;
+    else if (input.id.endsWith("_CM")) sumEjecutivo += valor;
+    else if (input.id.endsWith("_PT")) sumPatrulleros += valor;
+    else if (input.id.endsWith("_PP")) sumPP += valor;
+    else if (input.id.endsWith("_AUX")) sumAuxiliares += valor;
   });
 
-  const reqOf = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
-  const reqEj = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
-  const reqPt = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
-  const reqAx = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
+  const validacion = document.getElementById("validacion_distribucion_extra");
+  if (!validacion) return;
 
-  const estado =
-    oficiales === reqOf &&
-    ejecutivo === reqEj &&
-    patrulleros === reqPt &&
-    auxiliares === reqAx;
+  const solicitadoTexto = `${reqOficiales}-${reqEjecutivo}-${reqPatrulleros}-${reqPP}-${reqAuxiliares} = ${reqOficiales + reqEjecutivo + reqPatrulleros + reqPP + reqAuxiliares}`;
+  const distribuidoTexto = `${sumOficiales}-${sumEjecutivo}-${sumPatrulleros}-${sumPP}-${sumAuxiliares} = ${sumOficiales + sumEjecutivo + sumPatrulleros + sumPP + sumAuxiliares}`;
 
-  const box = document.getElementById("validacion_distribucion_extra");
-  if (!box) return;
+  const coincide =
+    sumOficiales === reqOficiales &&
+    sumEjecutivo === reqEjecutivo &&
+    sumPatrulleros === reqPatrulleros &&
+    sumPP === reqPP &&
+    sumAuxiliares === reqAuxiliares;
 
-  if (estado) {
-    box.innerText =
-      `Distribución correcta\nSolicitado: ${reqOf}-${reqEj}-${reqPt}-${reqAx} = ${reqOf + reqEj + reqPt + reqAx}\nDistribuido: ${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${oficiales + ejecutivo + patrulleros + auxiliares}`;
+  if (coincide) {
+    validacion.innerText =
+      `Distribución correcta\nSolicitado: ${solicitadoTexto}\nDistribuido: ${distribuidoTexto}`;
+    validacion.style.color = "green";
   } else {
-    box.innerText =
-      `Distribución no coincide\nSolicitado: ${reqOf}-${reqEj}-${reqPt}-${reqAx} = ${reqOf + reqEj + reqPt + reqAx}\nDistribuido: ${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${oficiales + ejecutivo + patrulleros + auxiliares}`;
+    validacion.innerText =
+      `Distribución no coincide\nSolicitado: ${solicitadoTexto}\nDistribuido: ${distribuidoTexto}`;
+    validacion.style.color = "red";
   }
 }
+
+function controlarLimiteSolicitadoExtra(input) {
+  if (!input) return;
+
+  let valor = parseInt(input.value || "0", 10);
+  if (isNaN(valor) || valor < 0) valor = 0;
+
+  let selector = "";
+  let totalSolicitado = 0;
+
+  if (input.id.endsWith("_CR")) {
+    selector = '#contenedor_distribucion_extra input[id$="_CR"]';
+    totalSolicitado = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
+  } else if (input.id.endsWith("_CM")) {
+    selector = '#contenedor_distribucion_extra input[id$="_CM"]';
+    totalSolicitado = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
+  } else if (input.id.endsWith("_PT")) {
+    selector = '#contenedor_distribucion_extra input[id$="_PT"]';
+    totalSolicitado = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
+  } else if (input.id.endsWith("_PP")) {
+    selector = '#contenedor_distribucion_extra input[id$="_PP"]';
+    totalSolicitado = parseInt(document.getElementById("total_pp_extra")?.value || "0", 10);
+  } else if (input.id.endsWith("_AUX")) {
+    selector = '#contenedor_distribucion_extra input[id$="_AUX"]';
+    totalSolicitado = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
+  }
+
+  const inputsGrupo = Array.from(document.querySelectorAll(selector));
+
+  let sumaOtros = 0;
+  inputsGrupo.forEach(i => {
+    if (i !== input) {
+      const v = parseInt(i.value || "0", 10);
+      sumaOtros += isNaN(v) ? 0 : v;
+    }
+  });
+
+  const maxPermitidoParaEsteCampo = Math.max(0, totalSolicitado - sumaOtros);
+
+  const maxDisponible = parseInt(input.max || "0", 10);
+  const maxFinal = Math.min(maxPermitidoParaEsteCampo, isNaN(maxDisponible) ? maxPermitidoParaEsteCampo : maxDisponible);
+
+  if (valor > maxFinal) {
+    valor = maxFinal;
+  }
+
+  input.value = valor;
+  validarDistribucionExtra();
+}  
+  
   // 👇 PEGA AQUÍ LA FUNCIÓN
 async function cargarResponsablesServicioExtra() {
   const boxSupervisor = document.getElementById("supervisor_servicio_box");
@@ -6342,7 +6391,7 @@ bloque.innerHTML = `
         value="0"
         class="input-cantidad-extra"
         ${disp.oficiales === 0 ? "disabled" : ""}
-        oninput="controlarMaximoExtra(this, ${disp.oficiales}); validarDistribucionExtra();"
+       oninput="controlarMaximoExtra(this, ${disp.oficiales}); controlarLimiteSolicitadoExtra(this);"
       />
     </div>
 
@@ -6357,7 +6406,7 @@ bloque.innerHTML = `
         value="0"
         class="input-cantidad-extra"
         ${disp.ejecutivo === 0 ? "disabled" : ""}
-        oninput="controlarMaximoExtra(this, ${disp.ejecutivo}); validarDistribucionExtra();"
+        oninput="controlarMaximoExtra(this, ${disp.ejecutivo}); controlarLimiteSolicitadoExtra(this);"
       />
     </div>
 
@@ -6372,7 +6421,7 @@ bloque.innerHTML = `
         value="0"
         class="input-cantidad-extra"
         ${disp.patrulleros === 0 ? "disabled" : ""}
-        oninput="controlarMaximoExtra(this, ${disp.patrulleros}); validarDistribucionExtra();"
+        oninput="controlarMaximoExtra(this, ${disp.patrulleros}); controlarLimiteSolicitadoExtra(this);"
       />
     </div>
 
@@ -6387,7 +6436,7 @@ bloque.innerHTML = `
         value="0"
         class="input-cantidad-extra"
         ${disp.patrullerosPolicia === 0 ? "disabled" : ""}
-        oninput="controlarMaximoExtra(this, ${disp.patrullerosPolicia}); validarDistribucionExtra();"
+        oninput="controlarMaximoExtra(this, ${disp.patrullerosPolicia}); controlarLimiteSolicitadoExtra(this);"
       />
     </div>
 
@@ -6402,7 +6451,7 @@ bloque.innerHTML = `
         value="0"
         class="input-cantidad-extra"
         ${disp.auxiliares === 0 ? "disabled" : ""}
-        oninput="controlarMaximoExtra(this, ${disp.auxiliares}); validarDistribucionExtra();"
+        oninput="controlarMaximoExtra(this, ${disp.auxiliares}); controlarLimiteSolicitadoExtra(this);"
       />
     </div>
   </div>
