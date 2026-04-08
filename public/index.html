@@ -3320,14 +3320,6 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   // FUNCIONES AUXILIARES
   // =========================
 
-    function escapeHtmlPdf(texto = "") {
-  return String(texto || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-   
-
 function construirBloqueResumenUnidadPDF(item, unidad, subunidad, fecha, responsable) {
   const r = item?.resumen || {};
   const estadoParte = item?.estado_parte || "NO HAN DADO PARTE";
@@ -3523,6 +3515,13 @@ function controlarMaximoExtra(input, maximo) {
     return `${v[0]}-${v[1]}-${v[2]}-${v[3]}`;
   }
 
+ function escapeHtmlPdf(texto = "") {
+  return String(texto || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+    
   // =========================
   // VARIABLES
   // =========================
