@@ -3296,6 +3296,14 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   renderizarConsultaDesdeMemoria();
 }
 
+function escapeHtmlPdf(texto = "") {
+  return String(texto || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+  
   function generarParte() {
   const cedula = document.getElementById("cedula_elabora")?.value || "";
   const grado = document.getElementById("grado")?.value || "";
@@ -3515,13 +3523,7 @@ function controlarMaximoExtra(input, maximo) {
     return `${v[0]}-${v[1]}-${v[2]}-${v[3]}`;
   }
 
- function escapeHtmlPdf(texto = "") {
-  return String(texto || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-    
+     
   // =========================
   // VARIABLES
   // =========================
