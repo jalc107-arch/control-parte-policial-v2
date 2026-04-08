@@ -3337,16 +3337,16 @@ function construirBloqueResumenUnidadPDF(item, unidad, subunidad, fecha, respons
     <div class="bloque">
       <div class="encabezado-bloque">
         <div>
-          <div class="titulo-bloque">${escaparHtmlPdf(subunidad || "SIN SUBUNIDAD")}</div>
-          <div class="meta">UNIDAD: ${escaparHtmlPdf(unidad)}</div>
-          <div class="meta">FECHA: ${escaparHtmlPdf(fecha)}</div>
-          <div class="meta">ESTADO: ${escaparHtmlPdf(estadoParte)}</div>
-          <div class="meta">RESPONSABLE GENERAL: ${escaparHtmlPdf(responsable.nombre || "")}</div>
-          <div class="meta">CÉDULA: ${escaparHtmlPdf(responsable.cedula || "")}</div>
-          <div class="meta">TELÉFONO: ${escaparHtmlPdf(responsable.telefono || "")}</div>
+          <div class="titulo-bloque">${escapeHtmlPdf(subunidad || "SIN SUBUNIDAD")}</div>
+          <div class="meta">UNIDAD: ${escapeHtmlPdf(unidad)}</div>
+          <div class="meta">FECHA: ${escapeHtmlPdf(fecha)}</div>
+          <div class="meta">ESTADO: ${escapeHtmlPdf(estadoParte)}</div>
+          <div class="meta">RESPONSABLE GENERAL: ${escapeHtmlPdf(responsable.nombre || "")}</div>
+          <div class="meta">CÉDULA: ${escapeHtmlPdf(responsable.cedula || "")}</div>
+          <div class="meta">TELÉFONO: ${escapeHtmlPdf(responsable.telefono || "")}</div>
           ${
             rp
-              ? `<div class="meta">QUIEN SACÓ EL PARTE: ${escaparHtmlPdf(`${rp.hora || ""} ${rp.grado || ""} ${rp.apellidos || ""} ${rp.nombres || ""} CC ${rp.cedula || ""} TEL ${rp.telefono || ""}`)}</div>`
+              ? `<div class="meta">QUIEN SACÓ EL PARTE: ${escapeHtmlPdf(`${rp.hora || ""} ${rp.grado || ""} ${rp.apellidos || ""} ${rp.nombres || ""} CC ${rp.cedula || ""} TEL ${rp.telefono || ""}`)}</div>`
               : ""
           }
         </div>
@@ -3360,15 +3360,15 @@ function construirBloqueResumenUnidadPDF(item, unidad, subunidad, fecha, respons
           </tr>
         </thead>
         <tbody>
-          <tr><td>FUERZA EFECTIVA</td><td>${escaparHtmlPdf(texto4(r.fuerza_efectiva || [0,0,0,0]))}</td></tr>
-          <tr><td>FUERZA DISPONIBLE</td><td>${escaparHtmlPdf(texto4(r.fuerza_disponible || [0,0,0,0]))}</td></tr>
-          <tr><td>NOVEDADES</td><td>${escaparHtmlPdf(texto4(r.novedades || [0,0,0,0]))}</td></tr>
-          <tr><td>EXCUSADO</td><td>${escaparHtmlPdf(texto4(r.excusado || [0,0,0,0]))}</td></tr>
-          <tr><td>NO ASISTE</td><td>${escaparHtmlPdf(texto4(r.no_asiste || [0,0,0,0]))}</td></tr>
-          <tr><td>RETARDADO</td><td>${escaparHtmlPdf(texto4(r.retardado || [0,0,0,0]))}</td></tr>
-          <tr><td>REEMPLAZO</td><td>${escaparHtmlPdf(texto4(r.reemplazo || [0,0,0,0]))}</td></tr>
-          <tr><td>INCAPACIDAD</td><td>${escaparHtmlPdf(texto4(r.incapacidad || [0,0,0,0]))}</td></tr>
-          <tr><td>HOSPITALIZADO</td><td>${escaparHtmlPdf(texto4(r.hospitalizado || [0,0,0,0]))}</td></tr>
+          <tr><td>FUERZA EFECTIVA</td><td>${escapeHtmlPdf(texto4(r.fuerza_efectiva || [0,0,0,0]))}</td></tr>
+          <tr><td>FUERZA DISPONIBLE</td><td>${escapeHtmlPdf(texto4(r.fuerza_disponible || [0,0,0,0]))}</td></tr>
+          <tr><td>NOVEDADES</td><td>${escapeHtmlPdf(texto4(r.novedades || [0,0,0,0]))}</td></tr>
+          <tr><td>EXCUSADO</td><td>${escapeHtmlPdf(texto4(r.excusado || [0,0,0,0]))}</td></tr>
+          <tr><td>NO ASISTE</td><td>${escapeHtmlPdf(texto4(r.no_asiste || [0,0,0,0]))}</td></tr>
+          <tr><td>RETARDADO</td><td>${escapeHtmlPdf(texto4(r.retardado || [0,0,0,0]))}</td></tr>
+          <tr><td>REEMPLAZO</td><td>${escapeHtmlPdf(texto4(r.reemplazo || [0,0,0,0]))}</td></tr>
+          <tr><td>INCAPACIDAD</td><td>${escapeHtmlPdf(texto4(r.incapacidad || [0,0,0,0]))}</td></tr>
+          <tr><td>HOSPITALIZADO</td><td>${escapeHtmlPdf(texto4(r.hospitalizado || [0,0,0,0]))}</td></tr>
         </tbody>
       </table>
     </div>
@@ -5966,7 +5966,7 @@ function descargarPDFUnidadModulo11(subunidadParametro = "") {
   const html = `
     <html>
       <head>
-        <title>Parte ${escaparHtmlPdf(subunidad)}</title>
+        <title>Parte ${escapeHtmlPdf(subunidad)}</title>
         ${obtenerEstiloPDFModulo11()}
       </head>
       <body>
@@ -6037,11 +6037,11 @@ function descargarPDFTotalModulo11() {
   const totalHtml = `
     <div class="bloque total-general">
       <div class="titulo-bloque">TOTAL GENERAL</div>
-      <div class="meta">UNIDAD: ${escaparHtmlPdf(unidad)}</div>
-      <div class="meta">FECHA: ${escaparHtmlPdf(fecha)}</div>
-      <div class="meta">RESPONSABLE GENERAL: ${escaparHtmlPdf(responsable.nombre || "")}</div>
-      <div class="meta">CÉDULA: ${escaparHtmlPdf(responsable.cedula || "")}</div>
-      <div class="meta">TELÉFONO: ${escaparHtmlPdf(responsable.telefono || "")}</div>
+      <div class="meta">UNIDAD: ${escapeHtmlPdf(unidad)}</div>
+      <div class="meta">FECHA: ${escapeHtmlPdf(fecha)}</div>
+      <div class="meta">RESPONSABLE GENERAL: ${escapeHtmlPdf(responsable.nombre || "")}</div>
+      <div class="meta">CÉDULA: ${escapeHtmlPdf(responsable.cedula || "")}</div>
+      <div class="meta">TELÉFONO: ${escapeHtmlPdf(responsable.telefono || "")}</div>
 
       <table class="tabla-pdf">
         <thead>
@@ -6051,15 +6051,15 @@ function descargarPDFTotalModulo11() {
           </tr>
         </thead>
         <tbody>
-          <tr><td>TOTAL FUERZA EFECTIVA</td><td>${escaparHtmlPdf(texto4(total.fuerza_efectiva))}</td></tr>
-          <tr><td>TOTAL FUERZA DISPONIBLE</td><td>${escaparHtmlPdf(texto4(total.fuerza_disponible))}</td></tr>
-          <tr><td>TOTAL NOVEDADES</td><td>${escaparHtmlPdf(texto4(total.novedades))}</td></tr>
-          <tr><td>EXCUSADO</td><td>${escaparHtmlPdf(texto4(total.excusado))}</td></tr>
-          <tr><td>NO ASISTE</td><td>${escaparHtmlPdf(texto4(total.no_asiste))}</td></tr>
-          <tr><td>RETARDADO</td><td>${escaparHtmlPdf(texto4(total.retardado))}</td></tr>
-          <tr><td>REEMPLAZO</td><td>${escaparHtmlPdf(texto4(total.reemplazo))}</td></tr>
-          <tr><td>INCAPACIDAD</td><td>${escaparHtmlPdf(texto4(total.incapacidad))}</td></tr>
-          <tr><td>HOSPITALIZADO</td><td>${escaparHtmlPdf(texto4(total.hospitalizado))}</td></tr>
+          <tr><td>TOTAL FUERZA EFECTIVA</td><td>${escapeHtmlPdf(texto4(total.fuerza_efectiva))}</td></tr>
+          <tr><td>TOTAL FUERZA DISPONIBLE</td><td>${escapeHtmlPdf(texto4(total.fuerza_disponible))}</td></tr>
+          <tr><td>TOTAL NOVEDADES</td><td>${escapeHtmlPdf(texto4(total.novedades))}</td></tr>
+          <tr><td>EXCUSADO</td><td>${escapeHtmlPdf(texto4(total.excusado))}</td></tr>
+          <tr><td>NO ASISTE</td><td>${escapeHtmlPdf(texto4(total.no_asiste))}</td></tr>
+          <tr><td>RETARDADO</td><td>${escapeHtmlPdf(texto4(total.retardado))}</td></tr>
+          <tr><td>REEMPLAZO</td><td>${escapeHtmlPdf(texto4(total.reemplazo))}</td></tr>
+          <tr><td>INCAPACIDAD</td><td>${escapeHtmlPdf(texto4(total.incapacidad))}</td></tr>
+          <tr><td>HOSPITALIZADO</td><td>${escapeHtmlPdf(texto4(total.hospitalizado))}</td></tr>
         </tbody>
       </table>
     </div>
