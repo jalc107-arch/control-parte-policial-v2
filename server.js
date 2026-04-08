@@ -1299,26 +1299,16 @@ app.post("/guardar-parte-pdf", async (req, res) => {
       }
     }
 
-    // 🔥 GENERAR CONSECUTIVO GPSE POR UNIDAD + DÍA
-    const fechaHoy = await pool.query(`
-      SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date AS fecha
-    `);
+   // 🔥 GENERAR CONSECUTIVO GPSE POR UNIDAD + DÍA
+const fechaHoy = await pool.query(`
+  SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date AS fecha
+`);
 
-    const fecha = fechaHoy.rows[0].fecha;
-    const fechaTexto = new Date(fecha).toISOString().slice(0, 10).replace(/-/g, "");
-    const unidadLimpia = String(unidad || "").toUpperCase().replace(/\s+/g, "");
+const fecha = fechaHoy.rows[0].fecha;
+const fechaTexto = new Date(fecha).toISOString().slice(0, 10).replace(/-/g, "");
+const unidadLimpia = String(unidad || "").toUpperCase().replace(/\s+/g, "");
 
-    const consecutivoDiaResult = await pool.query(
-      `
-      SELECT COALESCE(MAX(consecutivo_dia), 0) + 1 AS siguiente
-      FROM partes
-      WHERE DATE(fecha) = $1
-        AND unidad = $2
-      `,
-      [fecha, unidad]
-    );
-
-   let result;
+let result;
 let numero = 1;
 let consecutivo = "";
 let intento = 0;
@@ -1373,54 +1363,26 @@ while (intento < 3) {
   } catch (errorInsert) {
     if (errorInsert.code === "23505") {
       intento++;
+      if (intento >= 3) throw errorInsert;
     } else {
       throw errorInsert;
     }
   }
 }
-      `INSERT INTO partes (
-        consecutivo,
-        consecutivo_dia,
-        tipo,
-        unidad,
-        subunidad,
-        estacion,
-        grado_responsable,
-        nombre_responsable,
-        cedula_responsable,
-        telefono_responsable,
-        texto_parte
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-      RETURNING *`,
-      [
-        consecutivo,
-        numero,
-        tipo || null,
-        unidad || null,
-        subunidadTexto || null,
-        estacionTexto || null,
-        grado_responsable || null,
-        nombre_responsable || null,
-        cedula_responsable || null,
-        telefono_responsable || null,
-        texto_parte || null
-      ]
-    );
 
-    return res.json({
-      ok: true,
-      data: result.rows[0],
-      consecutivo
-    });
+return res.json({
+  ok: true,
+  data: result.rows[0],
+  consecutivo
+});
 
-  } catch (error) {
-    console.error("ERROR /guardar-parte-pdf:", error);
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
-  }
+} catch (error) {
+  console.error("ERROR /guardar-parte-pdf:", error);
+  return res.status(500).json({
+    ok: false,
+    error: error.message
+  });
+}
 });
 // =========================
 // CONSULTA GENERAL DE NOVEDADES (SOLO OFICIALES Y ADMIN)
