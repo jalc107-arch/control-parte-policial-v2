@@ -5996,42 +5996,67 @@ function construirTextoUnidadModulo11(subunidad) {
 
   texto += `\n`;
 
-  const r = item.resumen || {};
-  texto += `FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}\n`;
-  texto += `FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}\n`;
-  texto += `NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}\n`;
-  texto += `EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}\n`;
-  texto += `NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}\n`;
-  texto += `RETARDADO            ${texto4(r.retardado || [0,0,0,0])}\n`;
-  texto += `REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}\n`;
-  texto += `INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}\n`;
-  texto += `HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}\n`;
+const r = item.resumen || {};
 
+function tieneValores(arr = []) {
+  return arr.some(n => Number(n || 0) > 0);
+}
+
+texto += `FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}\n`;
+
+if (tieneValores(r.fuerza_disponible || [])) {
+  texto += `FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}\n`;
+}
+
+if (tieneValores(r.novedades || [])) {
+  texto += `NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}\n`;
+}
+
+if (tieneValores(r.excusado || [])) {
+  texto += `EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}\n`;
+}
+
+if (tieneValores(r.no_asiste || [])) {
+  texto += `NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}\n`;
+}
+
+if (tieneValores(r.retardado || [])) {
+  texto += `RETARDADO            ${texto4(r.retardado || [0,0,0,0])}\n`;
+}
+
+if (tieneValores(r.reemplazo || [])) {
+  texto += `REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}\n`;
+}
+
+if (tieneValores(r.incapacidad || [])) {
+  texto += `INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}\n`;
+}
+
+if (tieneValores(r.hospitalizado || [])) {
+  texto += `HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}\n`;
+}
+
+  if (disponibles.length) {
   texto += `\n==============================\n`;
   texto += `PERSONAL DISPONIBLE\n`;
   texto += `==============================\n`;
 
-  if (!disponibles.length) {
-    texto += `SIN PERSONAL DISPONIBLE\n`;
-  } else {
-    disponibles.forEach((p, i) => {
-      texto += `${lineaPersona(p, i)}\n`;
-    });
-  }
-
-  Object.keys(novedades).forEach(tipo => {
-    texto += `\n==============================\n`;
-    texto += `${tipo}\n`;
-    texto += `==============================\n`;
-
-    if (!novedades[tipo].length) {
-      texto += `SIN REGISTROS\n`;
-    } else {
-      novedades[tipo].forEach((p, i) => {
-        texto += `${lineaPersona(p, i)}\n`;
-      });
-    }
+  disponibles.forEach((p, i) => {
+    texto += `${lineaPersona(p, i)}\n`;
   });
+}
+  
+  Object.keys(novedades).forEach(tipo => {
+  if (!novedades[tipo].length) return;
+
+  texto += `\n==============================\n`;
+  texto += `${tipo}\n`;
+  texto += `==============================\n`;
+
+  novedades[tipo].forEach((p, i) => {
+    texto += `${lineaPersona(p, i)}\n`;
+  });
+});
 
   return texto;
 }
@@ -6065,17 +6090,45 @@ function construirTextoTotalConsolidadoModulo11() {
     total.hospitalizado = sumar4(total.hospitalizado, r.hospitalizado || [0,0,0,0]);
   });
 
+  function tieneValores(arr = []) {
+    return arr.some(n => Number(n || 0) > 0);
+  }
+
   let texto = "";
   texto += `TOTAL GENERAL CONSOLIDADO\n\n`;
   texto += `FUERZA EFECTIVA      ${texto4(total.fuerza_efectiva)}\n`;
-  texto += `FUERZA DISPONIBLE    ${texto4(total.fuerza_disponible)}\n`;
-  texto += `NOVEDADES            ${texto4(total.novedades)}\n`;
-  texto += `EXCUSADO             ${texto4(total.excusado)}\n`;
-  texto += `NO ASISTE            ${texto4(total.no_asiste)}\n`;
-  texto += `RETARDADO            ${texto4(total.retardado)}\n`;
-  texto += `REEMPLAZO            ${texto4(total.reemplazo)}\n`;
-  texto += `INCAPACIDAD          ${texto4(total.incapacidad)}\n`;
-  texto += `HOSPITALIZADO        ${texto4(total.hospitalizado)}\n`;
+
+  if (tieneValores(total.fuerza_disponible)) {
+    texto += `FUERZA DISPONIBLE    ${texto4(total.fuerza_disponible)}\n`;
+  }
+
+  if (tieneValores(total.novedades)) {
+    texto += `NOVEDADES            ${texto4(total.novedades)}\n`;
+  }
+
+  if (tieneValores(total.excusado)) {
+    texto += `EXCUSADO             ${texto4(total.excusado)}\n`;
+  }
+
+  if (tieneValores(total.no_asiste)) {
+    texto += `NO ASISTE            ${texto4(total.no_asiste)}\n`;
+  }
+
+  if (tieneValores(total.retardado)) {
+    texto += `RETARDADO            ${texto4(total.retardado)}\n`;
+  }
+
+  if (tieneValores(total.reemplazo)) {
+    texto += `REEMPLAZO            ${texto4(total.reemplazo)}\n`;
+  }
+
+  if (tieneValores(total.incapacidad)) {
+    texto += `INCAPACIDAD          ${texto4(total.incapacidad)}\n`;
+  }
+
+  if (tieneValores(total.hospitalizado)) {
+    texto += `HOSPITALIZADO        ${texto4(total.hospitalizado)}\n`;
+  }
 
   return texto;
 }
