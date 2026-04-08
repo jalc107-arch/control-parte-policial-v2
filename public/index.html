@@ -6156,14 +6156,17 @@ function construirTextoTotalModulo11() {
   };
 
   let texto = "";
-  texto += `PARTE TOTAL CONSOLIDADO SERVICIO EXTRAORDINARIO\n\n`;
-  texto += `UNIDAD: ${unidad}\n`;
-  texto += `SERVICIO:\n${servicio}\n\n`;
-texto += `FECHA:\n${fecha}\n\n`;
-  texto += `RESPONSABLE GENERAL: ${responsable.nombre || ""}\n`;
-  texto += `CÉDULA: ${responsable.cedula || ""}\n`;
-  texto += `TELÉFONO: ${responsable.telefono || ""}\n\n`;
 
+texto += `PARTE TOTAL CONSOLIDADO SERVICIO EXTRAORDINARIO\n`;
+texto += `==============================================\n\n`;
+
+texto += `UNIDAD:     ${unidad}\n`;
+texto += `SERVICIO:   ${servicio}\n`;
+texto += `FECHA:      ${fecha}\n`;
+texto += `RESPONSABLE GENERAL: ${responsable.nombre || ""}\n`;
+texto += `CÉDULA:     ${responsable.cedula || ""}\n`;
+texto += `TELÉFONO:   ${responsable.telefono || ""}\n\n`;
+  
   resumen.forEach(item => {
     const r = item.resumen || {};
 
