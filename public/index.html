@@ -2515,7 +2515,9 @@ let consecutivoGPSE = "GPSE-PENDIENTE";
 
 try {
   const gradoUsuario = document.getElementById("grado")?.value?.trim()?.toUpperCase() || "";
-  const rolUsuario = (document.getElementById("bloqueExcel")?.style.display === "block") ? "ADMIN_EXCEL" : "OPERADOR_PARTE";
+  const rolUsuario = (document.getElementById("bloqueExcel")?.style.display === "block")
+    ? "ADMIN_EXCEL"
+    : "OPERADOR_PARTE";
 
   const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
   const dataVal = await validar.json();
@@ -2539,39 +2541,39 @@ try {
     novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
   });
 
-if (dataVal.guardarOficial) {
-  const resGuardar = await fetch("/guardar-parte-pdf", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      tipo: dataVal.tipo || null,
-      unidad,
-      subunidades,
-      estaciones,
-      grado_responsable: grado,
-      nombre_responsable: nombre,
-      cedula_responsable: cedula,
-      telefono_responsable: telefono,
-      texto_parte: contenido,
-      novedades: novedadesSeleccionadas
-    })
-  });
+  if (dataVal.guardarOficial) {
+    const resGuardar = await fetch("/guardar-parte-pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: dataVal.tipo || null,
+        unidad,
+        subunidades,
+        estaciones,
+        grado_responsable: grado,
+        nombre_responsable: nombre,
+        cedula_responsable: cedula,
+        telefono_responsable: telefono,
+        texto_parte: contenido,
+        novedades: novedadesSeleccionadas
+      })
+    });
 
-  const dataGuardar = await resGuardar.json();
+    const dataGuardar = await resGuardar.json();
 
-  if (!resGuardar.ok || !dataGuardar?.ok) {
-    throw new Error(dataGuardar?.mensaje || dataGuardar?.error || "No se pudo guardar el parte");
+    if (!resGuardar.ok || !dataGuardar?.ok) {
+      throw new Error(dataGuardar?.mensaje || dataGuardar?.error || "No se pudo guardar el parte");
+    }
+
+    if (!dataGuardar?.consecutivo) {
+      throw new Error("El servidor guardó el parte pero no devolvió el consecutivo");
+    }
+
+    consecutivoGPSE = dataGuardar.consecutivo;
+  } else {
+    consecutivoGPSE = "NO APLICA";
   }
 
-  if (!dataGuardar?.consecutivo) {
-    throw new Error("El servidor guardó el parte pero no devolvió el consecutivo");
-  }
-
-  consecutivoGPSE = dataGuardar.consecutivo;
-} else {
-  consecutivoGPSE = "NO APLICA";
-}
-  
 } catch (e) {
   console.error("No se pudo obtener consecutivo real:", e);
   alert(`No se pudo obtener el consecutivo: ${e.message}`);
