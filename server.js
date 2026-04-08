@@ -1299,7 +1299,7 @@ app.post("/guardar-parte-pdf", async (req, res) => {
       }
     }
 
-   // 🔥 GENERAR CONSECUTIVO GPSE POR UNIDAD + DÍA
+  // 🔥 GENERAR CONSECUTIVO GPSE POR UNIDAD + DÍA
 const fechaHoy = await pool.query(`
   SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')::date AS fecha
 `);
@@ -1308,12 +1308,12 @@ const fecha = fechaHoy.rows[0].fecha;
 const fechaTexto = new Date(fecha).toISOString().slice(0, 10).replace(/-/g, "");
 const unidadLimpia = String(unidad || "").toUpperCase().replace(/\s+/g, "");
 
-let result;
+let result = null;
 let numero = 1;
 let consecutivo = "";
 let intento = 0;
 
-while (intento < 3) {
+while (intento < 10) {
   try {
     const consecutivoDiaResult = await pool.query(
       `
@@ -1360,14 +1360,19 @@ while (intento < 3) {
     );
 
     break;
+
   } catch (errorInsert) {
     if (errorInsert.code === "23505") {
       intento++;
-      if (intento >= 3) throw errorInsert;
+      await new Promise(r => setTimeout(r, 100));
     } else {
       throw errorInsert;
     }
   }
+}
+
+if (!result) {
+  throw new Error("No se pudo generar consecutivo único");
 }
 
 return res.json({
