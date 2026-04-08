@@ -1315,17 +1315,11 @@ let intento = 0;
 
 while (intento < 10) {
   try {
-    const consecutivoDiaResult = await pool.query(
-      `
-      SELECT COALESCE(MAX(consecutivo_dia), 0) + 1 AS siguiente
-      FROM partes
-      WHERE DATE(fecha) = $1
-        AND unidad = $2
-      `,
-      [fecha, unidad]
-    );
+    const seqResult = await pool.query(`
+  SELECT nextval('partes_consecutivo_seq') AS numero
+`);
 
-    numero = parseInt(consecutivoDiaResult.rows[0].siguiente, 10) || 1;
+numero = seqResult.rows[0].numero;
     consecutivo = `GPSE-${unidadLimpia}-${fechaTexto}-${String(numero).padStart(4, "0")}`;
 
     result = await pool.query(
