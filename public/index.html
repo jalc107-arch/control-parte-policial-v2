@@ -2511,7 +2511,7 @@ async function procesarFotoConSello() {
   `);
   ventana.document.close();
 
-let consecutivoGPSE = "";
+let consecutivoGPSE = "GPSE-PENDIENTE";
 
 try {
   const gradoUsuario = document.getElementById("grado")?.value?.trim()?.toUpperCase() || "";
@@ -2569,11 +2569,13 @@ if (dataVal.guardarOficial) {
 
   consecutivoGPSE = dataGuardar.consecutivo;
 } else {
-  consecutivoGPSE = "";
+  consecutivoGPSE = "NO APLICA";
 }
   
 } catch (e) {
-  console.warn("No se pudo obtener consecutivo real:", e);
+  console.error("No se pudo obtener consecutivo real:", e);
+  alert(`No se pudo obtener el consecutivo: ${e.message}`);
+  return;
 }
      
   const fotoBase64 = await procesarFotoConSello();
