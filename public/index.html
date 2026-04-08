@@ -5977,22 +5977,23 @@ function construirTextoUnidadModulo11(subunidad) {
   }
 
   let texto = "";
-  texto += `PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO\n\n`;
-  texto += `UNIDAD: ${unidad}\n`;
-  texto += `SUBUNIDAD: ${subunidad}\n`;
-  texto += `SERVICIO:\n${servicio}\n\n`;
-texto += `FECHA:\n${fecha}\n\n`;
-  texto += `ESTADO: ${estadoParte}\n`;
-  texto += `RESPONSABLE GENERAL: ${responsable.nombre || ""}\n`;
-  texto += `CÉDULA: ${responsable.cedula || ""}\n`;
-  texto += `TELÉFONO: ${responsable.telefono || ""}\n`;
+  texto += `PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO\n`;
+texto += `=========================================\n\n`;
+texto += `UNIDAD:               ${unidad}\n`;
+texto += `SUBUNIDAD:            ${subunidad}\n`;
+texto += `SERVICIO:             ${servicio}\n`;
+texto += `FECHA DEL SERVICIO:   ${fecha}\n`;
+texto += `ESTADO DEL PARTE:     ${item?.estado_parte || "NO HAN DADO PARTE"}\n`;
+texto += `RESPONSABLE GENERAL:  ${responsable.nombre || ""}\n`;
+texto += `CÉDULA:               ${responsable.cedula || ""}\n`;
+texto += `TELÉFONO:             ${responsable.telefono || ""}\n`;
 
   if (rp) {
-    texto += `QUIEN DIO PARTE: ${rp.grado || ""} ${rp.apellidos || ""} ${rp.nombres || ""}\n`;
-    texto += `CC QUIEN DIO PARTE: ${rp.cedula || ""}\n`;
-    texto += `TEL QUIEN DIO PARTE: ${rp.telefono || ""}\n`;
-    texto += `HORA PARTE: ${rp.hora || ""}\n`;
-  }
+  texto += `QUIEN DIO PARTE:      ${rp.grado || ""} ${rp.apellidos || ""} ${rp.nombres || ""}\n`;
+  texto += `CC QUIEN DIO PARTE:   ${rp.cedula || ""}\n`;
+  texto += `TEL QUIEN DIO PARTE:  ${rp.telefono || ""}\n`;
+  texto += `HORA PARTE:           ${rp.hora || ""}\n`;
+}
 
   texto += `\n`;
 
