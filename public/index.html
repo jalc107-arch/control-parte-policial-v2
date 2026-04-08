@@ -6036,6 +6036,50 @@ function construirTextoUnidadModulo11(subunidad) {
   return texto;
 }
 
+function construirTextoTotalConsolidadoModulo11() {
+  const resumen = Array.isArray(window.m11Resumen) ? window.m11Resumen : [];
+  if (!resumen.length) return "";
+
+  let total = {
+    fuerza_efectiva: [0,0,0,0],
+    fuerza_disponible: [0,0,0,0],
+    novedades: [0,0,0,0],
+    excusado: [0,0,0,0],
+    no_asiste: [0,0,0,0],
+    retardado: [0,0,0,0],
+    reemplazo: [0,0,0,0],
+    incapacidad: [0,0,0,0],
+    hospitalizado: [0,0,0,0]
+  };
+
+  resumen.forEach(item => {
+    const r = item.resumen || {};
+    total.fuerza_efectiva = sumar4(total.fuerza_efectiva, r.fuerza_efectiva || [0,0,0,0]);
+    total.fuerza_disponible = sumar4(total.fuerza_disponible, r.fuerza_disponible || [0,0,0,0]);
+    total.novedades = sumar4(total.novedades, r.novedades || [0,0,0,0]);
+    total.excusado = sumar4(total.excusado, r.excusado || [0,0,0,0]);
+    total.no_asiste = sumar4(total.no_asiste, r.no_asiste || [0,0,0,0]);
+    total.retardado = sumar4(total.retardado, r.retardado || [0,0,0,0]);
+    total.reemplazo = sumar4(total.reemplazo, r.reemplazo || [0,0,0,0]);
+    total.incapacidad = sumar4(total.incapacidad, r.incapacidad || [0,0,0,0]);
+    total.hospitalizado = sumar4(total.hospitalizado, r.hospitalizado || [0,0,0,0]);
+  });
+
+  let texto = "";
+  texto += `TOTAL GENERAL CONSOLIDADO\n\n`;
+  texto += `FUERZA EFECTIVA      ${texto4(total.fuerza_efectiva)}\n`;
+  texto += `FUERZA DISPONIBLE    ${texto4(total.fuerza_disponible)}\n`;
+  texto += `NOVEDADES            ${texto4(total.novedades)}\n`;
+  texto += `EXCUSADO             ${texto4(total.excusado)}\n`;
+  texto += `NO ASISTE            ${texto4(total.no_asiste)}\n`;
+  texto += `RETARDADO            ${texto4(total.retardado)}\n`;
+  texto += `REEMPLAZO            ${texto4(total.reemplazo)}\n`;
+  texto += `INCAPACIDAD          ${texto4(total.incapacidad)}\n`;
+  texto += `HOSPITALIZADO        ${texto4(total.hospitalizado)}\n`;
+
+  return texto;
+}
+  
 function construirTextoTotalModulo11() {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
@@ -6200,15 +6244,70 @@ async function descargarPDFUnidadModulo11(subunidadParametro = "") {
   }
 }
 
-function descargarPDFTotalModulo11() {
-  const texto = construirTextoTotalModulo11();
+async function descargarPDFTotalModulo11() {
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
 
-  if (!texto) {
+  if (!fecha || !unidad || !servicio) {
+    alert("Faltan datos para generar PDF total");
+    return;
+  }
+
+  const resumen = Array.isArray(window.m11Resumen) ? window.m11Resumen : [];
+  if (!resumen.length) {
     alert("Primero consulta el tablero");
     return;
   }
 
-  abrirVentanaPdfModulo11("Parte total consolidado", texto);
+  try {
+    const bloques = [];
+
+    for (const item of resumen) {
+      const subunidad = String(item.subunidad || "").trim();
+      if (!subunidad) continue;
+
+      const res = await fetch(
+        `/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`
+      );
+      const data = await res.json();
+
+      if (!data.ok) {
+        console.error("No se pudo cargar detalle de:", subunidad, data.error);
+        continue;
+      }
+
+      const detalleOriginal = Array.isArray(window.m11DetalleActual) ? window.m11DetalleActual : [];
+      const subunidadOriginal = window.m11SubunidadActual || "";
+
+      window.m11DetalleActual = Array.isArray(data.detalle) ? data.detalle : [];
+      window.m11SubunidadActual = subunidad;
+
+      const textoUnidad = construirTextoUnidadModulo11(subunidad);
+      if (textoUnidad) {
+        bloques.push(textoUnidad);
+      }
+
+      window.m11DetalleActual = detalleOriginal;
+      window.m11SubunidadActual = subunidadOriginal;
+    }
+
+    if (!bloques.length) {
+      alert("No se pudo construir el PDF total");
+      return;
+    }
+
+    const textoFinal =
+  bloques.join(`\n\n============================================================\n\n`) +
+  `\n\n============================================================\n\n` +
+  construirTextoTotalConsolidadoModulo11();
+
+abrirVentanaPdfModulo11("Parte total consolidado", textoFinal);
+
+  } catch (error) {
+    console.error(error);
+    alert("Error generando PDF total");
+  }
 }
  
   document.addEventListener("DOMContentLoaded", () => {
