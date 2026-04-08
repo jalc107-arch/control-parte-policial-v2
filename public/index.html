@@ -5980,8 +5980,8 @@ function construirTextoUnidadModulo11(subunidad) {
   texto += `PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO\n\n`;
   texto += `UNIDAD: ${unidad}\n`;
   texto += `SUBUNIDAD: ${subunidad}\n`;
-  texto += `SERVICIO: <b>${escaparHtmlPdf(servicio)}</b><br>`;
-  texto += `FECHA: <b>${escaparHtmlPdf(fecha)}</b><br>`;
+  texto += `SERVICIO: <b>${escapeHtmlPdf(servicio)}</b><br>`;
+  texto += `FECHA: <b>${escapeHtmlPdf(fecha)}</b><br>`;
   texto += `ESTADO: ${estadoParte}\n`;
   texto += `RESPONSABLE GENERAL: ${responsable.nombre || ""}\n`;
   texto += `CÉDULA: ${responsable.cedula || ""}\n`;
@@ -6157,8 +6157,8 @@ function construirTextoTotalModulo11() {
   let texto = "";
   texto += `PARTE TOTAL CONSOLIDADO SERVICIO EXTRAORDINARIO\n\n`;
   texto += `UNIDAD: ${unidad}\n`;
-  texto += `SERVICIO: <b>${escaparHtmlPdf(servicio)}</b><br>`;
-  texto += `FECHA: <b>${escaparHtmlPdf(fecha)}</b><br>`;
+  texto += `SERVICIO: <b>${escapeHtmlPdf(servicio)}</b><br>`;
+  texto += `FECHA: <b>${escapeHtmlPdf(fecha)}</b><br>`;
   texto += `RESPONSABLE GENERAL: ${responsable.nombre || ""}\n`;
   texto += `CÉDULA: ${responsable.cedula || ""}\n`;
   texto += `TELÉFONO: ${responsable.telefono || ""}\n\n`;
