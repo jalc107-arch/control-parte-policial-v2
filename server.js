@@ -1373,7 +1373,8 @@ while (intento < 3) {
 return res.json({
   ok: true,
   data: result.rows[0],
-  consecutivo
+  consecutivo,
+  numero
 });
 
 } catch (error) {
@@ -2554,54 +2555,7 @@ app.post("/modulo11-guardar-control", async (req, res) => {
     return res.status(500).json({ ok: false, error: error.message });
   }
 });
-// =========================
-// CERRAR SERVICIO MODULO 11
-// =========================
 
-async function cerrarServicioExtraordinario() {
-  const fecha = document.getElementById("m11_fecha").value;
-  const unidad = document.getElementById("m11_unidad").value;
-  const servicio = document.getElementById("m11_servicio")?.value;
-
-  if (!fecha || !unidad || !servicio) {
-    alert("Debe seleccionar fecha, unidad y servicio");
-    return;
-  }
-
-  if (!confirm("¿Seguro que desea finalizar este servicio?")) return;
-
-  try {
-    const res = await fetch("/modulo11-cerrar-servicio", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        fecha,
-        unidad,
-        servicio,
-        subunidad: "TODAS", // 🔥 cierre general
-        responsable_cedula: document.getElementById("cedula_responsable")?.value || null,
-        responsable_nombre: document.getElementById("nombre_elabora")?.value || null,
-        responsable_cargo: "CIERRE SERVICIO"
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "Error cerrando servicio");
-      return;
-    }
-
-    alert("Servicio finalizado correctamente ✅");
-    cargarServiciosModulo11();
-
-  } catch (error) {
-    console.error(error);
-    alert("Error en servidor");
-  }
-}
 // =========================
 // FUNCIONES AUXILIARES
 // =========================
