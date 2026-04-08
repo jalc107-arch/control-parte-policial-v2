@@ -3296,13 +3296,6 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   renderizarConsultaDesdeMemoria();
 }
 
-function escapeHtmlPdf(texto = "") {
-  return String(texto || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
   
   function generarParte() {
   const cedula = document.getElementById("cedula_elabora")?.value || "";
@@ -5909,103 +5902,81 @@ async function cerrarServicioModulo11() {
   }
 }
 
-function construirTextoPDFUnidadModulo11(subunidad) {
-  const responsable = window.m11ResponsableParte || {};
-  const fecha = document.getElementById("m11_fecha")?.value || "";
-  const unidad = document.getElementById("m11_unidad")?.value || "";
-
-  const item = (window.m11Resumen || []).find(x => String(x.subunidad || "") === String(subunidad || ""));
-  if (!item) return "";
-
-  const r = item.resumen || {};
-
-  let texto = "";
-  texto += `UNIDAD: ${unidad}\n`;
-  texto += `SUBUNIDAD: ${subunidad}\n`;
-  texto += `FECHA: ${fecha}\n`;
-  texto += `RESPONSABLE: ${responsable.nombre || ""}\n`;
-  texto += `CEDULA: ${responsable.cedula || ""}\n`;
-  texto += `TELEFONO: ${responsable.telefono || ""}\n\n`;
-
-  texto += `FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}\n`;
-  texto += `FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}\n`;
-  texto += `NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}\n`;
-  texto += `EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}\n`;
-  texto += `NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}\n`;
-  texto += `RETARDADO            ${texto4(r.retardado || [0,0,0,0])}\n`;
-  texto += `REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}\n`;
-  texto += `INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}\n`;
-  texto += `HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}\n`;
-
-  return texto;
+function escapeHtmlPdf(texto = "") {
+  return String(texto || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-function descargarPDFUnidadModulo11(subunidadParametro = "") {
-  const subunidad = subunidadParametro || window.m11SubunidadActual || "";
+function textoResumenUnidadModulo11(r = {}) {
+  const filas = [];
+
+  filas.push(`FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}`);
+
+  const tiene = (arr = []) => arr.some(x => Number(x || 0) > 0);
+
+  if (tiene(r.fuerza_disponible || [])) filas.push(`FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}`);
+  if (tiene(r.novedades || [])) filas.push(`NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}`);
+  if (tiene(r.excusado || [])) filas.push(`EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}`);
+  if (tiene(r.no_asiste || [])) filas.push(`NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}`);
+  if (tiene(r.retardado || [])) filas.push(`RETARDADO            ${texto4(r.retardado || [0,0,0,0])}`);
+  if (tiene(r.reemplazo || [])) filas.push(`REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}`);
+  if (tiene(r.incapacidad || [])) filas.push(`INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}`);
+  if (tiene(r.hospitalizado || [])) filas.push(`HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}`);
+
+  return filas.join("\n");
+}
+
+function construirTextoUnidadModulo11(subunidad) {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
   const responsable = window.m11ResponsableParte || {};
 
   const item = (window.m11Resumen || []).find(
     x => String(x.subunidad || "") === String(subunidad || "")
   );
 
-  if (!item) {
-    alert("No hay información para generar PDF");
-    return;
+  if (!item) return "";
+
+  const r = item.resumen || {};
+  const estadoParte = item.estado_parte || "NO HAN DADO PARTE";
+  const rp = item.responsable_parte || null;
+
+  let texto = "";
+  texto += `PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO\n\n`;
+  texto += `UNIDAD: ${unidad}\n`;
+  texto += `SUBUNIDAD: ${subunidad}\n`;
+  texto += `SERVICIO: ${servicio}\n`;
+  texto += `FECHA: ${fecha}\n`;
+  texto += `ESTADO: ${estadoParte}\n`;
+  texto += `RESPONSABLE GENERAL: ${responsable.nombre || ""}\n`;
+  texto += `CÉDULA: ${responsable.cedula || ""}\n`;
+  texto += `TELÉFONO: ${responsable.telefono || ""}\n`;
+
+  if (rp) {
+    texto += `QUIEN DIO PARTE: ${rp.grado || ""} ${rp.apellidos || ""} ${rp.nombres || ""}\n`;
+    texto += `CC QUIEN DIO PARTE: ${rp.cedula || ""}\n`;
+    texto += `TEL QUIEN DIO PARTE: ${rp.telefono || ""}\n`;
+    texto += `HORA PARTE: ${rp.hora || ""}\n`;
   }
 
-  const win = window.open("", "_blank");
-  if (!win) {
-    alert("El navegador bloqueó la ventana");
-    return;
-  }
+  texto += `\n`;
+  texto += textoResumenUnidadModulo11(r);
+  texto += `\n`;
 
-  const estadoServicio = !!window.m11ServicioEstado?.cerrado;
-  const fechaCierreServicio = window.m11ServicioEstado?.fecha_cierre || "";
-
-  const html = `
-    <html>
-      <head>
-        <title>Parte ${escapeHtmlPdf(subunidad)}</title>
-        ${obtenerEstiloPDFModulo11()}
-      </head>
-      <body>
-        <div class="fecha-impresion">Impreso: ${new Date().toLocaleString("es-CO")}</div>
-        <div class="titulo-principal">PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO</div>
-
-        ${
-          estadoServicio
-            ? `<div class="estado-cierre">🟢 SERVICIO CERRADO ${fechaCierreServicio ? `- Finalizado: ${new Date(fechaCierreServicio).toLocaleString("es-CO")}` : ""}</div>`
-            : ""
-        }
-
-        ${construirBloqueResumenUnidadPDF(item, unidad, subunidad, fecha, responsable)}
-
-        <script>
-          window.onload = function() {
-            window.print();
-          };
-        <\/script>
-      </body>
-    </html>
-  `;
-
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
+  return texto;
 }
-  
-function descargarPDFTotalModulo11() {
-  const responsable = window.m11ResponsableParte || {};
+
+function construirTextoTotalModulo11() {
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
-
+  const servicio = document.getElementById("m11_servicio")?.value || "";
+  const responsable = window.m11ResponsableParte || {};
   const resumen = Array.isArray(window.m11Resumen) ? window.m11Resumen : [];
-  if (!resumen.length) {
-    alert("Primero consulta el tablero");
-    return;
-  }
+
+  if (!resumen.length) return "";
 
   let total = {
     fuerza_efectiva: [0,0,0,0],
@@ -6019,8 +5990,18 @@ function descargarPDFTotalModulo11() {
     hospitalizado: [0,0,0,0]
   };
 
+  let texto = "";
+  texto += `PARTE TOTAL CONSOLIDADO SERVICIO EXTRAORDINARIO\n\n`;
+  texto += `UNIDAD: ${unidad}\n`;
+  texto += `SERVICIO: ${servicio}\n`;
+  texto += `FECHA: ${fecha}\n`;
+  texto += `RESPONSABLE GENERAL: ${responsable.nombre || ""}\n`;
+  texto += `CÉDULA: ${responsable.cedula || ""}\n`;
+  texto += `TELÉFONO: ${responsable.telefono || ""}\n\n`;
+
   resumen.forEach(item => {
     const r = item.resumen || {};
+
     total.fuerza_efectiva = sumar4(total.fuerza_efectiva, r.fuerza_efectiva || [0,0,0,0]);
     total.fuerza_disponible = sumar4(total.fuerza_disponible, r.fuerza_disponible || [0,0,0,0]);
     total.novedades = sumar4(total.novedades, r.novedades || [0,0,0,0]);
@@ -6030,82 +6011,103 @@ function descargarPDFTotalModulo11() {
     total.reemplazo = sumar4(total.reemplazo, r.reemplazo || [0,0,0,0]);
     total.incapacidad = sumar4(total.incapacidad, r.incapacidad || [0,0,0,0]);
     total.hospitalizado = sumar4(total.hospitalizado, r.hospitalizado || [0,0,0,0]);
+
+    texto += `========================================\n`;
+    texto += `SUBUNIDAD: ${item.subunidad || "SIN SUBUNIDAD"}\n`;
+    texto += `ESTADO: ${item.estado_parte || "NO HAN DADO PARTE"}\n`;
+
+    if (item.responsable_parte) {
+      texto += `QUIEN DIO PARTE: ${item.responsable_parte.grado || ""} ${item.responsable_parte.apellidos || ""} ${item.responsable_parte.nombres || ""}\n`;
+      texto += `CC: ${item.responsable_parte.cedula || ""}\n`;
+      texto += `TEL: ${item.responsable_parte.telefono || ""}\n`;
+      texto += `HORA: ${item.responsable_parte.hora || ""}\n`;
+    }
+
+    texto += `\n${textoResumenUnidadModulo11(r)}\n\n`;
   });
 
-  const estadoServicio = !!window.m11ServicioEstado?.cerrado;
-  const fechaCierreServicio = window.m11ServicioEstado?.fecha_cierre || "";
+  texto += `========================================\n`;
+  texto += `TOTAL GENERAL\n\n`;
+  texto += textoResumenUnidadModulo11(total);
+  texto += `\n`;
 
-  const totalHtml = `
-    <div class="bloque total-general">
-      <div class="titulo-bloque">TOTAL GENERAL</div>
-      <div class="meta">UNIDAD: ${escapeHtmlPdf(unidad)}</div>
-      <div class="meta">FECHA: ${escapeHtmlPdf(fecha)}</div>
-      <div class="meta">RESPONSABLE GENERAL: ${escapeHtmlPdf(responsable.nombre || "")}</div>
-      <div class="meta">CÉDULA: ${escapeHtmlPdf(responsable.cedula || "")}</div>
-      <div class="meta">TELÉFONO: ${escapeHtmlPdf(responsable.telefono || "")}</div>
+  return texto;
+}
 
-      <table class="tabla-pdf">
-        <thead>
-          <tr>
-            <th>Concepto</th>
-            <th>Conteo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>TOTAL FUERZA EFECTIVA</td><td>${escapeHtmlPdf(texto4(total.fuerza_efectiva))}</td></tr>
-          <tr><td>TOTAL FUERZA DISPONIBLE</td><td>${escapeHtmlPdf(texto4(total.fuerza_disponible))}</td></tr>
-          <tr><td>TOTAL NOVEDADES</td><td>${escapeHtmlPdf(texto4(total.novedades))}</td></tr>
-          <tr><td>EXCUSADO</td><td>${escapeHtmlPdf(texto4(total.excusado))}</td></tr>
-          <tr><td>NO ASISTE</td><td>${escapeHtmlPdf(texto4(total.no_asiste))}</td></tr>
-          <tr><td>RETARDADO</td><td>${escapeHtmlPdf(texto4(total.retardado))}</td></tr>
-          <tr><td>REEMPLAZO</td><td>${escapeHtmlPdf(texto4(total.reemplazo))}</td></tr>
-          <tr><td>INCAPACIDAD</td><td>${escapeHtmlPdf(texto4(total.incapacidad))}</td></tr>
-          <tr><td>HOSPITALIZADO</td><td>${escapeHtmlPdf(texto4(total.hospitalizado))}</td></tr>
-        </tbody>
-      </table>
-    </div>
-  `;
-
+function abrirVentanaPdfModulo11(titulo, texto) {
   const win = window.open("", "_blank");
+
   if (!win) {
     alert("El navegador bloqueó la ventana");
     return;
   }
 
-  const html = `
-    <html>
+  const contenidoSeguro = escapeHtmlPdf(texto).replace(/\n/g, "<br>");
+
+  win.document.open();
+  win.document.write(`
+    <!DOCTYPE html>
+    <html lang="es">
       <head>
-        <title>Parte total</title>
-        ${obtenerEstiloPDFModulo11()}
+        <meta charset="UTF-8" />
+        <title>${escapeHtmlPdf(titulo)}</title>
+        <style>
+          body{
+            font-family: Arial, sans-serif;
+            padding: 24px;
+            color:#111;
+          }
+          .titulo{
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 18px;
+          }
+          .contenido{
+            white-space: normal;
+            font-family: "Courier New", monospace;
+            font-size: 14px;
+            line-height: 1.5;
+          }
+          @media print{
+            body{ padding: 12px; }
+          }
+        </style>
       </head>
       <body>
-        <div class="fecha-impresion">Impreso: ${new Date().toLocaleString("es-CO")}</div>
-        <div class="titulo-principal">PARTE TOTAL CONSOLIDADO SERVICIO EXTRAORDINARIO</div>
-
-        ${
-          estadoServicio
-            ? `<div class="estado-cierre">🟢 SERVICIO CERRADO ${fechaCierreServicio ? `- Finalizado: ${new Date(fechaCierreServicio).toLocaleString("es-CO")}` : ""}</div>`
-            : ""
-        }
-
-        ${resumen.map(item =>
-          construirBloqueResumenUnidadPDF(item, unidad, item.subunidad || "SIN SUBUNIDAD", fecha, responsable)
-        ).join("")}
-
-        ${totalHtml}
-
+        <div class="titulo">${escapeHtmlPdf(titulo)}</div>
+        <div class="contenido">${contenidoSeguro}</div>
         <script>
-          window.onload = function() {
+          window.onload = function () {
             window.print();
           };
         <\/script>
       </body>
     </html>
-  `;
-
-  win.document.open();
-  win.document.write(html);
+  `);
   win.document.close();
+}
+
+function descargarPDFUnidadModulo11(subunidadParametro = "") {
+  const subunidad = subunidadParametro || window.m11SubunidadActual || "";
+  const texto = construirTextoUnidadModulo11(subunidad);
+
+  if (!texto) {
+    alert("No hay información para generar PDF");
+    return;
+  }
+
+  abrirVentanaPdfModulo11(`Parte ${subunidad}`, texto);
+}
+
+function descargarPDFTotalModulo11() {
+  const texto = construirTextoTotalModulo11();
+
+  if (!texto) {
+    alert("Primero consulta el tablero");
+    return;
+  }
+
+  abrirVentanaPdfModulo11("Parte total consolidado", texto);
 }
  
   document.addEventListener("DOMContentLoaded", () => {
