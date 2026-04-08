@@ -5940,9 +5940,41 @@ function construirTextoUnidadModulo11(subunidad) {
 
   if (!item) return "";
 
-  const r = item.resumen || {};
+  const lista = Array.isArray(window.m11DetalleActual) ? window.m11DetalleActual : [];
   const estadoParte = item.estado_parte || "NO HAN DADO PARTE";
   const rp = item.responsable_parte || null;
+
+  const disponibles = [];
+  const novedades = {
+    "EXCUSADO": [],
+    "NO ASISTE": [],
+    "RETARDADO": [],
+    "REEMPLAZO": [],
+    "INCAPACIDAD": [],
+    "HOSPITALIZADO": []
+  };
+
+  lista.forEach(p => {
+    const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
+
+    if (
+      !estado ||
+      estado === "DISPONIBLE" ||
+      estado === "SACANDO PARTE" ||
+      estado === "PARTE"
+    ) {
+      disponibles.push(p);
+      return;
+    }
+
+    if (novedades[estado]) {
+      novedades[estado].push(p);
+    }
+  });
+
+  function lineaPersona(p, i) {
+    return `${i + 1}. ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""} - CC ${p.cedula || ""} - TEL ${p.telefono || ""}${p.observacion ? ` - OBS: ${p.observacion}` : ""}`;
+  }
 
   let texto = "";
   texto += `PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO\n\n`;
@@ -5963,8 +5995,43 @@ function construirTextoUnidadModulo11(subunidad) {
   }
 
   texto += `\n`;
-  texto += textoResumenUnidadModulo11(r);
-  texto += `\n`;
+
+  const r = item.resumen || {};
+  texto += `FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}\n`;
+  texto += `FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}\n`;
+  texto += `NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}\n`;
+  texto += `EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}\n`;
+  texto += `NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}\n`;
+  texto += `RETARDADO            ${texto4(r.retardado || [0,0,0,0])}\n`;
+  texto += `REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}\n`;
+  texto += `INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}\n`;
+  texto += `HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}\n`;
+
+  texto += `\n==============================\n`;
+  texto += `PERSONAL DISPONIBLE\n`;
+  texto += `==============================\n`;
+
+  if (!disponibles.length) {
+    texto += `SIN PERSONAL DISPONIBLE\n`;
+  } else {
+    disponibles.forEach((p, i) => {
+      texto += `${lineaPersona(p, i)}\n`;
+    });
+  }
+
+  Object.keys(novedades).forEach(tipo => {
+    texto += `\n==============================\n`;
+    texto += `${tipo}\n`;
+    texto += `==============================\n`;
+
+    if (!novedades[tipo].length) {
+      texto += `SIN REGISTROS\n`;
+    } else {
+      novedades[tipo].forEach((p, i) => {
+        texto += `${lineaPersona(p, i)}\n`;
+      });
+    }
+  });
 
   return texto;
 }
@@ -6087,16 +6154,50 @@ function abrirVentanaPdfModulo11(titulo, texto) {
   win.document.close();
 }
 
-function descargarPDFUnidadModulo11(subunidadParametro = "") {
+async function descargarPDFUnidadModulo11(subunidadParametro = "") {
   const subunidad = subunidadParametro || window.m11SubunidadActual || "";
-  const texto = construirTextoUnidadModulo11(subunidad);
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+  const servicio = document.getElementById("m11_servicio")?.value || "";
 
-  if (!texto) {
-    alert("No hay información para generar PDF");
+  if (!fecha || !unidad || !servicio || !subunidad) {
+    alert("Faltan datos para generar PDF");
     return;
   }
 
-  abrirVentanaPdfModulo11(`Parte ${subunidad}`, texto);
+  try {
+    const res = await fetch(
+      `/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`
+    );
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo cargar el detalle para el PDF");
+      return;
+    }
+
+    const detalleOriginal = Array.isArray(window.m11DetalleActual) ? window.m11DetalleActual : [];
+    const subunidadOriginal = window.m11SubunidadActual || "";
+
+    window.m11DetalleActual = Array.isArray(data.detalle) ? data.detalle : [];
+    window.m11SubunidadActual = subunidad;
+
+    const texto = construirTextoUnidadModulo11(subunidad);
+
+    window.m11DetalleActual = detalleOriginal;
+    window.m11SubunidadActual = subunidadOriginal;
+
+    if (!texto) {
+      alert("No hay información para generar PDF");
+      return;
+    }
+
+    abrirVentanaPdfModulo11(`Parte ${subunidad}`, texto);
+
+  } catch (error) {
+    console.error(error);
+    alert("Error generando PDF de unidad");
+  }
 }
 
 function descargarPDFTotalModulo11() {
