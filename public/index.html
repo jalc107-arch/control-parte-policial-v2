@@ -1039,31 +1039,7 @@
    <!-- ========================= -->
 <!-- MODULO 12 -->
 <!-- ========================= -->
-async function validarServicioCerradoM11() {
-  const fecha = document.getElementById("m12_fecha")?.value || "";
-  const unidad = document.getElementById("m12_unidad")?.value || "";
-  const servicio = document.getElementById("m12_servicio")?.value || "";
-
-  if (!fecha || !unidad || !servicio) return false;
-
-  try {
-    const res = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
-    const data = await res.json();
-
-    if (!data.ok) return false;
-
-    const actual = (data.data || []).find(
-      x => String(x.titulo_servicio || "").trim() === String(servicio || "").trim()
-    );
-
-    return !!actual?.cerrado;
-
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
-    
+   
 <section id="bloqueModulo12" class="bloque-app" style="display:none;">
   <div class="card-app">
     <button class="panel-toggle" onclick="togglePanel('panelModulo12')">
@@ -6789,6 +6765,31 @@ async function cerrarServicioExtraordinario() {
     );
 
     return !!actual?.cerrado;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+async function validarServicioCerradoM11() {
+  const fecha = document.getElementById("m12_fecha")?.value || "";
+  const unidad = document.getElementById("m12_unidad")?.value || "";
+  const servicio = document.getElementById("m12_servicio")?.value || "";
+
+  if (!fecha || !unidad || !servicio) return false;
+
+  try {
+    const res = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
+    const data = await res.json();
+
+    if (!data.ok) return false;
+
+    const actual = (data.data || []).find(
+      x => String(x.titulo_servicio || "").trim() === String(servicio || "").trim()
+    );
+
+    return !!actual?.cerrado;
+
   } catch (error) {
     console.error(error);
     return false;
