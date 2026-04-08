@@ -3320,6 +3320,144 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   // FUNCIONES AUXILIARES
   // =========================
 
+    function escaparHtmlPdf(texto = "") {
+  return String(texto || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function construirBloqueResumenUnidadPDF(item, unidad, subunidad, fecha, responsable) {
+  const r = item?.resumen || {};
+  const estadoParte = item?.estado_parte || "NO HAN DADO PARTE";
+  const rp = item?.responsable_parte || null;
+
+  return `
+    <div class="bloque">
+      <div class="encabezado-bloque">
+        <div>
+          <div class="titulo-bloque">${escaparHtmlPdf(subunidad || "SIN SUBUNIDAD")}</div>
+          <div class="meta">UNIDAD: ${escaparHtmlPdf(unidad)}</div>
+          <div class="meta">FECHA: ${escaparHtmlPdf(fecha)}</div>
+          <div class="meta">ESTADO: ${escaparHtmlPdf(estadoParte)}</div>
+          <div class="meta">RESPONSABLE GENERAL: ${escaparHtmlPdf(responsable.nombre || "")}</div>
+          <div class="meta">CÉDULA: ${escaparHtmlPdf(responsable.cedula || "")}</div>
+          <div class="meta">TELÉFONO: ${escaparHtmlPdf(responsable.telefono || "")}</div>
+          ${
+            rp
+              ? `<div class="meta">QUIEN SACÓ EL PARTE: ${escaparHtmlPdf(`${rp.hora || ""} ${rp.grado || ""} ${rp.apellidos || ""} ${rp.nombres || ""} CC ${rp.cedula || ""} TEL ${rp.telefono || ""}`)}</div>`
+              : ""
+          }
+        </div>
+      </div>
+
+      <table class="tabla-pdf">
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Conteo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>FUERZA EFECTIVA</td><td>${escaparHtmlPdf(texto4(r.fuerza_efectiva || [0,0,0,0]))}</td></tr>
+          <tr><td>FUERZA DISPONIBLE</td><td>${escaparHtmlPdf(texto4(r.fuerza_disponible || [0,0,0,0]))}</td></tr>
+          <tr><td>NOVEDADES</td><td>${escaparHtmlPdf(texto4(r.novedades || [0,0,0,0]))}</td></tr>
+          <tr><td>EXCUSADO</td><td>${escaparHtmlPdf(texto4(r.excusado || [0,0,0,0]))}</td></tr>
+          <tr><td>NO ASISTE</td><td>${escaparHtmlPdf(texto4(r.no_asiste || [0,0,0,0]))}</td></tr>
+          <tr><td>RETARDADO</td><td>${escaparHtmlPdf(texto4(r.retardado || [0,0,0,0]))}</td></tr>
+          <tr><td>REEMPLAZO</td><td>${escaparHtmlPdf(texto4(r.reemplazo || [0,0,0,0]))}</td></tr>
+          <tr><td>INCAPACIDAD</td><td>${escaparHtmlPdf(texto4(r.incapacidad || [0,0,0,0]))}</td></tr>
+          <tr><td>HOSPITALIZADO</td><td>${escaparHtmlPdf(texto4(r.hospitalizado || [0,0,0,0]))}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function obtenerEstiloPDFModulo11() {
+  return `
+    <style>
+      @page {
+        size: A4;
+        margin: 18mm 14mm;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        color: #0B1F3A;
+        margin: 0;
+        padding: 0;
+        font-size: 12px;
+      }
+
+      .titulo-principal {
+        text-align: center;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+
+      .bloque {
+        border: 1px solid #B8C4D2;
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 14px;
+        page-break-inside: avoid;
+      }
+
+      .titulo-bloque {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .meta {
+        font-size: 11px;
+        margin-bottom: 3px;
+      }
+
+      .tabla-pdf {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
+
+      .tabla-pdf th,
+      .tabla-pdf td {
+        border: 1px solid #D9E2EC;
+        padding: 8px 10px;
+        text-align: left;
+        font-size: 11px;
+      }
+
+      .tabla-pdf th {
+        background: #F5F7FA;
+      }
+
+      .estado-cierre {
+        margin-bottom: 14px;
+        padding: 10px 12px;
+        border: 1px solid #067647;
+        background: #ECFDF3;
+        color: #067647;
+        font-weight: 700;
+        border-radius: 10px;
+      }
+
+      .total-general {
+        border: 2px solid #0B1F3A;
+      }
+
+      .fecha-impresion {
+        text-align: right;
+        font-size: 10px;
+        color: #52606D;
+        margin-bottom: 10px;
+      }
+    </style>
+  `;
+}
+
 async function servicioEstaCerrado(fecha, unidad, servicio) {
   const result = await pool.query(
     `
@@ -5219,10 +5357,6 @@ async function consultarModulo11() {
 }
   
 async function verDetalleModulo11(subunidad) {
-  if (window.m11ServicioEstado?.cerrado) {
-  alert("El servicio está cerrado. No se permite modificar información.");
-  return;
-}
   const fecha = document.getElementById("m11_fecha")?.value || "";
   const unidad = document.getElementById("m11_unidad")?.value || "";
   const servicio = document.getElementById("m11_servicio")?.value || "";
@@ -5230,7 +5364,7 @@ async function verDetalleModulo11(subunidad) {
   if (!fecha || !unidad || !subunidad) return;
 
   try {
-const res = await fetch(`/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`);
+    const res = await fetch(`/modulo11-detalle?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}&servicio=${encodeURIComponent(servicio)}&subunidad=${encodeURIComponent(subunidad)}`);
     const data = await res.json();
 
     if (!data.ok) {
@@ -5262,6 +5396,8 @@ function renderizarDetalleModulo11() {
   const servicio = document.getElementById("m11_servicio")?.value || "";
   const subunidad = window.m11SubunidadActual || "";
   const responsable = window.m11ResponsableParte || {};
+  const servicioCerrado = !!window.m11ServicioEstado?.cerrado;
+  const fechaCierreServicio = window.m11ServicioEstado?.fecha_cierre || "";
 
   titulo.innerText = `Detalle ${subunidad}`;
 
@@ -5337,7 +5473,7 @@ function renderizarDetalleModulo11() {
   function tablaSimple(tituloBloque, columnas, filasHtml) {
     if (!filasHtml || !String(filasHtml).trim()) return "";
     return `
-      <details class="sub-card" style="margin-top:12px;">
+      <details class="sub-card" style="margin-top:12px;" open>
         <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">${tituloBloque}</summary>
         <div class="tabla-wrap" style="margin-top:10px;">
           <table class="tabla-app">
@@ -5353,27 +5489,58 @@ function renderizarDetalleModulo11() {
     `;
   }
 
-  let resumenTiposHtml = "";
-  if (tieneValores(tipos.EXCUSADO)) resumenTiposHtml += `EXCUSADO             ${texto4(tipos.EXCUSADO)}\n`;
-  if (tieneValores(tipos["NO ASISTE"])) resumenTiposHtml += `NO ASISTE            ${texto4(tipos["NO ASISTE"])}\n`;
-  if (tieneValores(tipos.RETARDADO)) resumenTiposHtml += `RETARDADO            ${texto4(tipos.RETARDADO)}\n`;
-  if (tieneValores(tipos.REEMPLAZO)) resumenTiposHtml += `REEMPLAZO            ${texto4(tipos.REEMPLAZO)}\n`;
-  if (tieneValores(tipos.INCAPACIDAD)) resumenTiposHtml += `INCAPACIDAD          ${texto4(tipos.INCAPACIDAD)}\n`;
-  if (tieneValores(tipos.HOSPITALIZADO)) resumenTiposHtml += `HOSPITALIZADO        ${texto4(tipos.HOSPITALIZADO)}\n`;
-
   const resumenHtml = `
-    <div class="sub-card" style="margin-bottom:12px;">
-      <div><b>Fecha servicio:</b> ${fecha}</div>
-      <div><b>Servicio:</b> ${servicio}</div>
-      <div><b>Unidad:</b> ${unidad}</div>
-      <div><b>Subunidad:</b> ${subunidad}</div>
-      <div><b>Quien sacó el parte:</b> ${responsable.nombre || ""} - CC ${responsable.cedula || ""} - TEL ${responsable.telefono || ""}</div>
+    <div class="sub-card" style="
+      margin-bottom:12px;
+      border:2px solid ${servicioCerrado ? "#067647" : "#D9E2EC"};
+      background:${servicioCerrado ? "#ECFDF3" : "#FFFFFF"};
+    ">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+        <div>
+          <div><b>Fecha servicio:</b> ${fecha}</div>
+          <div><b>Servicio:</b> ${servicio}</div>
+          <div><b>Unidad:</b> ${unidad}</div>
+          <div><b>Subunidad:</b> ${subunidad}</div>
+          <div><b>Responsable:</b> ${responsable.nombre || ""}</div>
+          <div><b>Cédula:</b> ${responsable.cedula || ""}</div>
+          <div><b>Teléfono:</b> ${responsable.telefono || ""}</div>
+        </div>
 
-      <pre style="margin-top:10px;">
-FUERZA EFECTIVA      ${texto4(base.fuerza_efectiva)}
-FUERZA DISPONIBLE    ${texto4(base.fuerza_disponible)}
-NOVEDADES            ${texto4(base.novedades)}
-${resumenTiposHtml}</pre>
+        <div style="text-align:right;">
+          <div style="font-weight:700; color:${servicioCerrado ? "#067647" : "#0B1F3A"};">
+            ${servicioCerrado ? "🟢 SERVICIO CERRADO" : "🟡 SERVICIO EN GESTIÓN"}
+          </div>
+          ${
+            servicioCerrado && fechaCierreServicio
+              ? `<div style="font-size:12px; color:#067647; margin-top:6px;">
+                   Finalizado: ${new Date(fechaCierreServicio).toLocaleString("es-CO")}
+                 </div>`
+              : ""
+          }
+        </div>
+      </div>
+
+      <div class="tabla-wrap" style="margin-top:14px;">
+        <table class="tabla-app">
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th>Conteo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>FUERZA EFECTIVA</td><td>${texto4(base.fuerza_efectiva)}</td></tr>
+            <tr><td>FUERZA DISPONIBLE</td><td>${texto4(base.fuerza_disponible)}</td></tr>
+            <tr><td>NOVEDADES</td><td>${texto4(base.novedades)}</td></tr>
+            <tr><td>EXCUSADO</td><td>${texto4(tipos.EXCUSADO)}</td></tr>
+            <tr><td>NO ASISTE</td><td>${texto4(tipos["NO ASISTE"])}</td></tr>
+            <tr><td>RETARDADO</td><td>${texto4(tipos.RETARDADO)}</td></tr>
+            <tr><td>REEMPLAZO</td><td>${texto4(tipos.REEMPLAZO)}</td></tr>
+            <tr><td>INCAPACIDAD</td><td>${texto4(tipos.INCAPACIDAD)}</td></tr>
+            <tr><td>HOSPITALIZADO</td><td>${texto4(tipos.HOSPITALIZADO)}</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   `;
 
@@ -5388,18 +5555,14 @@ ${resumenTiposHtml}</pre>
     </tr>
   `).join("");
 
-  let novedadesResumenRows = "";
-  ["EXCUSADO", "NO ASISTE", "RETARDADO", "INCAPACIDAD", "HOSPITALIZADO", "REEMPLAZO"].forEach((tipo) => {
-    const conteo = tipos[tipo] || [0, 0, 0, 0];
-    if (tieneValores(conteo)) {
-      novedadesResumenRows += `
-        <tr>
-          <td>${tipo}</td>
-          <td>${texto4(conteo)}</td>
-        </tr>
-      `;
-    }
-  });
+  const novedadesResumenRows = `
+    <tr><td>EXCUSADO</td><td>${texto4(tipos.EXCUSADO)}</td></tr>
+    <tr><td>NO ASISTE</td><td>${texto4(tipos["NO ASISTE"])}</td></tr>
+    <tr><td>RETARDADO</td><td>${texto4(tipos.RETARDADO)}</td></tr>
+    <tr><td>REEMPLAZO</td><td>${texto4(tipos.REEMPLAZO)}</td></tr>
+    <tr><td>INCAPACIDAD</td><td>${texto4(tipos.INCAPACIDAD)}</td></tr>
+    <tr><td>HOSPITALIZADO</td><td>${texto4(tipos.HOSPITALIZADO)}</td></tr>
+  `;
 
   let novedadesDetalleHtml = "";
   ["EXCUSADO", "NO ASISTE", "RETARDADO", "INCAPACIDAD", "HOSPITALIZADO"].forEach((tipo) => {
@@ -5447,101 +5610,104 @@ ${resumenTiposHtml}</pre>
     );
   }
 
-  const editarParteHtml = `
-    <details class="sub-card" style="margin-top:12px;">
-      <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">Editar parte</summary>
-      <div class="tabla-wrap" style="margin-top:10px;">
-        <table class="tabla-app">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Grado</th>
-              <th>Apellidos</th>
-              <th>Nombres</th>
-              <th>Cédula</th>
-              <th>Teléfono</th>
-              <th>Estado</th>
-              <th>Observación</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${lista.map((p, i) => {
-              const ced = String(p.cedula || "").trim();
-              const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
+  let editarParteHtml = "";
+  let reemplazoFormHtml = "";
 
-              return `
-                <tr>
-                  <td>${i + 1}</td>
-                  <td>${p.grado || ""}</td>
-                  <td>${p.apellidos || ""}</td>
-                  <td>${p.nombres || ""}</td>
-                  <td>${ced}</td>
-                  <td>${p.telefono || ""}</td>
-                  <td>
-                    <select id="m11_estado_${ced}">
-                      <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
-                      <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
-                      <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
-                      <option value="EXCUSADO" ${estado === "EXCUSADO" ? "selected" : ""}>EXCUSADO</option>
-                      <option value="INCAPACIDAD" ${estado === "INCAPACIDAD" ? "selected" : ""}>INCAPACIDAD</option>
-                      <option value="HOSPITALIZADO" ${estado === "HOSPITALIZADO" ? "selected" : ""}>HOSPITALIZADO</option>
-                      <option value="NO ASISTE" ${estado === "NO ASISTE" ? "selected" : ""}>NO ASISTE</option>
-                    </select>
-                  </td>
-                  <td>
-                    <input id="m11_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación" />
-                  </td>
-                </tr>
-              `;
-            }).join("")}
-          </tbody>
-        </table>
-      </div>
+  if (!servicioCerrado) {
+    editarParteHtml = `
+      <details class="sub-card" style="margin-top:12px;">
+        <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">Editar parte</summary>
+        <div class="tabla-wrap" style="margin-top:10px;">
+          <table class="tabla-app">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Grado</th>
+                <th>Apellidos</th>
+                <th>Nombres</th>
+                <th>Cédula</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Observación</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${lista.map((p, i) => {
+                const ced = String(p.cedula || "").trim();
+                const estado = String(p.estado_control || "DISPONIBLE").trim().toUpperCase();
 
-<div class="acciones-inline" style="margin-top:10px;">
-  <button type="button" onclick="guardarCambiosEdicionModulo11()">
-    Guardar cambios
-  </button>
-</div> 
-</details>
-`;
-
-  const reemplazoFormHtml = `
-    <details class="sub-card" style="margin-top:12px;">
-      <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">Agregar reemplazo en terreno</summary>
-      <div style="margin-top:10px;">
-        <label>Seleccionar a quién reemplaza</label>
-        <select id="m11_reemplaza_a" style="margin-bottom:8px;">
-          ${opcionesReemplazo}
-        </select>
-
-        <label>Grado</label>
-        <input id="m11_rep_grado" placeholder="Grado">
-
-        <label>Apellidos</label>
-        <input id="m11_rep_apellidos" placeholder="Apellidos">
-
-        <label>Nombres</label>
-        <input id="m11_rep_nombres" placeholder="Nombres">
-
-        <label>Cédula</label>
-        <input id="m11_rep_cedula" placeholder="Cédula">
-
-        <label>Teléfono</label>
-        <input id="m11_rep_telefono" placeholder="Teléfono">
-
-        <label>Unidad</label>
-        <input id="m11_rep_unidad" value="${unidad}" placeholder="Unidad">
-
-        <label>Subunidad</label>
-        <input id="m11_rep_subunidad" value="${subunidad}" placeholder="Subunidad">
-
-        <div class="acciones-inline">
-          <button type="button" onclick="agregarReemplazoModulo11()">Agregar reemplazo</button>
+                return `
+                  <tr>
+                    <td>${i + 1}</td>
+                    <td>${p.grado || ""}</td>
+                    <td>${p.apellidos || ""}</td>
+                    <td>${p.nombres || ""}</td>
+                    <td>${ced}</td>
+                    <td>${p.telefono || ""}</td>
+                    <td>
+                      <select id="m11_estado_${ced}">
+                        <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
+                        <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
+                        <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
+                        <option value="EXCUSADO" ${estado === "EXCUSADO" ? "selected" : ""}>EXCUSADO</option>
+                        <option value="INCAPACIDAD" ${estado === "INCAPACIDAD" ? "selected" : ""}>INCAPACIDAD</option>
+                        <option value="HOSPITALIZADO" ${estado === "HOSPITALIZADO" ? "selected" : ""}>HOSPITALIZADO</option>
+                        <option value="NO ASISTE" ${estado === "NO ASISTE" ? "selected" : ""}>NO ASISTE</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input id="m11_obs_${ced}" value="${String(p.observacion || "").replace(/"/g, '&quot;')}" placeholder="Observación" />
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
         </div>
-      </div>
-    </details>
-  `;
+
+        <div class="acciones-inline" style="margin-top:10px;">
+          <button type="button" onclick="guardarCambiosEdicionModulo11()">Guardar cambios</button>
+        </div>
+      </details>
+    `;
+
+    reemplazoFormHtml = `
+      <details class="sub-card" style="margin-top:12px;">
+        <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">Agregar reemplazo en terreno</summary>
+        <div style="margin-top:10px;">
+          <label>Seleccionar a quién reemplaza</label>
+          <select id="m11_reemplaza_a" style="margin-bottom:8px;">
+            ${opcionesReemplazo}
+          </select>
+
+          <label>Grado</label>
+          <input id="m11_rep_grado" placeholder="Grado">
+
+          <label>Apellidos</label>
+          <input id="m11_rep_apellidos" placeholder="Apellidos">
+
+          <label>Nombres</label>
+          <input id="m11_rep_nombres" placeholder="Nombres">
+
+          <label>Cédula</label>
+          <input id="m11_rep_cedula" placeholder="Cédula">
+
+          <label>Teléfono</label>
+          <input id="m11_rep_telefono" placeholder="Teléfono">
+
+          <label>Unidad</label>
+          <input id="m11_rep_unidad" value="${unidad}" placeholder="Unidad">
+
+          <label>Subunidad</label>
+          <input id="m11_rep_subunidad" value="${subunidad}" placeholder="Subunidad">
+
+          <div class="acciones-inline">
+            <button type="button" onclick="agregarReemplazoModulo11()">Agregar reemplazo</button>
+          </div>
+        </div>
+      </details>
+    `;
+  }
 
   tabla.innerHTML =
     resumenHtml +
@@ -5774,9 +5940,15 @@ function construirTextoPDFUnidadModulo11(subunidad) {
 
 function descargarPDFUnidadModulo11(subunidadParametro = "") {
   const subunidad = subunidadParametro || window.m11SubunidadActual || "";
-  const texto = construirTextoPDFUnidadModulo11(subunidad);
+  const fecha = document.getElementById("m11_fecha")?.value || "";
+  const unidad = document.getElementById("m11_unidad")?.value || "";
+  const responsable = window.m11ResponsableParte || {};
 
-  if (!texto) {
+  const item = (window.m11Resumen || []).find(
+    x => String(x.subunidad || "") === String(subunidad || "")
+  );
+
+  if (!item) {
     alert("No hay información para generar PDF");
     return;
   }
@@ -5787,25 +5959,41 @@ function descargarPDFUnidadModulo11(subunidadParametro = "") {
     return;
   }
 
-  win.document.write(`
+  const estadoServicio = !!window.m11ServicioEstado?.cerrado;
+  const fechaCierreServicio = window.m11ServicioEstado?.fecha_cierre || "";
+
+  const html = `
     <html>
       <head>
-        <title>Parte ${subunidad}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          pre { white-space: pre-wrap; font-family: "Courier New", monospace; font-size: 14px; }
-        </style>
+        <title>Parte ${escaparHtmlPdf(subunidad)}</title>
+        ${obtenerEstiloPDFModulo11()}
       </head>
       <body>
-        <h2>PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO</h2>
-        <pre>${texto.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
-        <script>window.print();<\/script>
+        <div class="fecha-impresion">Impreso: ${new Date().toLocaleString("es-CO")}</div>
+        <div class="titulo-principal">PARTE CONSOLIDADO SERVICIO EXTRAORDINARIO</div>
+
+        ${
+          estadoServicio
+            ? `<div class="estado-cierre">🟢 SERVICIO CERRADO ${fechaCierreServicio ? `- Finalizado: ${new Date(fechaCierreServicio).toLocaleString("es-CO")}` : ""}</div>`
+            : ""
+        }
+
+        ${construirBloqueResumenUnidadPDF(item, unidad, subunidad, fecha, responsable)}
+
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        <\/script>
       </body>
     </html>
-  `);
+  `;
+
+  win.document.open();
+  win.document.write(html);
   win.document.close();
 }
-
+  
 function descargarPDFTotalModulo11() {
   const responsable = window.m11ResponsableParte || {};
   const fecha = document.getElementById("m11_fecha")?.value || "";
@@ -5829,16 +6017,8 @@ function descargarPDFTotalModulo11() {
     hospitalizado: [0,0,0,0]
   };
 
-  let texto = "";
-  texto += `UNIDAD: ${unidad}\n`;
-  texto += `FECHA: ${fecha}\n`;
-  texto += `RESPONSABLE: ${responsable.nombre || ""}\n`;
-  texto += `CEDULA: ${responsable.cedula || ""}\n`;
-  texto += `TELEFONO: ${responsable.telefono || ""}\n\n`;
-
   resumen.forEach(item => {
     const r = item.resumen || {};
-
     total.fuerza_efectiva = sumar4(total.fuerza_efectiva, r.fuerza_efectiva || [0,0,0,0]);
     total.fuerza_disponible = sumar4(total.fuerza_disponible, r.fuerza_disponible || [0,0,0,0]);
     total.novedades = sumar4(total.novedades, r.novedades || [0,0,0,0]);
@@ -5848,29 +6028,41 @@ function descargarPDFTotalModulo11() {
     total.reemplazo = sumar4(total.reemplazo, r.reemplazo || [0,0,0,0]);
     total.incapacidad = sumar4(total.incapacidad, r.incapacidad || [0,0,0,0]);
     total.hospitalizado = sumar4(total.hospitalizado, r.hospitalizado || [0,0,0,0]);
-
-    texto += `${item.subunidad || "SIN SUBUNIDAD"}\n`;
-    texto += `FUERZA EFECTIVA      ${texto4(r.fuerza_efectiva || [0,0,0,0])}\n`;
-    texto += `FUERZA DISPONIBLE    ${texto4(r.fuerza_disponible || [0,0,0,0])}\n`;
-    texto += `NOVEDADES            ${texto4(r.novedades || [0,0,0,0])}\n`;
-    texto += `EXCUSADO             ${texto4(r.excusado || [0,0,0,0])}\n`;
-    texto += `NO ASISTE            ${texto4(r.no_asiste || [0,0,0,0])}\n`;
-    texto += `RETARDADO            ${texto4(r.retardado || [0,0,0,0])}\n`;
-    texto += `REEMPLAZO            ${texto4(r.reemplazo || [0,0,0,0])}\n`;
-    texto += `INCAPACIDAD          ${texto4(r.incapacidad || [0,0,0,0])}\n`;
-    texto += `HOSPITALIZADO        ${texto4(r.hospitalizado || [0,0,0,0])}\n\n`;
   });
 
-  texto += `TOTAL GENERAL\n`;
-  texto += `TOTAL FUERZA EFECTIVA      ${texto4(total.fuerza_efectiva)}\n`;
-  texto += `TOTAL FUERZA DISPONIBLE    ${texto4(total.fuerza_disponible)}\n`;
-  texto += `TOTAL NOVEDADES            ${texto4(total.novedades)}\n`;
-  texto += `EXCUSADO                  ${texto4(total.excusado)}\n`;
-  texto += `NO ASISTE                 ${texto4(total.no_asiste)}\n`;
-  texto += `RETARDADO                 ${texto4(total.retardado)}\n`;
-  texto += `REEMPLAZO                 ${texto4(total.reemplazo)}\n`;
-  texto += `INCAPACIDAD               ${texto4(total.incapacidad)}\n`;
-  texto += `HOSPITALIZADO             ${texto4(total.hospitalizado)}\n`;
+  const estadoServicio = !!window.m11ServicioEstado?.cerrado;
+  const fechaCierreServicio = window.m11ServicioEstado?.fecha_cierre || "";
+
+  const totalHtml = `
+    <div class="bloque total-general">
+      <div class="titulo-bloque">TOTAL GENERAL</div>
+      <div class="meta">UNIDAD: ${escaparHtmlPdf(unidad)}</div>
+      <div class="meta">FECHA: ${escaparHtmlPdf(fecha)}</div>
+      <div class="meta">RESPONSABLE GENERAL: ${escaparHtmlPdf(responsable.nombre || "")}</div>
+      <div class="meta">CÉDULA: ${escaparHtmlPdf(responsable.cedula || "")}</div>
+      <div class="meta">TELÉFONO: ${escaparHtmlPdf(responsable.telefono || "")}</div>
+
+      <table class="tabla-pdf">
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Conteo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>TOTAL FUERZA EFECTIVA</td><td>${escaparHtmlPdf(texto4(total.fuerza_efectiva))}</td></tr>
+          <tr><td>TOTAL FUERZA DISPONIBLE</td><td>${escaparHtmlPdf(texto4(total.fuerza_disponible))}</td></tr>
+          <tr><td>TOTAL NOVEDADES</td><td>${escaparHtmlPdf(texto4(total.novedades))}</td></tr>
+          <tr><td>EXCUSADO</td><td>${escaparHtmlPdf(texto4(total.excusado))}</td></tr>
+          <tr><td>NO ASISTE</td><td>${escaparHtmlPdf(texto4(total.no_asiste))}</td></tr>
+          <tr><td>RETARDADO</td><td>${escaparHtmlPdf(texto4(total.retardado))}</td></tr>
+          <tr><td>REEMPLAZO</td><td>${escaparHtmlPdf(texto4(total.reemplazo))}</td></tr>
+          <tr><td>INCAPACIDAD</td><td>${escaparHtmlPdf(texto4(total.incapacidad))}</td></tr>
+          <tr><td>HOSPITALIZADO</td><td>${escaparHtmlPdf(texto4(total.hospitalizado))}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
 
   const win = window.open("", "_blank");
   if (!win) {
@@ -5878,27 +6070,41 @@ function descargarPDFTotalModulo11() {
     return;
   }
 
-  win.document.write(`
+  const html = `
     <html>
       <head>
         <title>Parte total</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          pre { white-space: pre-wrap; font-family: "Courier New", monospace; font-size: 14px; }
-        </style>
+        ${obtenerEstiloPDFModulo11()}
       </head>
       <body>
-        <h2>PARTE TOTAL CONSOLIDADO SERVICIO EXTRAORDINARIO</h2>
-        <pre>${texto.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
-        <script>window.print();<\/script>
+        <div class="fecha-impresion">Impreso: ${new Date().toLocaleString("es-CO")}</div>
+        <div class="titulo-principal">PARTE TOTAL CONSOLIDADO SERVICIO EXTRAORDINARIO</div>
+
+        ${
+          estadoServicio
+            ? `<div class="estado-cierre">🟢 SERVICIO CERRADO ${fechaCierreServicio ? `- Finalizado: ${new Date(fechaCierreServicio).toLocaleString("es-CO")}` : ""}</div>`
+            : ""
+        }
+
+        ${resumen.map(item =>
+          construirBloqueResumenUnidadPDF(item, unidad, item.subunidad || "SIN SUBUNIDAD", fecha, responsable)
+        ).join("")}
+
+        ${totalHtml}
+
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        <\/script>
       </body>
     </html>
-  `);
+  `;
+
+  win.document.open();
+  win.document.write(html);
   win.document.close();
 }
-
-
-  
  
   document.addEventListener("DOMContentLoaded", () => {
   const inputFecha = document.getElementById("fecha_control");
