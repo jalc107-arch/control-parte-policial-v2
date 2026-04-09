@@ -6642,48 +6642,22 @@ function cargarEstacionesMultiple() {
 
 function cargarOrganicosMultiple() {
   const unidad = document.getElementById("unidad_select")?.value || "";
-  const esOficial = !!window.responsable?.esOficial;
-  const subunidadResponsable = String(window.responsable?.subunidad || "").trim();
   const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
+  const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_parte");
 
-  let filtrados = estructuraGlobal.filter(
-    x => String(x.unidad || "").trim() === String(unidad || "").trim()
-  );
+  let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
 
-  if (!esOficial && subunidadResponsable) {
-    filtrados = filtrados.filter(
-      x => String(x.subunidad || "").trim() === subunidadResponsable
-    );
-  } else if (subunidadesMarcadas.length) {
-    filtrados = filtrados.filter(
-      x => subunidadesMarcadas.includes(String(x.subunidad || "").trim())
-    );
+  if (subunidadesMarcadas.length) {
+    filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
   }
 
-  const organicos = [
-    ...new Set(
-      filtrados
-        .map(x => String(x.organico || "").trim())
-        .filter(Boolean)
-    )
-  ].sort();
+  if (estacionesMarcadas.length) {
+    filtrados = filtrados.filter(x => estacionesMarcadas.includes(x.estacion));
+  }
 
-  console.log("MOD3 ORGÁNICOS DEBUG", {
-    unidad,
-    esOficial,
-    subunidadResponsable,
-    subunidadesMarcadas,
-    totalEstructura: Array.isArray(estructuraGlobal) ? estructuraGlobal.length : 0,
-    filtrados,
-    organicos
-  });
+  const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))].sort();
 
-  pintarChecks(
-    "checks_organico_parte",
-    organicos,
-    "actualizarRutaDependenciaParte();"
-  );
-
+  pintarChecks("checks_organico_parte", organicos, "actualizarRutaDependenciaParte();");
   actualizarRutaDependenciaParte();
 }
 
