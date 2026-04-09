@@ -1364,20 +1364,27 @@ async function validarResponsable() {
     if (!data.esOficial) {
       if (unidadSelect) unidadSelect.disabled = true;
 
-      setTimeout(() => {
-        if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
-        cargarEstacionesMultiple();
+setTimeout(() => {
+  marcarCheckSiExiste("checks_subunidad_parte", subunidadResp);
 
-        setTimeout(() => {
-          if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
-          cargarOrganicosMultiple();
+  // 🔥 primero estaciones
+  cargarEstacionesMultiple();
 
-          setTimeout(() => {
-            if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
-            actualizarRutaDependenciaParte();
-          }, 100);
-        }, 100);
-      }, 100);
+  setTimeout(() => {
+    marcarCheckSiExiste("checks_estacion_parte", estacionResp);
+
+    // 🔥 ahora sí orgánicos
+    cargarOrganicosMultiple();
+
+    setTimeout(() => {
+      marcarCheckSiExiste("checks_organico_parte", organicoResp);
+      actualizarRutaDependenciaParte();
+    }, 100);
+
+  }, 100);
+
+}, 100);
+      
     } else {
       if (unidadSelect) unidadSelect.disabled = false;
       actualizarRutaDependenciaParte();
