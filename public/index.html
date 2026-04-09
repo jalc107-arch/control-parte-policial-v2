@@ -6643,7 +6643,17 @@ function cargarEstacionesMultiple() {
     filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
   }
 
-  const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))].sort();
+  const estaciones = [
+  ...new Map(
+    filtrados
+      .map(x => String(x.estacion || "").trim())
+      .filter(Boolean)
+      .map(nombre => [
+        nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
+        nombre
+      ])
+  ).values()
+].sort();
 
   pintarChecks(
   "checks_estacion_parte",
@@ -6685,12 +6695,16 @@ function cargarOrganicosMultiple() {
   }
 
   let organicos = [
-    ...new Set(
-      filtrados
-        .map(x => String(x.organico || "").trim())
-        .filter(Boolean)
-    )
-  ].sort();
+  ...new Map(
+    filtrados
+      .map(x => String(x.organico || "").trim())
+      .filter(Boolean)
+      .map(nombre => [
+        nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
+        nombre
+      ])
+  ).values()
+].sort();
 
   // Si no encontró por estación, muestra todos los orgánicos de la subunidad
   if (!organicos.length && subunidadesMarcadas.length) {
