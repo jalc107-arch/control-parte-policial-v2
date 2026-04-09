@@ -1342,16 +1342,16 @@ async function validarResponsable() {
     }
 
     window.responsable = {
-  cedula: data.cedula || "",
-  nombre: data.nombre || "",
-  grado: data.grado || "",
-  telefono: data.telefono || "",
-  unidad: data.unidad || "",
-  subunidad: data.subunidad || "",
-  estacion: data.estacion || "",
-  organico: data.organico || "",
-  esOficial: !!data.esOficial
-};
+      cedula: data.cedula || "",
+      nombre: data.nombre || "",
+      grado: data.grado || "",
+      telefono: data.telefono || "",
+      unidad: data.unidad || "",
+      subunidad: data.subunidad || "",
+      estacion: data.estacion || "",
+      organico: data.organico || "",
+      esOficial: !!data.esOficial
+    };
 
     const unidadSelect = document.getElementById("unidad_select");
 
@@ -1361,31 +1361,26 @@ async function validarResponsable() {
 
     cargarSubunidadesMultiple();
 
-   if (!data.esOficial) {
-  if (unidadSelect) unidadSelect.disabled = true;
+    if (!data.esOficial) {
+      if (unidadSelect) unidadSelect.disabled = true;
 
-  setTimeout(() => {
-    if (data.subunidad) {
-      marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
-    }
+      setTimeout(() => {
+        if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
+        cargarEstacionesMultiple();
 
-    cargarEstacionesMultiple();
-    cargarOrganicosMultiple();
+        setTimeout(() => {
+          if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
+          cargarOrganicosMultiple();
 
-    setTimeout(() => {
-      if (data.estacion) {
-        marcarCheckSiExiste("checks_estacion_parte", data.estacion);
-      }
+          setTimeout(() => {
+            if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
+            actualizarRutaDependenciaParte();
+          }, 100);
 
-      if (data.organico) {
-        marcarCheckSiExiste("checks_organico_parte", data.organico);
-      }
+        }, 100);
 
-      actualizarRutaDependenciaParte();
-    }, 200);
-  }, 200);
-}
-      
+      }, 100);
+
     } else {
       if (unidadSelect) unidadSelect.disabled = false;
       actualizarRutaDependenciaParte();
@@ -1437,6 +1432,7 @@ async function validarResponsable() {
       if (typeof inicializarModulo12 === "function") {
         inicializarModulo12();
       }
+
     } else {
       const ids = [
         "bloqueOrganico",
