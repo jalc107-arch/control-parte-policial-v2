@@ -1365,21 +1365,22 @@ async function validarResponsable() {
       if (unidadSelect) unidadSelect.disabled = true;
 
       setTimeout(() => {
-        if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
-        cargarEstacionesMultiple();
+  if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
+  cargarEstacionesMultiple();
 
-        setTimeout(() => {
-          if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
-          cargarOrganicosMultiple();
+  setTimeout(() => {
+    if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
 
-          setTimeout(() => {
-            if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
-            actualizarRutaDependenciaParte();
-          }, 100);
+    mostrarOrganicoSegunEstacion();
 
-        }, 100);
+    setTimeout(() => {
+      if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
+      actualizarRutaDependenciaParte();
+    }, 100);
 
-      }, 100);
+  }, 100);
+
+}, 100);
 
     } else {
       if (unidadSelect) unidadSelect.disabled = false;
