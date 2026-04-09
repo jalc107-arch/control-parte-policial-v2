@@ -2215,111 +2215,39 @@ async function iniciarParteModulo12() {
 }
 
 async function guardarParteModulo12() {
-  if (await validarServicioCerradoM11()) {
-  alert("Este servicio ya fue cerrado en el módulo 11");
-  return;
-}
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const servicio = document.getElementById("m12_servicio")?.value || "";
-    const subunidad = document.getElementById("m12_subunidad")?.value || "";
+  const fecha = document.getElementById("m12_fecha").value;
+  const unidad = document.getElementById("m12_unidad").value;
+  const servicio = document.getElementById("m12_servicio").value;
+  const subunidad = document.getElementById("m12_subunidad").value;
 
-    if (!fecha || !unidad || !servicio || !subunidad) {
-      alert("Faltan datos");
-      return;
-    }
+  // ⚠️ ESTE ARRAY DEBE SER EL QUE YA USAS EN TABLA
+  const detalle = window.m12_personal || [];
 
-    if (!window.m12DetalleActual.length) {
-      alert("Primero debes cargar el personal");
-      return;
-    }
+  const responsable = {
+    nombre: window.responsable?.nombre || "",
+    cedula: window.responsable?.cedula || "",
+    telefono: window.responsable?.telefono || ""
+  };
 
-    const detalle = window.m12DetalleActual.map(p => {
-      const ced = String(p.cedula || "").trim();
-      return {
-        ...p,
-        estado_control: document.getElementById(`m12_estado_${ced}`)?.value || "",
-        observacion: document.getElementById(`m12_obs_${ced}`)?.value || ""
-      };
-    });
+  const res = await fetch("/modulo11-guardar-control", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fecha,
+      unidad,
+      subunidad,
+      servicio,
+      responsable,
+      detalle
+    })
+  });
 
-    const responsable = obtenerResponsableModulo12();
+  const data = await res.json();
 
-    const res = await fetch("/modulo11-guardar-control", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        fecha,
-        unidad,
-        subunidad,
-        servicio,
-        responsable,
-        detalle
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "No se pudo guardar el parte");
-      return;
-    }
-
+  if (data.ok) {
     alert("Parte guardado correctamente");
-    await consultarEstadoModulo12();
-  } catch (error) {
-    console.error(error);
-    alert("Error guardando parte");
-  }
-}
-
-async function cerrarParteModulo12() {
-  if (await validarServicioCerradoM11()) {
-  alert("Este servicio ya fue cerrado en el módulo 11");
-  return;
-}
-  try {
-    const fecha = document.getElementById("m12_fecha")?.value || "";
-    const unidad = document.getElementById("m12_unidad")?.value || "";
-    const servicio = document.getElementById("m12_servicio")?.value || "";
-    const subunidad = document.getElementById("m12_subunidad")?.value || "";
-
-    if (!fecha || !unidad || !servicio || !subunidad) {
-      alert("Faltan datos");
-      return;
-    }
-
-    const responsable = obtenerResponsableModulo12();
-
-    const res = await fetch("/modulo12-cerrar-parte", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        fecha,
-        unidad,
-        servicio,
-        subunidad,
-        responsable
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert(data.error || "No se pudo cerrar el parte");
-      return;
-    }
-
-    alert("Parte cerrado correctamente");
-    await consultarEstadoModulo12();
-  } catch (error) {
-    console.error(error);
-    alert("Error cerrando parte");
+  } else {
+    alert("Error: " + data.error);
   }
 }
   function inicializarModulo12() {
