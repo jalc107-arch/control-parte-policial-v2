@@ -2127,19 +2127,25 @@ function agregarReemplazoModulo12(cedulaTitular) {
     obsTitular.value = `REEMPLAZADO POR ${grado} ${apellidos} ${nombres} CC ${cedula}`;
   }
 
-  window.m12DetalleActual.push({
-    grado,
-    apellidos,
-    nombres,
-    cedula,
-    telefono,
-    unidad: document.getElementById("m12_unidad")?.value || "",
-    subunidad: document.getElementById("m12_subunidad")?.value || "",
-    estado_control: "REEMPLAZO",
-    observacion: `REEMPLAZA A ${titular.grado || ""} ${titular.apellidos || ""} ${titular.nombres || ""}`,
-    es_reemplazo_manual: true,
-    reemplaza_a_cedula: cedulaTitular
-  });
+window.m11DetalleActual = window.m11DetalleActual || [];
+window.m12DetalleActual = window.m12DetalleActual || [];
+
+const nuevoReemplazo = {
+  grado,
+  apellidos,
+  nombres,
+  cedula,
+  telefono,
+  unidad: document.getElementById("m12_unidad")?.value || "",
+  subunidad: document.getElementById("m12_subunidad")?.value || "",
+  estado_control: "REEMPLAZO",
+  observacion: `REEMPLAZA A ${titular.grado || ""} ${titular.apellidos || ""} ${titular.nombres || ""}`.trim(),
+  es_reemplazo_manual: true,
+  reemplaza_a_cedula: cedulaTitular
+};
+
+window.m12DetalleActual.push(nuevoReemplazo);
+window.m11DetalleActual.push(nuevoReemplazo);
 
   renderizarPersonalModulo12();
 
