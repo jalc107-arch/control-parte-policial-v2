@@ -6645,19 +6645,31 @@ function cargarOrganicosMultiple() {
 
   let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
 
+  // Si no es oficial, solo su subunidad
   if (!esOficial && subunidadResponsable) {
     filtrados = filtrados.filter(
       x => String(x.subunidad || "").trim() === subunidadResponsable
     );
   } else if (subunidadesMarcadas.length) {
-    filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
+    filtrados = filtrados.filter(
+      x => subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    );
   }
 
-  if (estacionesMarcadas.length) {
-    filtrados = filtrados.filter(x => estacionesMarcadas.includes(x.estacion));
+  // Solo filtrar por estación si realmente hay estaciones marcadas
+  if (estacionesMarcadas.length > 0) {
+    filtrados = filtrados.filter(
+      x => estacionesMarcadas.includes(String(x.estacion || "").trim())
+    );
   }
 
-  const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))].sort();
+  const organicos = [
+    ...new Set(
+      filtrados
+        .map(x => String(x.organico || "").trim())
+        .filter(Boolean)
+    )
+  ].sort();
 
   pintarChecks("checks_organico_parte", organicos, "actualizarRutaDependenciaParte();");
   actualizarRutaDependenciaParte();
