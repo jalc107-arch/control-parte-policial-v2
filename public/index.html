@@ -1361,20 +1361,30 @@ async function validarResponsable() {
 
     cargarSubunidadesMultiple();
 
-    if (!data.esOficial) {
-      if (unidadSelect) unidadSelect.disabled = true;
-
-setTimeout(() => {
-  marcarCheckSiExiste("checks_subunidad_parte", subunidadResp);
-  cargarEstacionesMultiple();
-  cargarOrganicosMultiple();
+   if (!data.esOficial) {
+  if (unidadSelect) unidadSelect.disabled = true;
 
   setTimeout(() => {
-    marcarCheckSiExiste("checks_estacion_parte", estacionResp);
-    marcarCheckSiExiste("checks_organico_parte", organicoResp);
-    actualizarRutaDependenciaParte();
+    if (data.subunidad) {
+      marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
+    }
+
+    cargarEstacionesMultiple();
+    cargarOrganicosMultiple();
+
+    setTimeout(() => {
+      if (data.estacion) {
+        marcarCheckSiExiste("checks_estacion_parte", data.estacion);
+      }
+
+      if (data.organico) {
+        marcarCheckSiExiste("checks_organico_parte", data.organico);
+      }
+
+      actualizarRutaDependenciaParte();
+    }, 200);
   }, 200);
-}, 200);
+}
       
     } else {
       if (unidadSelect) unidadSelect.disabled = false;
