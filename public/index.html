@@ -6639,13 +6639,14 @@ function cargarEstacionesMultiple() {
 function cargarOrganicosMultiple() {
   const unidad = document.getElementById("unidad_select")?.value || "";
   const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
-  const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_parte");
   const esOficial = !!window.responsable?.esOficial;
   const subunidadResponsable = String(window.responsable?.subunidad || "").trim();
 
-  let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+  let filtrados = estructuraGlobal.filter(
+    x => String(x.unidad || "").trim() === String(unidad || "").trim()
+  );
 
-  // Si no es oficial, solo su subunidad
+  // Si no es oficial, SOLO su subunidad
   if (!esOficial && subunidadResponsable) {
     filtrados = filtrados.filter(
       x => String(x.subunidad || "").trim() === subunidadResponsable
@@ -6656,13 +6657,7 @@ function cargarOrganicosMultiple() {
     );
   }
 
-  // Solo filtrar por estación si realmente hay estaciones marcadas
-  if (estacionesMarcadas.length > 0) {
-    filtrados = filtrados.filter(
-      x => estacionesMarcadas.includes(String(x.estacion || "").trim())
-    );
-  }
-
+  // OJO: aquí NO filtramos por estación
   const organicos = [
     ...new Set(
       filtrados
@@ -6671,7 +6666,12 @@ function cargarOrganicosMultiple() {
     )
   ].sort();
 
-  pintarChecks("checks_organico_parte", organicos, "actualizarRutaDependenciaParte();");
+  pintarChecks(
+    "checks_organico_parte",
+    organicos,
+    "actualizarRutaDependenciaParte();"
+  );
+
   actualizarRutaDependenciaParte();
 }
 
