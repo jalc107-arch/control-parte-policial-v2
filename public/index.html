@@ -1434,23 +1434,24 @@ async function validarResponsable() {
       }
 
     } else {
-      const ids = [
-        "bloqueOrganico",
-        "bloqueConsultaGeneral",
-        "bloqueExtraordinario",
-        "bloqueHistorialExtra",
-        "bloqueControlCumplimiento",
-        "bloqueConfigExtraGlobal",
-        "bloqueModulo11",
-        "bloqueModulo12"
-      ];
+  const ids = [
+    "bloqueConsultaGeneral",
+    "bloqueExtraordinario",
+    "bloqueHistorialExtra",
+    "bloqueControlCumplimiento",
+    "bloqueConfigExtraGlobal",
+    "bloqueModulo11",
+    "bloqueModulo12"
+  ];
 
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = "none";
-      });
-    }
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
 
+  const bloqueOrganico = document.getElementById("bloqueOrganico");
+  if (bloqueOrganico) bloqueOrganico.style.display = "block";
+}
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
 
