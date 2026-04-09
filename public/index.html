@@ -1470,8 +1470,7 @@ setTimeout(() => {
   setTimeout(() => {
     if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
 
-    cargarOrganicosMultiple(); // 🔥 ESTA ES LA CLAVE
-
+    
     setTimeout(() => {
       if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
     }, 200);
