@@ -1461,9 +1461,23 @@ async function validarResponsable() {
 
       cargarConsultaDependencias();
 
-      if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
-      if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
+setTimeout(() => {
+  if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
+
+  cargarEstacionesMultiple();
+
+  setTimeout(() => {
+    if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
+
+    cargarOrganicosMultiple(); // 🔥 ESTA ES LA CLAVE
+
+    setTimeout(() => {
       if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
+    }, 200);
+
+  }, 200);
+
+}, 200);
     }
 
   } catch (error) {
