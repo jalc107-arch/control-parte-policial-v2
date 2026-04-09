@@ -1342,11 +1342,16 @@ async function validarResponsable() {
     }
 
     window.responsable = {
-      cedula: data.cedula || "",
-      nombre: data.nombre || "",
-      grado: data.grado || "",
-      telefono: data.telefono || ""
-    };
+  cedula: data.cedula || "",
+  nombre: data.nombre || "",
+  grado: data.grado || "",
+  telefono: data.telefono || "",
+  unidad: data.unidad || "",
+  subunidad: data.subunidad || "",
+  estacion: data.estacion || "",
+  organico: data.organico || "",
+  esOficial: !!data.esOficial
+};
 
     const unidadSelect = document.getElementById("unidad_select");
 
@@ -6564,31 +6569,70 @@ function actualizarRutaDependenciaParte() {
 
 function cargarSubunidadesMultiple() {
   const unidad = document.getElementById("unidad_select")?.value || "";
-
-  const filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
-  const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))].sort();
-
-  pintarChecks("checks_subunidad_parte", subunidades, "cargarEstacionesMultiple(); cargarOrganicosMultiple(); actualizarRutaDependenciaParte();");
-  pintarChecks("checks_estacion_parte", [], "");
-  pintarChecks("checks_organico_parte", [], "");
-  actualizarRutaDependenciaParte();
-}
-
-function cargarEstacionesMultiple() {
-  const unidad = document.getElementById("unidad_select")?.value || "";
-  const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
+  const esOficial = !!window.responsable?.esOficial;
+  const subunidadResponsable = String(window.responsable?.subunidad || "").trim();
 
   let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
 
-  if (subunidadesMarcadas.length) {
+  if (!esOficial && subunidadResponsable) {
+    filtrados = filtrados.filter(
+      x => String(x.subunidad || "").trim() === subunidadResponsable
+    );
+  }
+
+  const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))].sort();
+
+  pintarChecks(
+    "checks_subunidad_parte",
+    subunidades,
+    "cargarEstacionesMultiple(); cargarOrganicosMultiple(); actualizarRutaDependenciaParte();"
+  );
+
+  pintarChecks("checks_estacion_parte", [], "");
+  pintarChecks("checks_organico_parte", [], "");
+
+  if (!esOficial && subunidadResponsable) {
+    setTimeout(() => {
+      marcarCheckSiExiste("checks_subunidad_parte", subunidadResponsable);
+
+      const checks = document.querySelectorAll('#checks_subunidad_parte input[type="checkbox"]');
+      checks.forEach(chk => {
+        chk.disabled = true;
+      });
+
+      cargarEstacionesMultiple();
+      cargarOrganicosMultiple();
+      actualizarRutaDependenciaParte();
+    }, 50);
+  } else {
+    actualizarRutaDependenciaParte();
+  }
+}
+  
+function cargarEstacionesMultiple() {
+  const unidad = document.getElementById("unidad_select")?.value || "";
+  const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
+  const esOficial = !!window.responsable?.esOficial;
+  const subunidadResponsable = String(window.responsable?.subunidad || "").trim();
+
+  let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+
+  if (!esOficial && subunidadResponsable) {
+    filtrados = filtrados.filter(
+      x => String(x.subunidad || "").trim() === subunidadResponsable
+    );
+  } else if (subunidadesMarcadas.length) {
     filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
   }
 
   const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))].sort();
 
-  pintarChecks("checks_estacion_parte", estaciones, "cargarOrganicosMultiple(); actualizarRutaDependenciaParte();");
-  cargarOrganicosMultiple();
-  
+  pintarChecks(
+    "checks_estacion_parte",
+    estaciones,
+    "cargarOrganicosMultiple(); actualizarRutaDependenciaParte();"
+  );
+
   actualizarRutaDependenciaParte();
 }
 
@@ -6596,10 +6640,16 @@ function cargarOrganicosMultiple() {
   const unidad = document.getElementById("unidad_select")?.value || "";
   const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
   const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_parte");
+  const esOficial = !!window.responsable?.esOficial;
+  const subunidadResponsable = String(window.responsable?.subunidad || "").trim();
 
   let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
 
-  if (subunidadesMarcadas.length) {
+  if (!esOficial && subunidadResponsable) {
+    filtrados = filtrados.filter(
+      x => String(x.subunidad || "").trim() === subunidadResponsable
+    );
+  } else if (subunidadesMarcadas.length) {
     filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
   }
 
