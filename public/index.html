@@ -6605,7 +6605,10 @@ function cargarSubunidadesMultiple() {
 
 
   pintarChecks("checks_estacion_parte", [], "");
-  pintarChecks("checks_organico_parte", [], "");
+pintarChecks("checks_organico_parte", [], "");
+
+const bloqueOrganico = document.getElementById("bloqueOrganico");
+if (bloqueOrganico) bloqueOrganico.style.display = "none";
 
   if (!esOficial && subunidadResponsable) {
     setTimeout(() => {
@@ -6648,6 +6651,15 @@ function cargarEstacionesMultiple() {
   "mostrarOrganicoSegunEstacion(); actualizarRutaDependenciaParte();"
 );
 
+const bloqueOrganico = document.getElementById("bloqueOrganico");
+const estacionesMarcadasActuales = obtenerChecksMarcados("checks_estacion_parte");
+
+if (!estacionesMarcadasActuales.length) {
+  if (bloqueOrganico) bloqueOrganico.style.display = "none";
+  const contOrganico = document.getElementById("checks_organico_parte");
+  if (contOrganico) contOrganico.innerHTML = "";
+}
+  
   actualizarRutaDependenciaParte();
 }
 
