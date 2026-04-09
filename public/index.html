@@ -1450,7 +1450,7 @@ async function validarResponsable() {
   });
 
   const bloqueOrganico = document.getElementById("bloqueOrganico");
-  if (bloqueOrganico) bloqueOrganico.style.display = "block";
+if (bloqueOrganico) bloqueOrganico.style.display = "none";
 }
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
@@ -6647,10 +6647,10 @@ function cargarEstacionesMultiple() {
   const estaciones = [...new Set(filtrados.map(x => x.estacion).filter(Boolean))].sort();
 
   pintarChecks(
-    "checks_estacion_parte",
-    estaciones,
-    "cargarOrganicosMultiple(); actualizarRutaDependenciaParte();"
-  );
+  "checks_estacion_parte",
+  estaciones,
+  "mostrarOrganicoSegunEstacion(); actualizarRutaDependenciaParte();"
+);
 
   actualizarRutaDependenciaParte();
 }
@@ -6707,6 +6707,23 @@ function cargarOrganicosMultiple() {
     "actualizarRutaDependenciaParte();"
   );
 
+  actualizarRutaDependenciaParte();
+}
+
+  function mostrarOrganicoSegunEstacion() {
+  const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_parte");
+  const bloqueOrganico = document.getElementById("bloqueOrganico");
+  const contOrganico = document.getElementById("checks_organico_parte");
+
+  if (!estacionesMarcadas.length) {
+    if (bloqueOrganico) bloqueOrganico.style.display = "none";
+    if (contOrganico) contOrganico.innerHTML = "";
+    actualizarRutaDependenciaParte();
+    return;
+  }
+
+  if (bloqueOrganico) bloqueOrganico.style.display = "block";
+  cargarOrganicosMultiple();
   actualizarRutaDependenciaParte();
 }
 
