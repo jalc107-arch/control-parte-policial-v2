@@ -6645,19 +6645,53 @@ function cargarOrganicosMultiple() {
   const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
   const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_parte");
 
-  let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+  let filtrados = estructuraGlobal.filter(
+    x => String(x.unidad || "").trim() === String(unidad || "").trim()
+  );
 
   if (subunidadesMarcadas.length) {
-    filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
+    filtrados = filtrados.filter(
+      x => subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    );
   }
 
   if (estacionesMarcadas.length) {
-    filtrados = filtrados.filter(x => estacionesMarcadas.includes(x.estacion));
+    filtrados = filtrados.filter(
+      x => estacionesMarcadas.includes(String(x.estacion || "").trim())
+    );
   }
 
-  const organicos = [...new Set(filtrados.map(x => x.organico).filter(Boolean))].sort();
+  let organicos = [
+    ...new Set(
+      filtrados
+        .map(x => String(x.organico || "").trim())
+        .filter(Boolean)
+    )
+  ].sort();
 
-  pintarChecks("checks_organico_parte", organicos, "actualizarRutaDependenciaParte();");
+  // Si no encontró por estación, muestra todos los orgánicos de la subunidad
+  if (!organicos.length && subunidadesMarcadas.length) {
+    let filtradosSubunidad = estructuraGlobal.filter(
+      x =>
+        String(x.unidad || "").trim() === String(unidad || "").trim() &&
+        subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    );
+
+    organicos = [
+      ...new Set(
+        filtradosSubunidad
+          .map(x => String(x.organico || "").trim())
+          .filter(Boolean)
+      )
+    ].sort();
+  }
+
+  pintarChecks(
+    "checks_organico_parte",
+    organicos,
+    "actualizarRutaDependenciaParte();"
+  );
+
   actualizarRutaDependenciaParte();
 }
 
