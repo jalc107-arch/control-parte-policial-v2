@@ -6602,11 +6602,8 @@ function cargarSubunidadesMultiple() {
 
   const subunidades = [...new Set(filtrados.map(x => x.subunidad).filter(Boolean))].sort();
 
-  pintarChecks(
-    "checks_subunidad_parte",
-    subunidades,
-    "cargarEstacionesMultiple(); cargarOrganicosMultiple(); actualizarRutaDependenciaParte();"
-  );
+  pintarChecks("checks_subunidad_parte", subunidades, "cargarEstacionesMultiple(); actualizarRutaDependenciaParte();");
+
 
   pintarChecks("checks_estacion_parte", [], "");
   pintarChecks("checks_organico_parte", [], "");
@@ -6621,7 +6618,6 @@ function cargarSubunidadesMultiple() {
       });
 
       cargarEstacionesMultiple();
-      cargarOrganicosMultiple();
       actualizarRutaDependenciaParte();
     }, 50);
   } else {
