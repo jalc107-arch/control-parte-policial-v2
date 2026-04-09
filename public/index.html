@@ -1366,24 +1366,15 @@ async function validarResponsable() {
 
 setTimeout(() => {
   marcarCheckSiExiste("checks_subunidad_parte", subunidadResp);
-
-  // 🔥 primero estaciones
   cargarEstacionesMultiple();
+  cargarOrganicosMultiple();
 
   setTimeout(() => {
     marcarCheckSiExiste("checks_estacion_parte", estacionResp);
-
-    // 🔥 ahora sí orgánicos
-    cargarOrganicosMultiple();
-
-    setTimeout(() => {
-      marcarCheckSiExiste("checks_organico_parte", organicoResp);
-      actualizarRutaDependenciaParte();
-    }, 100);
-
-  }, 100);
-
-}, 100);
+    marcarCheckSiExiste("checks_organico_parte", organicoResp);
+    actualizarRutaDependenciaParte();
+  }, 200);
+}, 200);
       
     } else {
       if (unidadSelect) unidadSelect.disabled = false;
@@ -6645,15 +6636,14 @@ function cargarEstacionesMultiple() {
 
 function cargarOrganicosMultiple() {
   const unidad = document.getElementById("unidad_select")?.value || "";
-  const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
   const esOficial = !!window.responsable?.esOficial;
   const subunidadResponsable = String(window.responsable?.subunidad || "").trim();
+  const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
 
   let filtrados = estructuraGlobal.filter(
     x => String(x.unidad || "").trim() === String(unidad || "").trim()
   );
 
-  // Si no es oficial, SOLO su subunidad
   if (!esOficial && subunidadResponsable) {
     filtrados = filtrados.filter(
       x => String(x.subunidad || "").trim() === subunidadResponsable
@@ -6664,7 +6654,6 @@ function cargarOrganicosMultiple() {
     );
   }
 
-  // OJO: aquí NO filtramos por estación
   const organicos = [
     ...new Set(
       filtrados
@@ -6672,6 +6661,16 @@ function cargarOrganicosMultiple() {
         .filter(Boolean)
     )
   ].sort();
+
+  console.log("MOD3 ORGÁNICOS DEBUG", {
+    unidad,
+    esOficial,
+    subunidadResponsable,
+    subunidadesMarcadas,
+    totalEstructura: Array.isArray(estructuraGlobal) ? estructuraGlobal.length : 0,
+    filtrados,
+    organicos
+  });
 
   pintarChecks(
     "checks_organico_parte",
