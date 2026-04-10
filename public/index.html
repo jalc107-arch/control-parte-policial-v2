@@ -5793,6 +5793,29 @@ function renderizarDetalleModulo11() {
       </details>
     `;
 
+let opcionesReemplazo = `<option value="">Seleccionar a quién reemplaza</option>`;
+
+if (window.m11DetalleActual && Array.isArray(window.m11DetalleActual)) {
+  opcionesReemplazo += window.m11DetalleActual
+    .filter(p => {
+      const estado = String(p.estado_control || "").toUpperCase().trim();
+
+      // SOLO LOS QUE SE PUEDEN REEMPLAZAR
+      return (
+        estado !== "REEMPLAZO" && 
+        !p.es_reemplazo_manual && 
+        estado !== "NO ASISTE"
+      );
+    })
+    .map(p => {
+      const ced = String(p.cedula || "").trim();
+      const nombre = `${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}`;
+      return `<option value="${ced}">${nombre} - CC ${ced}</option>`;
+    })
+    .join("");
+}
+
+    
     reemplazoFormHtml = `
       <details class="sub-card" style="margin-top:12px;">
         <summary style="cursor:pointer; font-weight:700; color:#0B1F3A;">Agregar reemplazo en terreno</summary>
