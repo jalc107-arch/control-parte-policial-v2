@@ -2510,21 +2510,23 @@ async function guardarNovedades(mostrarMensaje = true) {
     const data = await res.json();
 
     if (!data.ok) {
-      alert(data.error || data.mensaje || "No se pudieron guardar las novedades");
-      return false;
-    }
+  alert(data.error || data.mensaje || "No se pudieron guardar las novedades");
+  return false;
+}
 
     if (mostrarMensaje) {
       alert(data.mensaje || "Novedades guardadas correctamente");
+return true;
     }
 
     return true;
+    
   } catch (error) {
-    console.error(error);
-    alert("Error guardando novedades");
-    return false;
-  }
+  console.error(error);
+  alert("Error guardando novedades");
+  return false;
 }
+  }
   
 // =========================
 // CONSTRUIR TEXTO QR UBICACION
@@ -3444,6 +3446,16 @@ async function aplicarServicioExtraordinarioPorGrupos() {
 
   
   async function generarParte() {
+  // 🔥 GUARDAR NOVEDADES ANTES DE GENERAR
+const ok = await guardarNovedades(false);
+
+if (!ok) {
+  alert("No se pudieron guardar las novedades");
+  return;
+}
+
+// 🔥 REFRESCAR DATOS PARA MÓDULO 6 Y 7
+await consultarNovedades();
   const cedula = document.getElementById("cedula_elabora")?.value || "";
   const grado = document.getElementById("grado")?.value || "";
   const nombre = document.getElementById("nombre_elabora")?.value || "";
