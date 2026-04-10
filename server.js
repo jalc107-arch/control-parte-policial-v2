@@ -1501,15 +1501,19 @@ app.post("/consulta-novedades", async (req, res) => {
     let personalFiltrado = personal;
 
     if (tiposLimpios.length > 0) {
-      const incluirDisponibles = tiposLimpios.includes("DISPONIBLE");
-      const otrosTipos = tiposLimpios.filter(t => t !== "DISPONIBLE");
+  const incluirDisponibles = tiposLimpios.includes("DISPONIBLE");
+  const otrosTipos = tiposLimpios.filter(t => t !== "DISPONIBLE");
 
-      personalFiltrado = personal.filter(p => {
-        const tipo = p.tipo_novedad || "";
-        if (!tipo) return incluirDisponibles;
-        return otrosTipos.includes(tipo);
-      });
+  personalFiltrado = personal.filter(p => {
+    const tipo = String(p.tipo_novedad || "").trim().toUpperCase();
+
+    if (!tipo || tipo === "DISPONIBLE") {
+      return incluirDisponibles;
     }
+
+    return otrosTipos.includes(tipo);
+  });
+}
 
     const fuerzaEfectivaConteo = contarGrupo(personalFiltrado);
     const fuerzaEfectivaTotal = personalFiltrado.length;
