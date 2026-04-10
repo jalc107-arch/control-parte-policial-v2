@@ -2278,13 +2278,39 @@ async function iniciarParteModulo12() {
 }
 
 async function guardarParteModulo12() {
-  const fecha = document.getElementById("m12_fecha").value;
-  const unidad = document.getElementById("m12_unidad").value;
-  const servicio = document.getElementById("m12_servicio").value;
-  const subunidad = document.getElementById("m12_subunidad").value;
+  const fecha = document.getElementById("m12_fecha")?.value || "";
+  const unidad = document.getElementById("m12_unidad")?.value || "";
+  const servicio = document.getElementById("m12_servicio")?.value || "";
+  const subunidad = document.getElementById("m12_subunidad")?.value || "";
 
-  // ⚠️ ESTE ARRAY DEBE SER EL QUE YA USAS EN TABLA
-  const detalle = window.m12_personal || [];
+  if (!fecha || !unidad || !servicio || !subunidad) {
+    alert("Falta fecha, unidad, servicio o subunidad");
+    return;
+  }
+
+  window.m12DetalleActual = window.m12DetalleActual || [];
+  window.m11DetalleActual = window.m11DetalleActual || [...window.m12DetalleActual];
+
+  // 🔥 Antes de guardar, pasar a memoria lo que el usuario escribió en pantalla
+  window.m12DetalleActual.forEach(p => {
+    const ced = String(p.cedula || "").trim();
+
+    const select = document.getElementById(`m12_estado_${ced}`);
+    const obs = document.getElementById(`m12_obs_${ced}`);
+
+    if (select) {
+      p.estado_control = String(select.value || "DISPONIBLE").trim().toUpperCase();
+    }
+
+    if (obs) {
+      p.observacion = String(obs.value || "").trim();
+    }
+  });
+
+  // 🔥 Sincronizar m11 con m12 para que guarde exactamente lo visible
+  window.m11DetalleActual = window.m12DetalleActual.map(p => ({ ...p }));
+
+  const detalle = window.m11DetalleActual;
 
   const responsable = {
     nombre: window.responsable?.nombre || "",
@@ -2292,25 +2318,31 @@ async function guardarParteModulo12() {
     telefono: window.responsable?.telefono || ""
   };
 
-  const res = await fetch("/modulo11-guardar-control", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      fecha,
-      unidad,
-      subunidad,
-      servicio,
-      responsable,
-      detalle
-    })
-  });
+  try {
+    const res = await fetch("/modulo11-guardar-control", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        subunidad,
+        servicio,
+        responsable,
+        detalle
+      })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (data.ok) {
-    alert("Parte guardado correctamente");
-  } else {
-    alert("Error: " + data.error);
+    if (data.ok) {
+      alert("Parte guardado correctamente");
+      await consultarModulo11();
+    } else {
+      alert("Error: " + (data.error || "No se pudo guardar"));
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Error guardando parte");
   }
 }
 
