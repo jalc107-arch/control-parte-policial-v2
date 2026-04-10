@@ -2477,10 +2477,10 @@ async function guardarNovedades(mostrarMensaje = true) {
     if (!select) return;
 
     const cedulaPersona = String(select.id || "").replace("novedad-", "").trim();
-    const tipo = (select.value || "").trim();
+    
+    const tipo = (select.value || "DISPONIBLE").trim();
 
-    if (!cedulaPersona) return;
-    if (!tipo) return;
+if (!cedulaPersona) return;
 
     novedades.push({
       cedula: cedulaPersona,
