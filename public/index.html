@@ -1276,7 +1276,7 @@ async function validarCodigoOTP() {
     }
 
 async function validarResponsable() {
-  const cedula = document.getElementById("cedula_responsable").value.trim();
+  const cedula = document.getElementById("cedula_responsable")?.value.trim();
 
   if (!otpValidado) {
     alert("Primero debes validar el código de seguridad");
@@ -1313,10 +1313,6 @@ async function validarResponsable() {
     const data = await res.json();
     console.log("RESPUESTA:", data);
 
-    window.usuarioRol = data.rol || "";
-    window.usuarioCedula = data.cedula || "";
-    window.usuarioEsAdmin = !!data.es_admin;
-
     if (!data.ok) {
       alert("Cédula no encontrada");
       return;
@@ -1326,6 +1322,31 @@ async function validarResponsable() {
       alert("No tiene permisos");
       return;
     }
+
+    window.usuarioRol = (data.rol || "").toUpperCase().trim();
+    window.usuarioCedula = data.cedula || "";
+    window.usuarioEsAdmin = !!data.es_admin;
+
+    const esAdmin = !!data.es_admin;
+    const esOficial = !!data.esOficial;
+    const rol = (data.rol || "").toUpperCase().trim();
+
+    const puedeVerModulo11 =
+      esAdmin ||
+      rol === "SUPERVISOR" ||
+      rol === "JEFE_SERVICIO" ||
+      rol === "JEFE_PMU" ||
+      !!data.puedeVerModulo11y12;
+
+    const puedeVerModulo12 =
+      esAdmin ||
+      esOficial ||
+      rol === "ADMIN_EXCEL" ||
+      rol === "SUPERVISOR" ||
+      rol === "JEFE_SERVICIO" ||
+      rol === "JEFE_PMU" ||
+      !!data.puedeVerModulo11y12 ||
+      !!data.puedeVerModulo12PorServicio;
 
     const cedulaElabora = document.getElementById("cedula_elabora");
     const nombreElabora = document.getElementById("nombre_elabora");
@@ -1350,7 +1371,7 @@ async function validarResponsable() {
       subunidad: data.subunidad || "",
       estacion: data.estacion || "",
       organico: data.organico || "",
-      esOficial: !!data.esOficial
+      esOficial: esOficial
     };
 
     const unidadSelect = document.getElementById("unidad_select");
@@ -1361,26 +1382,24 @@ async function validarResponsable() {
 
     cargarSubunidadesMultiple();
 
-    if (!data.esOficial) {
+    if (!esOficial) {
       if (unidadSelect) unidadSelect.disabled = true;
 
       setTimeout(() => {
-  if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
-  cargarEstacionesMultiple();
+        if (data.subunidad) marcarCheckSiExiste("checks_subunidad_parte", data.subunidad);
+        cargarEstacionesMultiple();
 
-  setTimeout(() => {
-    if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
+        setTimeout(() => {
+          if (data.estacion) marcarCheckSiExiste("checks_estacion_parte", data.estacion);
 
-    mostrarOrganicoSegunEstacion();
+          mostrarOrganicoSegunEstacion();
 
-    setTimeout(() => {
-      if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
-      actualizarRutaDependenciaParte();
-    }, 100);
-
-  }, 100);
-
-}, 100);
+          setTimeout(() => {
+            if (data.organico) marcarCheckSiExiste("checks_organico_parte", data.organico);
+            actualizarRutaDependenciaParte();
+          }, 100);
+        }, 100);
+      }, 100);
 
     } else {
       if (unidadSelect) unidadSelect.disabled = false;
@@ -1391,22 +1410,24 @@ async function validarResponsable() {
     const bloqueUbicacion = document.getElementById("bloqueUbicacion");
     const bloqueNovedades = document.getElementById("bloqueNovedades");
     const bloqueParte = document.getElementById("bloqueParte");
+    const bloqueOrganico = document.getElementById("bloqueOrganico");
+    const bloqueConsultaGeneral = document.getElementById("bloqueConsultaGeneral");
+    const bloqueExtraordinario = document.getElementById("bloqueExtraordinario");
+    const bloqueHistorialExtra = document.getElementById("bloqueHistorialExtra");
+    const bloqueControlCumplimiento = document.getElementById("bloqueControlCumplimiento");
+    const bloqueConfigExtraGlobal = document.getElementById("bloqueConfigExtraGlobal");
+    const bloqueModulo11 = document.getElementById("bloqueModulo11");
+    const bloqueModulo12 = document.getElementById("bloqueModulo12");
 
     if (bloqueExcel) bloqueExcel.style.display = data.puedeSubirExcel ? "block" : "none";
     if (bloqueUbicacion) bloqueUbicacion.style.display = "block";
     if (bloqueNovedades) bloqueNovedades.style.display = "none";
     if (bloqueParte) bloqueParte.style.display = "none";
 
-    if (data.esOficial || data.rol === "ADMIN_EXCEL" || data.es_admin) {
-      const bloqueOrganico = document.getElementById("bloqueOrganico");
-      const bloqueConsultaGeneral = document.getElementById("bloqueConsultaGeneral");
-      const bloqueExtraordinario = document.getElementById("bloqueExtraordinario");
-      const bloqueHistorialExtra = document.getElementById("bloqueHistorialExtra");
-      const bloqueControlCumplimiento = document.getElementById("bloqueControlCumplimiento");
-      const bloqueConfigExtraGlobal = document.getElementById("bloqueConfigExtraGlobal");
-      const bloqueModulo11 = document.getElementById("bloqueModulo11");
-      const bloqueModulo12 = document.getElementById("bloqueModulo12");
+    const puedeVerBloquesAdministrativos =
+      esOficial || rol === "ADMIN_EXCEL" || esAdmin;
 
+    if (puedeVerBloquesAdministrativos) {
       if (bloqueOrganico) bloqueOrganico.style.display = "block";
       if (bloqueConsultaGeneral) bloqueConsultaGeneral.style.display = "block";
       if (bloqueExtraordinario) bloqueExtraordinario.style.display = "block";
@@ -1414,70 +1435,63 @@ async function validarResponsable() {
       if (bloqueControlCumplimiento) bloqueControlCumplimiento.style.display = "block";
       if (bloqueConfigExtraGlobal) bloqueConfigExtraGlobal.style.display = "block";
 
-      if (
-        window.usuarioEsAdmin ||
-        window.usuarioRol === "SUPERVISOR" ||
-        window.usuarioRol === "JEFE_SERVICIO" ||
-        window.usuarioRol === "JEFE_PMU"
-      ) {
-        if (bloqueModulo11) bloqueModulo11.style.display = "block";
-      } else {
-        if (bloqueModulo11) bloqueModulo11.style.display = "none";
-      }
-
-      if (bloqueModulo12) bloqueModulo12.style.display = "block";
-
       consultarParteExtraGlobal();
       cargarUnidadModulo11();
-
-      if (typeof inicializarModulo12 === "function") {
-        inicializarModulo12();
-      }
-
     } else {
-  const ids = [
-    "bloqueConsultaGeneral",
-    "bloqueExtraordinario",
-    "bloqueHistorialExtra",
-    "bloqueControlCumplimiento",
-    "bloqueConfigExtraGlobal",
-    "bloqueModulo11",
-    "bloqueModulo12"
-  ];
+      const ids = [
+        "bloqueConsultaGeneral",
+        "bloqueExtraordinario",
+        "bloqueHistorialExtra",
+        "bloqueControlCumplimiento",
+        "bloqueConfigExtraGlobal"
+      ];
 
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "none";
-  });
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
 
-  const bloqueOrganico = document.getElementById("bloqueOrganico");
-if (bloqueOrganico) bloqueOrganico.style.display = "none";
-}
+      if (bloqueOrganico) bloqueOrganico.style.display = "none";
+    }
+
+    if (bloqueModulo11) {
+      bloqueModulo11.style.display = puedeVerModulo11 ? "block" : "none";
+    }
+
+    if (bloqueModulo12) {
+      bloqueModulo12.style.display = puedeVerModulo12 ? "block" : "none";
+    }
+
+    if (puedeVerModulo11) {
+      cargarUnidadModulo11();
+    }
+
+    if (puedeVerModulo12 && typeof inicializarModulo12 === "function") {
+      inicializarModulo12();
+    }
+
     cargarFiltrosConsulta();
     cargarChecksGruposExtra();
 
-    if (data.esOficial || data.rol === "ADMIN_EXCEL" || data.es_admin) {
+    if (puedeVerBloquesAdministrativos) {
       const consultaUnidad = document.getElementById("consulta_unidad");
       if (consultaUnidad) consultaUnidad.value = data.unidad || "";
 
       cargarConsultaDependencias();
 
-setTimeout(() => {
-  if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
+      setTimeout(() => {
+        if (data.subunidad) marcarCheckSiExiste("checks_subunidad", data.subunidad);
 
-  cargarEstacionesMultiple();
+        cargarEstacionesMultiple();
 
-  setTimeout(() => {
-    if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
+        setTimeout(() => {
+          if (data.estacion) marcarCheckSiExiste("checks_estacion", data.estacion);
 
-    
-    setTimeout(() => {
-      if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
-    }, 200);
-
-  }, 200);
-
-}, 200);
+          setTimeout(() => {
+            if (data.organico) marcarCheckSiExiste("checks_organico", data.organico);
+          }, 200);
+        }, 200);
+      }, 200);
     }
 
   } catch (error) {
