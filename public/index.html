@@ -2311,6 +2311,8 @@ async function guardarParteModulo12() {
   window.m11DetalleActual = window.m12DetalleActual.map(p => ({ ...p }));
 
   const detalle = window.m11DetalleActual;
+  
+  console.log("DETALLE M12 ANTES DE GUARDAR:", detalle);
 
   const responsable = {
     nombre: window.responsable?.nombre || "",
