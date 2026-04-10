@@ -3443,7 +3443,7 @@ async function aplicarServicioExtraordinarioPorGrupos() {
 }
 
   
-  function generarParte() {
+  async function generarParte() {
   const cedula = document.getElementById("cedula_elabora")?.value || "";
   const grado = document.getElementById("grado")?.value || "";
   const nombre = document.getElementById("nombre_elabora")?.value || "";
@@ -3612,21 +3612,7 @@ function obtenerEstiloPDFModulo11() {
   `;
 }
 
-async function servicioEstaCerrado(fecha, unidad, servicio) {
-  const result = await pool.query(
-    `
-    SELECT COALESCE(BOOL_OR(COALESCE(cerrado, false)), false) AS cerrado
-    FROM servicios_extraordinarios
-    WHERE fecha = $1
-      AND unidad = $2
-      AND TRIM(COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO')) = TRIM($3)
-    `,
-    [fecha, unidad, servicio]
-  );
-
-  return !!result.rows[0]?.cerrado;
-}
-    
+   
     function validarBaseModulo6() {
   if (!Array.isArray(ultimoResultadoConsulta) || !ultimoResultadoConsulta.length) {
     mostrarAlertaModulo7();
