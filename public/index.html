@@ -3446,16 +3446,14 @@ async function aplicarServicioExtraordinarioPorGrupos() {
 
   
   async function generarParte() {
-  // 🔥 GUARDAR NOVEDADES ANTES DE GENERAR
-const ok = await guardarNovedades(false);
+  const ok = await guardarNovedades(false);
 
-if (!ok) {
+  if (!ok) {
   alert("No se pudieron guardar las novedades");
   return;
 }
-
-// 🔥 REFRESCAR DATOS PARA MÓDULO 6 Y 7
 await consultarNovedades();
+    
   const cedula = document.getElementById("cedula_elabora")?.value || "";
   const grado = document.getElementById("grado")?.value || "";
   const nombre = document.getElementById("nombre_elabora")?.value || "";
@@ -3475,20 +3473,7 @@ await consultarNovedades();
   const personas = [...lista.querySelectorAll(".persona")];
   if (!personas.length) return alert("No hay personal");
 
-    // Guardar novedades antes de generar el parte
-  const novedadesGuardadas = await guardarNovedades(false);
-  if (!novedadesGuardadas) {
-    alert("No se pudo continuar porque las novedades no quedaron guardadas");
-    return;
-  }
-
-  // Refrescar memoria de consulta para módulo 6 y planeación
-  try {
-    await consultarNovedades();
-  } catch (e) {
-    console.warn("No se pudo refrescar la consulta después de guardar novedades", e);
-  }
-
+    
   // =========================
   // FUNCIONES AUXILIARES
   // =========================
