@@ -2098,12 +2098,26 @@ function agregarReemplazoModulo12(cedulaTitular) {
     return;
   }
 
+  window.m12DetalleActual = window.m12DetalleActual || [];
+  window.m11DetalleActual = window.m11DetalleActual || [];
+
   const yaExiste = window.m12DetalleActual.some(
     p => String(p.cedula || "").trim() === String(cedula).trim()
   );
 
   if (yaExiste) {
     alert("Esa cédula ya existe en el listado");
+    return;
+  }
+
+  const yaFueReemplazado = window.m12DetalleActual.some(
+    p =>
+      !!p.es_reemplazo_manual &&
+      String(p.reemplaza_a_cedula || "").trim() === String(cedulaTitular || "").trim()
+  );
+
+  if (yaFueReemplazado) {
+    alert("Ese funcionario ya tiene un reemplazo asignado");
     return;
   }
 
@@ -2127,25 +2141,48 @@ function agregarReemplazoModulo12(cedulaTitular) {
     obsTitular.value = `REEMPLAZADO POR ${grado} ${apellidos} ${nombres} CC ${cedula}`;
   }
 
-window.m11DetalleActual = window.m11DetalleActual || [];
-window.m12DetalleActual = window.m12DetalleActual || [];
+  // Actualizar también el titular dentro del arreglo de módulo 12
+  titular.estado_control = "NO ASISTE";
+  titular.observacion = `REEMPLAZADO POR ${grado} ${apellidos} ${nombres} CC ${cedula}`;
+  titular.fue_reemplazado = true;
 
-const nuevoReemplazo = {
-  grado,
-  apellidos,
-  nombres,
-  cedula,
-  telefono,
-  unidad: document.getElementById("m12_unidad")?.value || "",
-  subunidad: document.getElementById("m12_subunidad")?.value || "",
-  estado_control: "REEMPLAZO",
-  observacion: `REEMPLAZA A ${titular.grado || ""} ${titular.apellidos || ""} ${titular.nombres || ""}`.trim(),
-  es_reemplazo_manual: true,
-  reemplaza_a_cedula: cedulaTitular
-};
+  // Y sincronizar el titular en el arreglo que se guarda
+  const titularM11 = window.m11DetalleActual.find(
+    p => String(p.cedula || "").trim() === String(cedulaTitular).trim()
+  );
 
-window.m12DetalleActual.push(nuevoReemplazo);
-window.m11DetalleActual.push(nuevoReemplazo);
+  if (titularM11) {
+    titularM11.estado_control = "NO ASISTE";
+    titularM11.observacion = `REEMPLAZADO POR ${grado} ${apellidos} ${nombres} CC ${cedula}`;
+    titularM11.fue_reemplazado = true;
+  }
+
+  const nuevoReemplazo = {
+    grado,
+    apellidos,
+    nombres,
+    cedula,
+    telefono,
+    unidad: document.getElementById("m12_unidad")?.value || "",
+    subunidad: document.getElementById("m12_subunidad")?.value || "",
+    estado_control: "REEMPLAZO",
+    observacion: `REEMPLAZA A ${titular.grado || ""} ${titular.apellidos || ""} ${titular.nombres || ""}`.trim(),
+    es_reemplazo_manual: true,
+    reemplaza_a_cedula: cedulaTitular
+  };
+
+  window.m12DetalleActual.push(nuevoReemplazo);
+
+  const existeEnM11 = window.m11DetalleActual.some(
+    p =>
+      String(p.cedula || "").trim() === String(nuevoReemplazo.cedula || "").trim() &&
+      !!p.es_reemplazo_manual &&
+      String(p.reemplaza_a_cedula || "").trim() === String(cedulaTitular || "").trim()
+  );
+
+  if (!existeEnM11) {
+    window.m11DetalleActual.push({ ...nuevoReemplazo });
+  }
 
   renderizarPersonalModulo12();
 
