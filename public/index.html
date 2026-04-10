@@ -1888,23 +1888,11 @@ async function consultarEstadoModulo12() {
 
     window.m12EstadoActual = data.estado_parte || "NO HAN DADO PARTE";
 
-    try {
-  const resServ = await fetch(`/modulo11-servicios?fecha=${encodeURIComponent(fecha)}&unidad=${encodeURIComponent(unidad)}`);
-  const dataServ = await resServ.json();
-
-  if (dataServ.ok) {
-    const actual = (dataServ.data || []).find(
-      x => String(x.titulo_servicio || "").trim() === String(servicio || "").trim()
-    );
-
-    window.m11ServicioEstado = actual || {};
-  } else {
-    window.m11ServicioEstado = {};
-  }
-} catch (e) {
-  console.error("Error obteniendo estado servicio M11", e);
-  window.m11ServicioEstado = {};
-}
+    window.m12ServicioEstado = {
+      cerrado: data.estado_parte === "PARTE DADO",
+      estado_parte: data.estado_parte || "NO HAN DADO PARTE",
+      responsable_parte: data.responsable_parte || null
+    };
 
     const rp = data.responsable_parte;
     const color =
@@ -2015,7 +2003,7 @@ function renderizarPersonalModulo12() {
           </select>
         </td>
         <td>
-          <input id="m12_obs_${ced}" ${window.m11ServicioEstado?.cerrado ? "disabled" : ""}>
+          <input id="m12_obs_${ced}" ${window.m12ServicioEstado?.cerrado ? "disabled" : ""}>
         </td>
       </tr>
     `;
@@ -2325,6 +2313,71 @@ async function guardarParteModulo12() {
     alert("Error: " + data.error);
   }
 }
+
+  async function cerrarParteModulo12() {
+  const fecha = document.getElementById("m12_fecha")?.value || "";
+  const unidad = document.getElementById("m12_unidad")?.value || "";
+  const servicio = document.getElementById("m12_servicio")?.value || "";
+  const subunidad = document.getElementById("m12_subunidad")?.value || "";
+
+  if (!fecha || !unidad || !servicio || !subunidad) {
+    alert("Falta fecha, unidad, servicio o subunidad");
+    return;
+  }
+
+  if (!window.responsable) {
+    alert("No se identificó el responsable");
+    return;
+  }
+
+  if (!confirm("¿Seguro que desea cerrar el parte de esta subunidad?")) {
+    return;
+  }
+
+  try {
+    const responsable = obtenerResponsableModulo12();
+
+    const res = await fetch("/modulo12-cerrar-parte", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fecha,
+        unidad,
+        servicio,
+        subunidad,
+        responsable
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.error || "No se pudo cerrar el parte");
+      return;
+    }
+
+    window.m12ServicioEstado = window.m12ServicioEstado || {};
+    window.m12ServicioEstado.cerrado = true;
+    window.m12ServicioEstado.estado_parte = data.estado_parte || "PARTE DADO";
+    window.m12ServicioEstado.hora_cierre = data.hora_cierre || "";
+
+    const estadoBox = document.getElementById("m12_estado_box");
+    if (estadoBox) {
+      estadoBox.style.display = "block";
+      estadoBox.innerHTML = `<b style="color:green;">PARTE DADO</b>`;
+    }
+
+    alert("Parte cerrado correctamente");
+    renderizarPersonalModulo12();
+
+  } catch (error) {
+    console.error(error);
+    alert("Error cerrando parte");
+  }
+}
+  
   function inicializarModulo12() {
   const fecha = document.getElementById("m12_fecha");
   const unidad = document.getElementById("m12_unidad");
