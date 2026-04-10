@@ -2004,7 +2004,7 @@ function renderizarPersonalModulo12() {
         <td>${ced}</td>
         <td>${p.telefono || ""}</td>
         <td>
-          <select id="m12_estado_${ced}" ${window.m11ServicioEstado?.cerrado ? "disabled" : ""}>
+          <select  id="m12_estado_${p.cedula}"  onchange="cambiarEstadoModulo12('${p.cedula}', this.value)">
             <option value="DISPONIBLE" ${estado === "DISPONIBLE" ? "selected" : ""}>DISPONIBLE</option>
             <option value="RETARDADO" ${estado === "RETARDADO" ? "selected" : ""}>RETARDADO</option>
             <option value="REEMPLAZO" ${estado === "REEMPLAZO" ? "selected" : ""}>REEMPLAZO</option>
@@ -2032,6 +2032,30 @@ function renderizarPersonalModulo12() {
   tabla.innerHTML = html;
 }
 
+function cambiarEstadoModulo12(cedula, valor) {
+  window.m12DetalleActual = window.m12DetalleActual || [];
+
+  const persona = window.m12DetalleActual.find(
+    p => String(p.cedula || "").trim() === String(cedula || "").trim()
+  );
+
+  if (!persona) return;
+
+  persona.estado_control = String(valor || "").trim().toUpperCase();
+
+  if (persona.estado_control !== "REEMPLAZO") {
+    const box = document.getElementById("m12_reemplazo_box");
+    if (box) {
+      box.style.display = "none";
+      box.innerHTML = "";
+    }
+    renderizarPersonalModulo12();
+    return;
+  }
+
+  mostrarFormularioReemplazoModulo12(cedula);
+}
+  
   function mostrarFormularioReemplazoModulo12(cedulaTitular) {
   const box = document.getElementById("m12_reemplazo_box");
   if (!box) return;
