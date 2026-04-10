@@ -2056,20 +2056,26 @@ function cambiarEstadoModulo12(cedula, valor) {
   mostrarFormularioReemplazoModulo12(cedula);
 }
   
-  function mostrarFormularioReemplazoModulo12(cedulaTitular) {
+function mostrarFormularioReemplazoModulo12(cedulaTitular) {
   const box = document.getElementById("m12_reemplazo_box");
   if (!box) return;
 
   const estado = document.getElementById(`m12_estado_${cedulaTitular}`)?.value || "";
-  const persona = window.m12DetalleActual.find(p => String(p.cedula || "").trim() === String(cedulaTitular).trim());
 
-  if (!persona || estado !== "REEMPLAZO") {
+  const persona = window.m12DetalleActual.find(
+    p => String(p.cedula || "").trim() === String(cedulaTitular).trim()
+  );
+
+  // Validación correcta (normalizando texto)
+  if (!persona || String(estado).trim().toUpperCase() !== "REEMPLAZO") {
     box.style.display = "none";
     box.innerHTML = "";
     return;
   }
 
+  // Mostrar formulario
   box.style.display = "block";
+
   box.innerHTML = `
     <h3>Agregar reemplazo para</h3>
     <div style="margin-bottom:10px; font-size:14px;">
@@ -2104,8 +2110,10 @@ function cambiarEstadoModulo12(cedula, valor) {
       </div>
     </div>
 
-    <div class="acciones-inline">
-      <button type="button" onclick="agregarReemplazoModulo12('${cedulaTitular}')">Agregar reemplazo</button>
+    <div class="acciones-inline" style="margin-top:10px;">
+      <button type="button" onclick="agregarReemplazoModulo12('${cedulaTitular}')">
+        Agregar reemplazo
+      </button>
     </div>
   `;
 }
