@@ -2448,7 +2448,7 @@ console.log(
   }
 }
 
-    async function guardarNovedades() {
+async function guardarNovedades(mostrarMensaje = true) {
   const unidad = document.getElementById("unidad_select")?.value || "";
   const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
   const estaciones = obtenerChecksMarcados("checks_estacion_parte");
@@ -2461,13 +2461,13 @@ console.log(
 
   if (!unidad) {
     alert("Debes seleccionar la unidad");
-    return;
+    return false;
   }
 
   const personas = document.querySelectorAll(".persona");
   if (!personas.length) {
     alert("No hay personal cargado");
-    return;
+    return false;
   }
 
   const novedades = [];
@@ -2511,13 +2511,18 @@ console.log(
 
     if (!data.ok) {
       alert(data.error || data.mensaje || "No se pudieron guardar las novedades");
-      return;
+      return false;
     }
 
-    alert(data.mensaje || "Novedades guardadas correctamente");
+    if (mostrarMensaje) {
+      alert(data.mensaje || "Novedades guardadas correctamente");
+    }
+
+    return true;
   } catch (error) {
     console.error(error);
     alert("Error guardando novedades");
+    return false;
   }
 }
   
@@ -3457,6 +3462,20 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   
   const personas = [...lista.querySelectorAll(".persona")];
   if (!personas.length) return alert("No hay personal");
+
+    // Guardar novedades antes de generar el parte
+  const novedadesGuardadas = await guardarNovedades(false);
+  if (!novedadesGuardadas) {
+    alert("No se pudo continuar porque las novedades no quedaron guardadas");
+    return;
+  }
+
+  // Refrescar memoria de consulta para módulo 6 y planeación
+  try {
+    await consultarNovedades();
+  } catch (e) {
+    console.warn("No se pudo refrescar la consulta después de guardar novedades", e);
+  }
 
   // =========================
   // FUNCIONES AUXILIARES
