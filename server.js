@@ -434,6 +434,8 @@ app.post("/validar-responsable", async (req, res) => {
   rol,
   esOficial,
   es_admin: esAdmin
+     puedeVerModulo11y12: true,
+  puedeVerModulo12PorServicio: true
 });
   } catch (error) {
     res.status(500).json({
@@ -1510,6 +1512,10 @@ app.post("/consulta-novedades", async (req, res) => {
     if (!tipo || tipo === "DISPONIBLE") {
       return incluirDisponibles;
     }
+
+    return otrosTipos.includes(tipo);
+  });
+}
 
     return otrosTipos.includes(tipo);
   });
