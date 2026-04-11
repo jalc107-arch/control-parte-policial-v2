@@ -1332,21 +1332,15 @@ async function validarResponsable() {
     const rol = (data.rol || "").toUpperCase().trim();
 
     const puedeVerModulo11 =
-      esAdmin ||
-      rol === "SUPERVISOR" ||
-      rol === "JEFE_SERVICIO" ||
-      rol === "JEFE_PMU" ||
-      !!data.puedeVerModulo11y12;
+  esAdmin ||
+  !!data.puedeVerModulo11y12;
 
-    const puedeVerModulo12 =
-      esAdmin ||
-      esOficial ||
-      rol === "ADMIN_EXCEL" ||
-      rol === "SUPERVISOR" ||
-      rol === "JEFE_SERVICIO" ||
-      rol === "JEFE_PMU" ||
-      !!data.puedeVerModulo11y12 ||
-      !!data.puedeVerModulo12PorServicio;
+const puedeVerModulo12 =
+  esAdmin ||
+  esOficial ||
+  rol === "ADMIN_EXCEL" ||
+  !!data.puedeVerModulo11y12 ||
+  !!data.puedeVerModulo12PorServicio;
 
     const cedulaElabora = document.getElementById("cedula_elabora");
     const nombreElabora = document.getElementById("nombre_elabora");
