@@ -2907,52 +2907,33 @@ app.get("/debug-gpse", async (req, res) => {
   }
 });
 
-app.post("/limpiar-prueba-servicio-extra", async (req, res) => {
+app.post("/limpiar-pruebas-total", async (req, res) => {
   try {
-    const { fecha, unidad, titulo_servicio } = req.body;
+    await pool.query("BEGIN");
 
-    if (!fecha || !unidad) {
-      return res.status(400).json({
-        ok: false,
-        error: "Fecha y unidad son obligatorias"
-      });
-    }
+    await pool.query("DELETE FROM modulo12_partes");
+    await pool.query("DELETE FROM modulo11_control_servicio");
+    await pool.query("DELETE FROM servicios_extraordinarios");
+    await pool.query("DELETE FROM novedades");
+    await pool.query("DELETE FROM partes");
+    await pool.query("DELETE FROM otp_codigos");
 
-    let result;
-
-    if (titulo_servicio && String(titulo_servicio).trim() !== "") {
-      result = await pool.query(
-        `
-        DELETE FROM servicios_extraordinarios
-        WHERE fecha = $1
-          AND unidad = $2
-          AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
-        `,
-        [fecha, unidad, titulo_servicio]
-      );
-    } else {
-      result = await pool.query(
-        `
-        DELETE FROM servicios_extraordinarios
-        WHERE fecha = $1
-          AND unidad = $2
-        `,
-        [fecha, unidad]
-      );
-    }
+    await pool.query("COMMIT");
 
     return res.json({
       ok: true,
-      eliminados: result.rowCount || 0
+      mensaje: "Todas las pruebas fueron eliminadas correctamente"
     });
   } catch (error) {
-    console.error("ERROR /limpiar-prueba-servicio-extra:", error);
+    await pool.query("ROLLBACK");
+    console.error("ERROR /limpiar-pruebas-total:", error);
     return res.status(500).json({
       ok: false,
       error: error.message
     });
   }
 });
+
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
