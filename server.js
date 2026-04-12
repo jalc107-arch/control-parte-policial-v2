@@ -419,7 +419,10 @@ app.post("/validar-responsable", async (req, res) => {
       esOficial ||
       rol === "ADMIN_EXCEL";
 
-   res.json({
+    const puedeVerModulo11y12 = true;
+const puedeVerModulo12PorServicio = true;
+
+res.json({
   ok: true,
   autorizado: puedeGenerarParte,
   puedeSubirExcel,
@@ -433,10 +436,11 @@ app.post("/validar-responsable", async (req, res) => {
   organico: persona.organico || "",
   rol,
   esOficial,
-  es_admin: esAdmin
-     puedeVerModulo11y12: true,
-  puedeVerModulo12PorServicio: true
+  es_admin: esAdmin,
+  puedeVerModulo11y12,
+  puedeVerModulo12PorServicio
 });
+
   } catch (error) {
     res.status(500).json({
       ok: false,
