@@ -2907,7 +2907,7 @@ app.get("/debug-gpse", async (req, res) => {
   }
 });
 
-app.post("/limpiar-pruebas-total", async (req, res) => {
+app.post("/limpiar-prueba-servicio-extra", async (req, res) => {
   try {
     await pool.query("BEGIN");
 
@@ -2926,7 +2926,7 @@ app.post("/limpiar-pruebas-total", async (req, res) => {
     });
   } catch (error) {
     await pool.query("ROLLBACK");
-    console.error("ERROR /limpiar-pruebas-total:", error);
+    console.error("ERROR /limpiar-prueba-servicio-extra:", error);
     return res.status(500).json({
       ok: false,
       error: error.message
