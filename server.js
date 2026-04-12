@@ -1521,10 +1521,6 @@ app.post("/consulta-novedades", async (req, res) => {
   });
 }
 
-    return otrosTipos.includes(tipo);
-  });
-}
-
     const fuerzaEfectivaConteo = contarGrupo(personalFiltrado);
     const fuerzaEfectivaTotal = personalFiltrado.length;
 
