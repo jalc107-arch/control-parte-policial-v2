@@ -917,7 +917,9 @@
   </div>
 </div>
 
-     <button type="button" onclick="limpiarPruebasTotal()">Limpiar todo</button>
+   <button id="btn_limpiar_prueba" style="display:none;" type="button" onclick="limpiarPruebaServicioExtra()">
+  Limpiar prueba
+</button>
 
     
     <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
@@ -1328,6 +1330,19 @@ async function validarResponsable() {
     const esAdmin = !!data.es_admin;
     const esOficial = !!data.esOficial;
     const rol = (data.rol || "").toUpperCase().trim();
+
+    // 🔒 CONTROL BOTÓN LIMPIAR PRUEBA
+const btnLimpiar = document.getElementById("btn_limpiar_prueba");
+
+if (btnLimpiar) {
+  const esMiCedula = String(data.cedula || "").trim() === "86085771";
+
+  if (esAdmin || esMiCedula) {
+    btnLimpiar.style.display = "inline-block";
+  } else {
+    btnLimpiar.style.display = "none";
+  }
+}
 
     const puedeVerModulo11 =
   esAdmin ||
@@ -7355,12 +7370,12 @@ function bloquearTecladoExtra(input, maximo) {
   }, 0);
 }
 
-async function limpiarPruebasTotal() {
-  const confirmar = confirm("¿Deseas borrar todas las pruebas del sistema?");
+async function limpiarPruebaServicioExtra() {
+  const confirmar = confirm("¿Deseas limpiar todas las pruebas del sistema para iniciar desde cero?");
   if (!confirmar) return;
 
   try {
-    const res = await fetch("/limpiar-pruebas-total", {
+    const res = await fetch("/limpiar-prueba-servicio-extra", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -7376,6 +7391,12 @@ async function limpiarPruebasTotal() {
 
     window.listaExtra = [];
     window.ultimosSeleccionadosExtra = [];
+    window.ultimoResultadoConsulta = [];
+    window.m11Resumen = [];
+    window.m11DetalleActual = [];
+    window.m12DetalleActual = [];
+    window.m11ServicioEstado = {};
+    window.m12EstadoActual = "";
     window.seleccionServicio = {
       supervisor: "",
       jefe: "",
@@ -7415,8 +7436,6 @@ async function limpiarPruebasTotal() {
     }
 
     const ruta = document.getElementById("ruta_apoyo_extra");
-    if (ruta) ruta.innerHTML = "";
-
     const contenedorDistribucion = document.getElementById("contenedor_distribucion_extra");
     const validacionDistribucion = document.getElementById("validacion_distribucion_extra");
     const resultadoExtra = document.getElementById("resultado_extra");
@@ -7425,6 +7444,7 @@ async function limpiarPruebasTotal() {
     const generalBox = document.getElementById("resultado_general");
     const detalleBox = document.getElementById("resultado_detalle");
 
+    if (ruta) ruta.innerHTML = "";
     if (contenedorDistribucion) contenedorDistribucion.innerHTML = "";
     if (validacionDistribucion) validacionDistribucion.innerText = "Sin validar";
     if (resultadoExtra) resultadoExtra.innerText = "";
@@ -7437,10 +7457,10 @@ async function limpiarPruebasTotal() {
       renderizarExtraordinario([]);
     }
 
-    alert("Sistema limpio. Todas las pruebas fueron eliminadas.");
+    alert("Sistema limpio correctamente. Ya puedes iniciar pruebas desde cero.");
   } catch (error) {
-    console.error("ERROR limpiarPruebasTotal:", error);
-    alert("Error limpiando todas las pruebas.");
+    console.error("ERROR limpiarPruebaServicioExtra:", error);
+    alert("Error limpiando las pruebas.");
   }
 }
 
