@@ -558,8 +558,8 @@ app.post("/subir-excel", upload.single("archivo"), async (req, res) => {
   String(row["APTITUD"] || "").trim(),
   String(row["CARGO"] || "").trim(),
   String(row["ROL"] || "").trim(),
-  String(row["FECHA_ASCENSO"] || "").trim() || null,
-  String(row["FECHA_INGRESO"] || "").trim() || null,
+  excelFechaAISO(row["FECHA_ASCENSO"]),
+excelFechaAISO(row["FECHA_INGRESO"]),
   row["ORDEN_ANTIGUEDAD"] !== "" && row["ORDEN_ANTIGUEDAD"] != null
     ? parseInt(row["ORDEN_ANTIGUEDAD"], 10)
     : null,
@@ -1256,6 +1256,24 @@ app.post("/parte-texto", async (req, res) => {
     });
   }
 });
+
+function excelFechaAISO(valor) {
+  if (!valor) return null;
+
+  // Si viene como número (Excel)
+  if (typeof valor === "number") {
+    const fecha = new Date((valor - 25569) * 86400 * 1000);
+    return fecha.toISOString().split("T")[0];
+  }
+
+  // Si viene como texto (dd/mm/yyyy)
+  if (typeof valor === "string" && valor.includes("/")) {
+    const [d, m, y] = valor.split("/");
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+
+  return valor;
+}
 
 // ==============================
 // GUARDA PARTE PDF
