@@ -424,7 +424,7 @@ let puedeVerModulo12PorServicio = true; // SOLO PRUEBA para módulo 12
     
 res.json({
   ok: true,
-  autorizado: puedeGenerarParte,
+  autorizado: true,
   puedeSubirExcel,
   nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
   grado: persona.grado || "",
