@@ -696,10 +696,8 @@ app.post("/personal-filtrado", async (req, res) => {
 
     query += `
       ORDER BY
-        ${construirOrdenGradoSQL()},
-        apellidos,
-        nombres
-    `;
+        ${construirOrdenGradoSQL()}
+        `;
 
     const result = await pool.query(query, params);
 
@@ -1116,10 +1114,8 @@ app.post("/parte-texto", async (req, res) => {
 
     query += `
       ORDER BY
-        ${construirOrdenGradoSQL("p")},
-        p.apellidos,
-        p.nombres
-    `;
+        ${construirOrdenGradoSQL("p")}
+      `;
 
     const result = await pool.query(query, params);
 
@@ -1528,10 +1524,8 @@ app.post("/consulta-novedades", async (req, res) => {
 
     query += `
       ORDER BY
-        ${construirOrdenGradoSQL("p")},
-        p.apellidos,
-        p.nombres
-    `;
+        ${construirOrdenGradoSQL("p")}
+         `;
 
     const result = await pool.query(query, params);
 
@@ -1971,9 +1965,8 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
     query += `
       GROUP BY grado, apellidos, nombres, cedula, unidad, subunidad, estacion, organico
       ORDER BY
-        ${construirOrdenGradoSQL()},
-        apellidos,
-        nombres
+        ${construirOrdenGradoSQL()}
+        `;
     `;
 
     const result = await pool.query(query, params);
