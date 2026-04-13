@@ -2461,36 +2461,31 @@ async function inicializarModulo12() {
     const servicio = document.getElementById("m12_servicio");
     const subunidad = document.getElementById("m12_subunidad");
 
-    // Fecha automática
     if (fecha && !fecha.value) {
       fecha.value = new Date().toISOString().split("T")[0];
     }
 
-    // 1. Cargar unidades
     await cargarUnidadesModulo12();
 
-    // 2. Asignar unidad del servicio
-    if (unidad && window.responsable?.unidad_servicio_extra) {
-      unidad.value = window.responsable.unidad_servicio_extra;
+    if (unidad) {
+      unidad.value =
+        window.responsable?.unidad_servicio_extra ||
+        window.responsable?.unidad ||
+        "";
     }
 
-    // 3. Cargar servicios
     await cargarServiciosModulo12();
 
-    // 4. Asignar servicio
     if (servicio && window.responsable?.servicio_extra) {
       servicio.value = window.responsable.servicio_extra;
     }
 
-    // 5. Cargar subunidades
     await cargarSubunidadesModulo12();
 
-    // 6. Asignar subunidad
     if (subunidad && window.responsable?.subunidad_servicio_extra) {
       subunidad.value = window.responsable.subunidad_servicio_extra;
     }
 
-    // 7. Consultar estado
     await consultarEstadoModulo12();
 
   } catch (error) {
