@@ -1412,27 +1412,31 @@ async function validarResponsable() {
       actualizarRutaDependenciaParte();
     }
 
-    const bloqueExcel = document.getElementById("bloqueExcel");
     const bloqueUbicacion = document.getElementById("bloqueUbicacion");
-    const bloqueNovedades = document.getElementById("bloqueNovedades");
-    const bloqueParte = document.getElementById("bloqueParte");
-    const bloqueOrganico = document.getElementById("bloqueOrganico");
-    const bloqueConsultaGeneral = document.getElementById("bloqueConsultaGeneral");
-    const bloqueExtraordinario = document.getElementById("bloqueExtraordinario");
-    const bloqueHistorialExtra = document.getElementById("bloqueHistorialExtra");
-    const bloqueControlCumplimiento = document.getElementById("bloqueControlCumplimiento");
-    const bloqueConfigExtraGlobal = document.getElementById("bloqueConfigExtraGlobal");
-    const bloqueModulo11 = document.getElementById("bloqueModulo11");
-    const bloqueModulo12 = document.getElementById("bloqueModulo12");
+const bloqueExcel = document.getElementById("bloqueExcel");
+const bloqueNovedades = document.getElementById("bloqueNovedades");
+const bloqueParte = document.getElementById("bloqueParte");
+const bloqueOrganico = document.getElementById("bloqueOrganico");
+const bloqueConsultaGeneral = document.getElementById("bloqueConsultaGeneral");
+const bloqueExtraordinario = document.getElementById("bloqueExtraordinario");
+const bloqueHistorialExtra = document.getElementById("bloqueHistorialExtra");
+const bloqueControlCumplimiento = document.getElementById("bloqueControlCumplimiento");
+const bloqueConfigExtraGlobal = document.getElementById("bloqueConfigExtraGlobal");
+const bloqueModulo11 = document.getElementById("bloqueModulo11");
+const bloqueModulo12 = document.getElementById("bloqueModulo12");
 
-    if (bloqueExcel) bloqueExcel.style.display = data.puedeSubirExcel ? "block" : "none";
-    if (bloqueUbicacion) bloqueUbicacion.style.display = "block";
-    if (bloqueNovedades) bloqueNovedades.style.display = "none";
+if (bloqueExcel) bloqueExcel.style.display = data.puedeSubirExcel ? "block" : "none";
+if (bloqueUbicacion) bloqueUbicacion.style.display = puedeVerModulo3 ? "block" : "none";
+if (bloqueNovedades) bloqueNovedades.style.display = "none";
+if (bloqueParte) bloqueParte.style.display = "none";
 
-    // 👇 MÓDULO 3
-    if (bloqueParte) {
-      bloqueParte.style.display = puedeVerModulo3 ? "block" : "none";
-    }
+if (bloqueModulo11) {
+  bloqueModulo11.style.display = puedeVerModulo11 ? "block" : "none";
+}
+
+if (bloqueModulo12) {
+  bloqueModulo12.style.display = puedeVerModulo12 ? "block" : "none";
+}
 
     const puedeVerBloquesAdministrativos =
       esOficial || rol === "ADMIN_EXCEL" || esAdmin;
