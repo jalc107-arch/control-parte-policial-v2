@@ -2029,15 +2029,15 @@ app.post("/config/parte-extra-global", async (req, res) => {
   try {
     const { activo } = req.body;
 
-    await pool.query(
-      `
-      INSERT INTO configuracion_sistema (clave, valor)
-      VALUES ('parte_extra_global', $1)
-      ON CONFLICT (clave)
-      DO UPDATE SET valor = EXCLUDED.valor
-      `,
-      [activo ? "true" : "false"]
-    );
+   await pool.query(
+  `
+  INSERT INTO configuracion_sistema (clave, valor)
+  VALUES ('parte_extra_global', $1)
+  ON CONFLICT (clave)
+  DO UPDATE SET valor = EXCLUDED.valor
+  `,
+  [activo ? "true" : "false"]
+);
 
     res.json({
       ok: true,
