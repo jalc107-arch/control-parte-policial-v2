@@ -541,77 +541,92 @@ app.post("/subir-excel", upload.single("archivo"), async (req, res) => {
       );
 
       const payload = [
-        String(row["GRADO"] || "").trim().toUpperCase() === "AUX"
-        ? "AXP"
-        : String(row["GRADO"] || "").trim().toUpperCase(),
-        String(row["APELLIDOS"] || "").trim(),
-        String(row["NOMBRES"] || "").trim(),
-        cedula,
-        String(row["TELEFONO"] || row["TELÉFONO"] || "").trim(),
-        String(row["CORREO"] || "").trim(),
-        String(row["UNIDAD"] || row["UNIDAD1"] || "").trim(),
-        String(row["SUBUNIDAD"] || "").trim(),
-        String(row["ESTACIÓN"] || row["ESTACION"] || "").trim(),
-        String(row["ORGÁNICO"] || row["ORGANICO"] || "").trim(),
-        String(row["ASIGNACIÓN"] || row["ASIGNACION"] || "").trim(),
-        String(row["TURNO"] || "").trim(),
-        String(row["APTITUD"] || "").trim(),
-        String(row["CARGO"] || "").trim(),
-        String(row["ROL"] || "").trim(),
-        true
-      ];
+  String(row["GRADO"] || "").trim().toUpperCase() === "AUX"
+    ? "AXP"
+    : String(row["GRADO"] || "").trim().toUpperCase(),
+  String(row["APELLIDOS"] || "").trim(),
+  String(row["NOMBRES"] || "").trim(),
+  cedula,
+  String(row["TELEFONO"] || row["TELÉFONO"] || "").trim(),
+  String(row["CORREO"] || "").trim(),
+  String(row["UNIDAD"] || row["UNIDAD1"] || "").trim(),
+  String(row["SUBUNIDAD"] || "").trim(),
+  String(row["ESTACIÓN"] || row["ESTACION"] || "").trim(),
+  String(row["ORGÁNICO"] || row["ORGANICO"] || "").trim(),
+  String(row["ASIGNACIÓN"] || row["ASIGNACION"] || "").trim(),
+  String(row["TURNO"] || "").trim(),
+  String(row["APTITUD"] || "").trim(),
+  String(row["CARGO"] || "").trim(),
+  String(row["ROL"] || "").trim(),
+  String(row["FECHA_ASCENSO"] || "").trim() || null,
+  String(row["FECHA_INGRESO"] || "").trim() || null,
+  row["ORDEN_ANTIGUEDAD"] !== "" && row["ORDEN_ANTIGUEDAD"] != null
+    ? parseInt(row["ORDEN_ANTIGUEDAD"], 10)
+    : null,
+  String(row["OBSERVACIONES"] || "").trim() || null,
+  String(row["ACTIVO"] || "SI").trim().toUpperCase() !== "NO"
+];
 
       if (existe.rows.length > 0) {
         await pool.query(
-          `
-          UPDATE personal SET
-            grado = $1,
-            apellidos = $2,
-            nombres = $3,
-            telefono = $5,
-            correo = $6,
-            unidad = $7,
-            subunidad = $8,
-            estacion = $9,
-            organico = $10,
-            asignacion = $11,
-            turno = $12,
-            aptitud = $13,
-            cargo = $14,
-            rol = $15,
-            activo = $16
-          WHERE cedula = $4
-          `,
-          payload
-        );
+  `
+  UPDATE personal SET
+    grado = $1,
+    apellidos = $2,
+    nombres = $3,
+    telefono = $5,
+    correo = $6,
+    unidad = $7,
+    subunidad = $8,
+    estacion = $9,
+    organico = $10,
+    asignacion = $11,
+    turno = $12,
+    aptitud = $13,
+    cargo = $14,
+    rol = $15,
+    fecha_ascenso = $16,
+    fecha_ingreso = $17,
+    orden_antiguedad = $18,
+    observaciones = $19,
+    activo = $20
+  WHERE cedula = $4
+  `,
+  payload
+);
         actualizados++;
       } else {
-        await pool.query(
-          `
-          INSERT INTO personal (
-            grado,
-            apellidos,
-            nombres,
-            cedula,
-            telefono,
-            correo,
-            unidad,
-            subunidad,
-            estacion,
-            organico,
-            asignacion,
-            turno,
-            aptitud,
-            cargo,
-            rol,
-            activo
-          )
-          VALUES (
-            $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16
-          )
-          `,
-          payload
-        );
+       await pool.query(
+  `
+  INSERT INTO personal (
+    grado,
+    apellidos,
+    nombres,
+    cedula,
+    telefono,
+    correo,
+    unidad,
+    subunidad,
+    estacion,
+    organico,
+    asignacion,
+    turno,
+    aptitud,
+    cargo,
+    rol,
+    fecha_ascenso,
+    fecha_ingreso,
+    orden_antiguedad,
+    observaciones,
+    activo
+  )
+  VALUES (
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
+    $11,$12,$13,$14,$15,$16,$17,$18,$19,$20
+  )
+  `,
+  payload
+);
         insertados++;
       }
     }
