@@ -1369,16 +1369,19 @@ async function validarResponsable() {
     }
 
     window.responsable = {
-      cedula: data.cedula || "",
-      nombre: data.nombre || "",
-      grado: data.grado || "",
-      telefono: data.telefono || "",
-      unidad: data.unidad || "",
-      subunidad: data.subunidad || "",
-      estacion: data.estacion || "",
-      organico: data.organico || "",
-      esOficial: esOficial
-    };
+  cedula: data.cedula || "",
+  nombre: data.nombre || "",
+  grado: data.grado || "",
+  telefono: data.telefono || "",
+  unidad: data.unidad || "",
+  subunidad: data.subunidad || "",
+  estacion: data.estacion || "",
+  organico: data.organico || "",
+  unidad_servicio_extra: data.unidad_servicio_extra || "",
+  servicio_extra: data.servicio_extra || "",
+  subunidad_servicio_extra: data.subunidad_servicio_extra || "",
+  esOficial: esOficial
+};
 
     const unidadSelect = document.getElementById("unidad_select");
 
@@ -2451,16 +2454,47 @@ console.log(
   }
 }
   
-  function inicializarModulo12() {
-  const fecha = document.getElementById("m12_fecha");
-  const unidad = document.getElementById("m12_unidad");
+  async function inicializarModulo12() {
+  try {
+    const fecha = document.getElementById("m12_fecha");
+    const selectUnidad = document.getElementById("m12_unidad");
+    const selectServicio = document.getElementById("m12_servicio");
+    const selectSubunidad = document.getElementById("m12_subunidad");
 
-  if (fecha && !fecha.value) {
-    fecha.value = new Date().toISOString().split("T")[0];
-  }
+    if (fecha && !fecha.value) {
+      fecha.value = new Date().toISOString().split("T")[0];
+    }
 
-  if (unidad) {
-    unidad.innerHTML = document.getElementById("m11_unidad")?.innerHTML || '<option value="">Seleccionar UNIDAD</option>';
+    await cargarUnidadesModulo12();
+
+    // Si el backend mandó unidad del servicio, úsala
+    const unidadServicio = String(window.responsable?.unidad_servicio_extra || "").trim();
+    const unidadBase = String(window.responsable?.unidad || "").trim();
+
+    if (selectUnidad) {
+      if (unidadServicio) {
+        selectUnidad.value = unidadServicio;
+      } else if (unidadBase) {
+        selectUnidad.value = unidadBase;
+      }
+    }
+
+    await cargarServiciosModulo12();
+
+    const servicioExtra = String(window.responsable?.servicio_extra || "").trim();
+    if (selectServicio && servicioExtra) {
+      selectServicio.value = servicioExtra;
+      await cargarSubunidadesModulo12();
+    }
+
+    const subunidadServicio = String(window.responsable?.subunidad_servicio_extra || "").trim();
+    if (selectSubunidad && subunidadServicio) {
+      selectSubunidad.value = subunidadServicio;
+      await consultarEstadoModulo12();
+    }
+
+  } catch (error) {
+    console.error("ERROR inicializarModulo12:", error);
   }
 }
 
