@@ -443,6 +443,30 @@ const puedeVerModulo11y12 = cargosServicioHoy.some(c =>
 );
 
 const puedeVerModulo12PorServicio = servicioHoyResult.rows.length > 0;
+
+let unidadServicioExtra = "";
+let servicioExtra = "";
+let subunidadServicioExtra = "";
+
+if (servicioHoyResult.rows.length > 0) {
+  const servicioDetalle = await pool.query(
+    `
+    SELECT unidad, COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') AS titulo_servicio, subunidad
+    FROM servicios_extraordinarios
+    WHERE cedula = $1
+      AND fecha = $2
+      AND COALESCE(cerrado, false) = false
+    LIMIT 1
+    `,
+    [persona.cedula, fechaHoy]
+  );
+
+  if (servicioDetalle.rows.length > 0) {
+    unidadServicioExtra = servicioDetalle.rows[0].unidad || "";
+    servicioExtra = servicioDetalle.rows[0].titulo_servicio || "";
+    subunidadServicioExtra = servicioDetalle.rows[0].subunidad || "";
+  }
+}
     
 res.json({
   ok: true,
@@ -456,11 +480,15 @@ res.json({
   subunidad: persona.subunidad || "",
   estacion: persona.estacion || "",
   organico: persona.organico || "",
+  unidad_servicio_extra: unidadServicioExtra,
+servicio_extra: servicioExtra,
+subunidad_servicio_extra: subunidadServicioExtra,
   rol,
   esOficial,
   es_admin: esAdmin,
   puedeVerModulo11y12,
   puedeVerModulo12PorServicio
+  
 });
 
   } catch (error) {
