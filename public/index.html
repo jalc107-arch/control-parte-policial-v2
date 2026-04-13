@@ -1332,28 +1332,27 @@ async function validarResponsable() {
     const rol = (data.rol || "").toUpperCase().trim();
 
     // 🔒 CONTROL BOTÓN LIMPIAR PRUEBA
-const btnLimpiar = document.getElementById("btn_limpiar_prueba");
+    const btnLimpiar = document.getElementById("btn_limpiar_prueba");
+    if (btnLimpiar) {
+      const esMiCedula = String(data.cedula || "").trim() === "86085771";
+      btnLimpiar.style.display = (esAdmin || esMiCedula) ? "inline-block" : "none";
+    }
 
-if (btnLimpiar) {
-  const esMiCedula = String(data.cedula || "").trim() === "86085771";
-
-  if (esAdmin || esMiCedula) {
-    btnLimpiar.style.display = "inline-block";
-  } else {
-    btnLimpiar.style.display = "none";
-  }
-}
+    // 🔐 PERMISOS POR MÓDULO
+    const puedeVerModulo3 =
+      esAdmin ||
+      esOficial ||
+      rol === "OPERADOR_PARTE" ||
+      rol === "ADMIN_EXCEL";
 
     const puedeVerModulo11 =
-  esAdmin ||
-  !!data.puedeVerModulo11y12;
+      esAdmin ||
+      !!data.puedeVerModulo11y12;
 
-const puedeVerModulo12 =
-  esAdmin ||
-  esOficial ||
-  rol === "ADMIN_EXCEL" ||
-  !!data.puedeVerModulo11y12 ||
-  !!data.puedeVerModulo12PorServicio;
+    const puedeVerModulo12 =
+      esAdmin ||
+      !!data.puedeVerModulo11y12 ||
+      !!data.puedeVerModulo12PorServicio;
 
     const cedulaElabora = document.getElementById("cedula_elabora");
     const nombreElabora = document.getElementById("nombre_elabora");
@@ -1429,7 +1428,11 @@ const puedeVerModulo12 =
     if (bloqueExcel) bloqueExcel.style.display = data.puedeSubirExcel ? "block" : "none";
     if (bloqueUbicacion) bloqueUbicacion.style.display = "block";
     if (bloqueNovedades) bloqueNovedades.style.display = "none";
-    if (bloqueParte) bloqueParte.style.display = "none";
+
+    // 👇 MÓDULO 3
+    if (bloqueParte) {
+      bloqueParte.style.display = puedeVerModulo3 ? "block" : "none";
+    }
 
     const puedeVerBloquesAdministrativos =
       esOficial || rol === "ADMIN_EXCEL" || esAdmin;
@@ -1461,10 +1464,12 @@ const puedeVerModulo12 =
       if (bloqueOrganico) bloqueOrganico.style.display = "none";
     }
 
+    // 👇 MÓDULO 11
     if (bloqueModulo11) {
       bloqueModulo11.style.display = puedeVerModulo11 ? "block" : "none";
     }
 
+    // 👇 MÓDULO 12
     if (bloqueModulo12) {
       bloqueModulo12.style.display = puedeVerModulo12 ? "block" : "none";
     }
