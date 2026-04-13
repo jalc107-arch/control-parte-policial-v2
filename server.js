@@ -419,9 +419,9 @@ app.post("/validar-responsable", async (req, res) => {
       esOficial ||
       rol === "ADMIN_EXCEL";
 
-    const puedeVerModulo11y12 = true;
-const puedeVerModulo12PorServicio = true;
-
+    const puedeVerModulo11y12 = false; // por ahora no tocar aquí
+let puedeVerModulo12PorServicio = true; // SOLO PRUEBA para módulo 12
+    
 res.json({
   ok: true,
   autorizado: puedeGenerarParte,
