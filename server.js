@@ -240,7 +240,11 @@ function construirOrdenGradoSQL(alias = "") {
       WHEN 'PP' THEN 13
       WHEN 'AXP' THEN 14
       ELSE 99
-    END
+    END,
+    ${pref}fecha_ascenso ASC NULLS LAST,
+    ${pref}orden_antiguedad ASC NULLS LAST,
+    ${pref}apellidos ASC,
+    ${pref}nombres ASC
   `;
 }
 
