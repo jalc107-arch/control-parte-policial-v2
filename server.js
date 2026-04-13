@@ -419,12 +419,34 @@ app.post("/validar-responsable", async (req, res) => {
       esOficial ||
       rol === "ADMIN_EXCEL";
 
-    const puedeVerModulo11y12 = false; // por ahora no tocar aquí
-let puedeVerModulo12PorServicio = true; // SOLO PRUEBA para módulo 12
+    const fechaHoy = obtenerFechaBogotaSQL();
+
+const servicioHoyResult = await pool.query(
+  `
+  SELECT UPPER(TRIM(COALESCE(cargo_servicio, ''))) AS cargo_servicio
+  FROM servicios_extraordinarios
+  WHERE cedula = $1
+    AND fecha = $2
+    AND COALESCE(cerrado, false) = false
+  `,
+  [persona.cedula, fechaHoy]
+);
+
+const cargosServicioHoy = servicioHoyResult.rows.map(r => r.cargo_servicio);
+
+const puedeVerModulo11y12 = cargosServicioHoy.some(c =>
+  c === "SUPERVISOR" ||
+  c === "JEFE DE SERVICIO" ||
+  c === "JEFE_SERVICIO" ||
+  c === "JEFE DE PMU" ||
+  c === "JEFE_PMU"
+);
+
+const puedeVerModulo12PorServicio = servicioHoyResult.rows.length > 0;
     
 res.json({
   ok: true,
-  autorizado: true,
+  autorizado: puedeGenerarParte || puedeVerModulo11y12 || puedeVerModulo12PorServicio,
   puedeSubirExcel,
   nombre: `${persona.nombres || ""} ${persona.apellidos || ""}`.trim(),
   grado: persona.grado || "",
