@@ -2454,44 +2454,44 @@ console.log(
   }
 }
   
-  async function inicializarModulo12() {
+async function inicializarModulo12() {
   try {
     const fecha = document.getElementById("m12_fecha");
-    const selectUnidad = document.getElementById("m12_unidad");
-    const selectServicio = document.getElementById("m12_servicio");
-    const selectSubunidad = document.getElementById("m12_subunidad");
+    const unidad = document.getElementById("m12_unidad");
+    const servicio = document.getElementById("m12_servicio");
+    const subunidad = document.getElementById("m12_subunidad");
 
+    // Fecha automática
     if (fecha && !fecha.value) {
       fecha.value = new Date().toISOString().split("T")[0];
     }
 
+    // 1. Cargar unidades
     await cargarUnidadesModulo12();
 
-    // Si el backend mandó unidad del servicio, úsala
-    const unidadServicio = String(window.responsable?.unidad_servicio_extra || "").trim();
-    const unidadBase = String(window.responsable?.unidad || "").trim();
-
-    if (selectUnidad) {
-      if (unidadServicio) {
-        selectUnidad.value = unidadServicio;
-      } else if (unidadBase) {
-        selectUnidad.value = unidadBase;
-      }
+    // 2. Asignar unidad del servicio
+    if (unidad && window.responsable?.unidad_servicio_extra) {
+      unidad.value = window.responsable.unidad_servicio_extra;
     }
 
+    // 3. Cargar servicios
     await cargarServiciosModulo12();
 
-    const servicioExtra = String(window.responsable?.servicio_extra || "").trim();
-    if (selectServicio && servicioExtra) {
-      selectServicio.value = servicioExtra;
-      await cargarSubunidadesModulo12();
+    // 4. Asignar servicio
+    if (servicio && window.responsable?.servicio_extra) {
+      servicio.value = window.responsable.servicio_extra;
     }
 
-    const subunidadServicio = String(window.responsable?.subunidad_servicio_extra || "").trim();
-    if (selectSubunidad && subunidadServicio) {
-      selectSubunidad.value = subunidadServicio;
-      await consultarEstadoModulo12();
+    // 5. Cargar subunidades
+    await cargarSubunidadesModulo12();
+
+    // 6. Asignar subunidad
+    if (subunidad && window.responsable?.subunidad_servicio_extra) {
+      subunidad.value = window.responsable.subunidad_servicio_extra;
     }
+
+    // 7. Consultar estado
+    await consultarEstadoModulo12();
 
   } catch (error) {
     console.error("ERROR inicializarModulo12:", error);
