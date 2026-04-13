@@ -2029,7 +2029,7 @@ app.post("/config/parte-extra-global", async (req, res) => {
   try {
     const { activo } = req.body;
 
-   await pool.query(
+  await pool.query(
   `
   INSERT INTO configuracion_sistema (clave, valor)
   VALUES ('parte_extra_global', $1)
