@@ -2307,25 +2307,25 @@ app.get("/modulo11-parte-extra", async (req, res) => {
     );
 
     const controles = await pool.query(
-  `
-  SELECT
-    cedula,
-    subunidad,
-    estado_control,
-    observacion,
-    es_reemplazo_manual,
-    reemplaza_a_cedula,
-    grado,
-    apellidos,
-    nombres,
-    telefono
-  FROM modulo11_control_servicio
-  WHERE fecha = $1
-    AND unidad = $2
-    AND titulo_servicio = $3
-  `,
-  [fecha, unidad, servicio]
-);
+      `
+      SELECT
+        cedula,
+        subunidad,
+        estado_control,
+        observacion,
+        es_reemplazo_manual,
+        reemplaza_a_cedula,
+        grado,
+        apellidos,
+        nombres,
+        telefono
+      FROM modulo11_control_servicio
+      WHERE fecha = $1
+        AND unidad = $2
+        AND titulo_servicio = $3
+      `,
+      [fecha, unidad, servicio]
+    );
 
     const partes12 = await pool.query(
       `
@@ -2348,32 +2348,32 @@ app.get("/modulo11-parte-extra", async (req, res) => {
     );
 
     const mapaControl = {};
-const reemplazosManuales = [];
+    const reemplazosManuales = [];
 
-controles.rows.forEach(r => {
-  const esReemplazoManual = !!r.es_reemplazo_manual;
+    controles.rows.forEach(r => {
+      const esReemplazoManual = !!r.es_reemplazo_manual;
 
-  if (esReemplazoManual) {
-    reemplazosManuales.push({
-      subunidad: String(r.subunidad || "SIN SUBUNIDAD").trim(),
-      grado: r.grado || "",
-      apellidos: r.apellidos || "",
-      nombres: r.nombres || "",
-      cedula: r.cedula || "",
-      telefono: r.telefono || "",
-      estado_control: String(r.estado_control || "REEMPLAZO").trim().toUpperCase(),
-      observacion: r.observacion || "",
-      es_reemplazo_manual: true,
-      reemplaza_a_cedula: r.reemplaza_a_cedula || ""
+      if (esReemplazoManual) {
+        reemplazosManuales.push({
+          subunidad: String(r.subunidad || "SIN SUBUNIDAD").trim(),
+          grado: r.grado || "",
+          apellidos: r.apellidos || "",
+          nombres: r.nombres || "",
+          cedula: r.cedula || "",
+          telefono: r.telefono || "",
+          estado_control: String(r.estado_control || "REEMPLAZO").trim().toUpperCase(),
+          observacion: r.observacion || "",
+          es_reemplazo_manual: true,
+          reemplaza_a_cedula: r.reemplaza_a_cedula || ""
+        });
+        return;
+      }
+
+      mapaControl[`${String(r.subunidad || "").trim()}__${String(r.cedula || "").trim()}`] = {
+        estado_control: String(r.estado_control || "").trim().toUpperCase(),
+        observacion: r.observacion || ""
+      };
     });
-    return;
-  }
-
-  mapaControl[`${String(r.subunidad || "").trim()}__${String(r.cedula || "").trim()}`] = {
-    estado_control: String(r.estado_control || "").trim().toUpperCase(),
-    observacion: r.observacion || ""
-  };
-});
 
     const mapaParte12 = {};
     partes12.rows.forEach(r => {
@@ -2392,44 +2392,43 @@ controles.rows.forEach(r => {
 
     const agrupado = {};
 
-servicios.rows.forEach(p => {
-  const sub = String(p.subunidad || "SIN SUBUNIDAD").trim();
-  if (!agrupado[sub]) agrupado[sub] = [];
+    servicios.rows.forEach(p => {
+      const sub = String(p.subunidad || "SIN SUBUNIDAD").trim();
+      if (!agrupado[sub]) agrupado[sub] = [];
 
-  const key = `${sub}__${String(p.cedula || "").trim()}`;
-  const control = mapaControl[key] || {};
+      const key = `${sub}__${String(p.cedula || "").trim()}`;
+      const control = mapaControl[key] || {};
 
-  agrupado[sub].push({
-    ...p,
-    estado_control: control.estado_control
-      ? String(control.estado_control).trim().toUpperCase()
-      : "",
-    observacion: control.observacion || ""
-  });
-});
+      agrupado[sub].push({
+        ...p,
+        estado_control: control.estado_control
+          ? String(control.estado_control).trim().toUpperCase()
+          : "",
+        observacion: control.observacion || ""
+      });
+    });
 
-// 🔥 agregar reemplazos manuales al mismo agrupado
-reemplazosManuales.forEach(r => {
-  const sub = String(r.subunidad || "SIN SUBUNIDAD").trim();
-  if (!agrupado[sub]) agrupado[sub] = [];
+    reemplazosManuales.forEach(r => {
+      const sub = String(r.subunidad || "SIN SUBUNIDAD").trim();
+      if (!agrupado[sub]) agrupado[sub] = [];
 
-  agrupado[sub].push({
-    grado: r.grado || "",
-    apellidos: r.apellidos || "",
-    nombres: r.nombres || "",
-    cedula: r.cedula || "",
-    telefono: r.telefono || "",
-    unidad,
-    subunidad: sub,
-    estacion: "",
-    organico: "",
-    estado_control: r.estado_control || "REEMPLAZO",
-    observacion: r.observacion || "",
-    es_reemplazo_manual: true,
-    reemplaza_a_cedula: r.reemplaza_a_cedula || ""
-  });
-});
-    
+      agrupado[sub].push({
+        grado: r.grado || "",
+        apellidos: r.apellidos || "",
+        nombres: r.nombres || "",
+        cedula: r.cedula || "",
+        telefono: r.telefono || "",
+        unidad,
+        subunidad: sub,
+        estacion: "",
+        organico: "",
+        estado_control: r.estado_control || "REEMPLAZO",
+        observacion: r.observacion || "",
+        es_reemplazo_manual: true,
+        reemplaza_a_cedula: r.reemplaza_a_cedula || ""
+      });
+    });
+
     const resumen = Object.keys(agrupado).sort().map(subunidad => {
       const parte12 = mapaParte12[subunidad] || {
         estado_parte: "NO HAN DADO PARTE",
@@ -2586,7 +2585,7 @@ app.get("/modulo11-detalle", async (req, res) => {
       return {
         ...p,
         estado_control: control.estado_control
-          ? String(control.estado_control).trim().toUpperCase()
+          ? String(control.estado_control || "").trim().toUpperCase()
           : "",
         observacion: control.observacion || "",
         es_reemplazo_manual: !!control.es_reemplazo_manual,
