@@ -242,6 +242,7 @@ function construirOrdenGradoSQL(alias = "") {
       ELSE 99
     END,
     ${pref}fecha_ascenso ASC NULLS LAST,
+    ${pref}puesto ASC NULLS LAST,
     ${pref}orden_antiguedad ASC NULLS LAST,
     ${pref}apellidos ASC,
     ${pref}nombres ASC
