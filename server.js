@@ -2300,7 +2300,7 @@ app.get("/modulo11-parte-extra", async (req, res) => {
       WHERE s.fecha = $1
         AND s.unidad = $2
         AND COALESCE(s.titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
-      ORDER BY s.subunidad, ${construirOrdenGradoSQL("P")}, s.apellidos, s.nombres
+      ORDER BY s.subunidad, ${construirOrdenGradoSQL("p")}
       `,
       [fecha, unidad, servicio]
     );
@@ -2549,7 +2549,7 @@ app.get("/modulo11-detalle", async (req, res) => {
         AND s.unidad = $2
         AND s.subunidad = $3
         AND COALESCE(s.titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $4
-      ORDER BY ${construirOrdenGradoSQL("P")}, s.apellidos, s.nombres
+      ORDER BY ${construirOrdenGradoSQL("p")}
       `,
       [fecha, unidad, subunidad, servicio]
     );
@@ -2775,6 +2775,24 @@ app.post("/modulo12-iniciar-parte", async (req, res) => {
       hour12: false
     }).format(new Date());
 
+const servicioCerrado = await pool.query(
+  `
+  SELECT COALESCE(BOOL_OR(COALESCE(cerrado, false)), false) AS cerrado
+  FROM servicios_extraordinarios
+  WHERE fecha = $1
+    AND unidad = $2
+    AND COALESCE(titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
+  `,
+  [fecha, unidad, servicio]
+);
+
+if (servicioCerrado.rows[0]?.cerrado) {
+  return res.json({
+    ok: false,
+    error: "El servicio ya fue cerrado en módulo 11 y no se puede modificar en módulo 12"
+  });
+}
+    
     await pool.query(
       `
       INSERT INTO modulo12_partes (
