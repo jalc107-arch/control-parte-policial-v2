@@ -2300,7 +2300,7 @@ app.get("/modulo11-parte-extra", async (req, res) => {
       WHERE s.fecha = $1
         AND s.unidad = $2
         AND COALESCE(s.titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $3
-      ORDER BY s.subunidad, ${construirOrdenGradoSQL("s")}, s.apellidos, s.nombres
+      ORDER BY s.subunidad, ${construirOrdenGradoSQL("P")}, s.apellidos, s.nombres
       `,
       [fecha, unidad, servicio]
     );
@@ -2549,7 +2549,7 @@ app.get("/modulo11-detalle", async (req, res) => {
         AND s.unidad = $2
         AND s.subunidad = $3
         AND COALESCE(s.titulo_servicio, 'SERVICIO EXTRAORDINARIO') = $4
-      ORDER BY ${construirOrdenGradoSQL("s")}, s.apellidos, s.nombres
+      ORDER BY ${construirOrdenGradoSQL("P")}, s.apellidos, s.nombres
       `,
       [fecha, unidad, subunidad, servicio]
     );
