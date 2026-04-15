@@ -858,6 +858,37 @@
     <div class="sub-card">
   <h3>7.3 Dependencias que apoyan</h3>
 
+  <div class="sub-card" style="margin-top:15px;">
+
+  <h3>Configuración de distribución</h3>
+
+  <!-- NIVEL -->
+  <label><b>Nivel de distribución:</b></label>
+  <select id="nivelDistribucion" class="input-select">
+    <option value="unidad">Unidad</option>
+    <option value="estacion">Unidad - Estación/Grupo</option>
+    <option value="organico">Unidad - Estación - Orgánico</option>
+  </select>
+
+  <br><br>
+
+  <!-- ROLES -->
+  <label><b>Incluir roles:</b></label><br>
+  <label><input type="checkbox" id="chkSupervisor"> Supervisor</label><br>
+  <label><input type="checkbox" id="chkJefeServicio"> Jefe de servicio</label><br>
+  <label><input type="checkbox" id="chkPMU"> Jefe PMU</label>
+
+  <br><br>
+
+  <!-- EXCLUSIÓN -->
+  <label><b>Excluir grados:</b></label><br>
+  <label><input type="checkbox" value="CT" class="excluirGrado"> CT</label>
+  <label><input type="checkbox" value="MY" class="excluirGrado"> MY</label>
+  <label><input type="checkbox" value="CAP" class="excluirGrado"> CAP</label>
+  <label><input type="checkbox" value="TEN" class="excluirGrado"> TEN</label>
+
+</div>
+
   <div class="campo-corto">
     <select id="unidad_apoyo_extra" onchange="cargarSubunidadesApoyoExtraDependiente()">
       <option value="">Seleccionar UNIDAD</option>
