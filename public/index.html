@@ -7433,57 +7433,52 @@ function cargarOrganicosApoyoExtraDependiente() {
     document.querySelectorAll('#checks_estacion_apoyo_extra input[type="checkbox"]:checked')
   ).map(c => String(c.value || "").trim());
 
-  let filtrados = estructuraGlobal.filter(x =>
-    String(x.unidad || "").trim() === unidad
+  let base = extraerDisponiblesConsulta().filter(p =>
+    String(p.unidad || "").trim() === unidad
   );
 
   if (subunidadesMarcadas.length) {
-    filtrados = filtrados.filter(x =>
-      subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    base = base.filter(p =>
+      subunidadesMarcadas.includes(String(p.subunidad || "").trim())
     );
   }
 
   if (estacionesMarcadas.length) {
-    filtrados = filtrados.filter(x => {
-      const sub = String(x.subunidad || "").trim();
-      const est = String(x.estacion || "").trim();
-      const compuesto = `${sub} - ${est}`;
-      return estacionesMarcadas.includes(compuesto);
+    base = base.filter(p => {
+      const sub = String(p.subunidad || "").trim();
+      const est = String(p.estacion || "").trim();
+      return estacionesMarcadas.includes(`${sub} - ${est}`);
     });
   }
 
   if (nivel !== "organico") {
-    contenedorOrg.innerHTML = `<div class="ayuda">El nivel actual no requiere selección de orgánico.</div>`;
+    contenedorOrg.innerHTML = `<div class="ayuda">En este nivel no se requiere seleccionar orgánico.</div>`;
     actualizarRutaApoyoExtra();
     return;
   }
 
-  const opciones = [
-    ...new Map(
-      filtrados
-        .map(x => {
-          const sub = String(x.subunidad || "").trim();
-          const est = String(x.estacion || "").trim();
-          const org = String(x.organico || "").trim();
-          if (!sub || !est || !org) return null;
+  const organicos = [
+    ...new Set(
+      base
+        .map(p => {
+          const sub = String(p.subunidad || "").trim();
+          const est = String(p.estacion || "").trim();
+          const org = String(p.organico || "").trim();
+          if (!sub || !est || !org) return "";
           return `${sub} - ${est} - ${org}`;
         })
         .filter(Boolean)
-        .map(nombre => [
-          nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
-          nombre
-        ])
-    ).values()
+    )
   ].sort((a, b) => a.localeCompare(b, "es"));
 
-  contenedorOrg.innerHTML = opciones.map(op => `
+  contenedorOrg.innerHTML = organicos.map(org => `
     <label class="item-check">
       <input
         type="checkbox"
-        value="${op}"
+        value="${org}"
         onchange="actualizarRutaApoyoExtra();"
       >
-      ${op}
+      ${org}
     </label>
   `).join("");
 
@@ -7604,20 +7599,16 @@ function cargarSubunidadesApoyoExtraDependiente() {
 
   if (!unidad) return;
 
-  let filtrados = estructuraGlobal.filter(x =>
-    String(x.unidad || "").trim() === unidad
+  const base = extraerDisponiblesConsulta().filter(p =>
+    String(p.unidad || "").trim() === unidad
   );
 
   const subunidades = [
-    ...new Map(
-      filtrados
-        .map(x => String(x.subunidad || "").trim())
+    ...new Set(
+      base
+        .map(p => String(p.subunidad || "").trim())
         .filter(Boolean)
-        .map(nombre => [
-          nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
-          nombre
-        ])
-    ).values()
+    )
   ].sort((a, b) => a.localeCompare(b, "es"));
 
   contenedorSub.innerHTML = subunidades.map(sub => `
@@ -7625,7 +7616,7 @@ function cargarSubunidadesApoyoExtraDependiente() {
       <input
         type="checkbox"
         value="${sub}"
-        onchange="cargarEstacionesApoyoExtraDependiente(); cargarOrganicosApoyoExtraDependiente();"
+        onchange="cargarEstacionesApoyoExtraDependiente(); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();"
       >
       ${sub}
     </label>
@@ -7651,51 +7642,43 @@ function cargarEstacionesApoyoExtraDependiente() {
     document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]:checked')
   ).map(c => String(c.value || "").trim());
 
-  let filtrados = estructuraGlobal.filter(x =>
-    String(x.unidad || "").trim() === unidad
+  let base = extraerDisponiblesConsulta().filter(p =>
+    String(p.unidad || "").trim() === unidad
   );
 
   if (subunidadesMarcadas.length) {
-    filtrados = filtrados.filter(x =>
-      subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    base = base.filter(p =>
+      subunidadesMarcadas.includes(String(p.subunidad || "").trim())
     );
   }
 
-  let opciones = [];
-
   if (nivel === "subunidad") {
-    contenedorEst.innerHTML = `<div class="ayuda">En nivel Subunidad no se requiere seleccionar estación o grupo.</div>`;
+    contenedorEst.innerHTML = `<div class="ayuda">En este nivel no se requiere seleccionar estación o grupo.</div>`;
     actualizarRutaApoyoExtra();
     return;
   }
 
-  if (nivel === "estacion" || nivel === "organico") {
-    opciones = [
-      ...new Map(
-        filtrados
-          .map(x => {
-            const sub = String(x.subunidad || "").trim();
-            const est = String(x.estacion || "").trim();
-            if (!sub || !est) return null;
-            return `${sub} - ${est}`;
-          })
-          .filter(Boolean)
-          .map(nombre => [
-            nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
-            nombre
-          ])
-      ).values()
-    ].sort((a, b) => a.localeCompare(b, "es"));
-  }
+  const estaciones = [
+    ...new Set(
+      base
+        .map(p => {
+          const sub = String(p.subunidad || "").trim();
+          const est = String(p.estacion || "").trim();
+          if (!sub || !est) return "";
+          return `${sub} - ${est}`;
+        })
+        .filter(Boolean)
+    )
+  ].sort((a, b) => a.localeCompare(b, "es"));
 
-  contenedorEst.innerHTML = opciones.map(op => `
+  contenedorEst.innerHTML = estaciones.map(est => `
     <label class="item-check">
       <input
         type="checkbox"
-        value="${op}"
-        onchange="cargarOrganicosApoyoExtraDependiente();"
+        value="${est}"
+        onchange="cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();"
       >
-      ${op}
+      ${est}
     </label>
   `).join("");
 
