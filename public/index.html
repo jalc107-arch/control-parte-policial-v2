@@ -3559,16 +3559,20 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   }
 
   let historial = {};
-try {
-  historial = await obtenerHistorialServicios();
-} catch (error) {
-  console.error("No se pudo cargar historial, se continúa sin historial:", error);
-  historial = {};
-}
+  try {
+    historial = await obtenerHistorialServicios();
+    console.log("RESPUESTA HISTORIAL USADA:", historial);
+  } catch (e) {
+    console.error("No se pudo cargar historial, se continúa sin historial:", e);
+    historial = {};
+  }
+
   const seleccionadosFinales = [];
   const usados = new Set();
 
-  const tarjetas = Array.from(document.querySelectorAll("#contenedor_distribucion_extra .sub-card, #contenedor_distribucion_extra .tabla-wrap"));
+  const tarjetas = Array.from(
+    document.querySelectorAll("#contenedor_distribucion_extra .sub-card, #contenedor_distribucion_extra .tabla-wrap")
+  );
 
   if (!tarjetas.length) {
     alert("Primero debes generar la distribución por dependencia.");
@@ -3596,23 +3600,39 @@ try {
     if (!titulo) continue;
 
     const partes = titulo.split(" - ").map(x => String(x || "").trim()).filter(Boolean);
-    if (partes.length < 3) continue;
+    if (partes.length < 2) continue;
 
     const unidadDep = partes[0] || "";
-    const subunidadDep = partes[1] || "";
-    const estacionDep = partes.slice(2).join(" - ").trim();
-
-    if (!unidadDep || !subunidadDep || !estacionDep) continue;
-
-    const claveBase = `${subunidadDep}__${estacionDep}`;
+    const claveDependencia = partes.slice(1).join(" - ").trim();
+    const claveBase = claveDependencia.replace(/[^a-zA-Z0-9]/g, "_");
 
     const distribucion = [
-      { grupo: "OF", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CR`)?.value || "0", 10), cargo: "OFICIALES" },
-      { grupo: "NE", cantidad: parseInt(document.getElementById(`extra_${claveBase}_CM`)?.value || "0", 10), cargo: "EJECUTIVO" },
-      { grupo: "PT", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PT`)?.value || "0", 10), cargo: "PATRULLEROS" },
-      { grupo: "PP", cantidad: parseInt(document.getElementById(`extra_${claveBase}_PP`)?.value || "0", 10), cargo: "PATRULLEROS DE POLICIA" },
-      { grupo: "AXP", cantidad: parseInt(document.getElementById(`extra_${claveBase}_AXP`)?.value || "0", 10), cargo: "AUXILIARES" }
+      { grupo: "OF", cantidad: 0, cargo: "OFICIALES" },
+      { grupo: "NE", cantidad: 0, cargo: "EJECUTIVO" },
+      { grupo: "PT", cantidad: 0, cargo: "PATRULLEROS" },
+      { grupo: "PP", cantidad: 0, cargo: "PATRULLEROS DE POLICIA" },
+      { grupo: "AXP", cantidad: 0, cargo: "AUXILIARES" }
     ];
+
+    const inputs = tarjeta.querySelectorAll(".input-cantidad-extra");
+    inputs.forEach(input => {
+      const id = String(input.id || "");
+      const partesId = id.split("_");
+      const gradoInput = String(partesId[partesId.length - 1] || "").trim().toUpperCase();
+      const valor = parseInt(input.value || "0", 10) || 0;
+
+      if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(gradoInput)) {
+        distribucion[0].cantidad += valor;
+      } else if (["CM", "SC", "IJ", "IT", "SI"].includes(gradoInput)) {
+        distribucion[1].cantidad += valor;
+      } else if (gradoInput === "PT") {
+        distribucion[2].cantidad += valor;
+      } else if (gradoInput === "PP") {
+        distribucion[3].cantidad += valor;
+      } else if (gradoInput === "AXP") {
+        distribucion[4].cantidad += valor;
+      }
+    });
 
     for (const item of distribucion) {
       const cantidad = isNaN(item.cantidad) ? 0 : item.cantidad;
@@ -3621,16 +3641,24 @@ try {
       const candidatos = window.ultimoResultadoConsulta.filter(p => {
         const ced = String(p.cedula || "").trim();
         const unidadP = String(p.unidad || "").trim();
-        const subunidadP = String(p.subunidad || "").trim();
-        const estacionP = String(p.estacion || "").trim();
         const gradoP = String(p.grado || "").trim().toUpperCase();
         const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
         const aptitud = String(p.aptitud || "").trim().toUpperCase();
 
+        let dependenciaP = "";
+        const nivel = document.getElementById("nivelDistribucion")?.value || "estacion";
+
+        if (nivel === "subunidad") {
+          dependenciaP = String(p.subunidad || "").trim();
+        } else if (nivel === "estacion") {
+          dependenciaP = `${String(p.subunidad || "").trim()} - ${String(p.estacion || "").trim()}`.replace(/\s+/g, " ").trim();
+        } else {
+          dependenciaP = `${String(p.subunidad || "").trim()} - ${String(p.estacion || "").trim()} - ${String(p.organico || "").trim()}`.replace(/\s+/g, " ").trim();
+        }
+
         return (
           unidadP === unidadDep &&
-          subunidadP === subunidadDep &&
-          estacionP === estacionDep &&
+          dependenciaP === claveDependencia &&
           !usados.has(ced) &&
           !ocupadosSet.has(ced) &&
           ced !== supervisorCedula &&
@@ -3647,14 +3675,17 @@ try {
         const vecesB = historial[String(b.cedula || "").trim()] || 0;
 
         if (vecesA !== vecesB) return vecesA - vecesB;
-        return Math.random() - 0.5;
+
+        const nombreA = `${a.apellidos || ""} ${a.nombres || ""}`.trim();
+        const nombreB = `${b.apellidos || ""} ${b.nombres || ""}`.trim();
+        return nombreA.localeCompare(nombreB, "es");
       });
 
       const elegidos = candidatosOrdenados.slice(0, cantidad);
 
       if (elegidos.length < cantidad) {
         alert(
-          `No hay suficientes ${item.cargo} disponibles en ${unidadDep} - ${subunidadDep} - ${estacionDep}. Solicitaste ${cantidad} y solo hay ${elegidos.length}.`
+          `No hay suficientes ${item.cargo} disponibles en ${unidadDep} - ${claveDependencia}. Solicitaste ${cantidad} y solo hay ${elegidos.length}.`
         );
         return;
       }
@@ -3728,6 +3759,7 @@ try {
   listaFinal.push(...seleccionadosFinales);
 
   if (!listaFinal.length) {
+    console.error("No se generó lista final. seleccionadosFinales:", seleccionadosFinales);
     alert("No se pudo generar personal.");
     return;
   }
@@ -3737,12 +3769,14 @@ try {
     estadoExtra: "SI"
   }));
 
-  window.listaExtra = ordenarListaExtraPorGrado(
-    listaFinal.map(p => ({
-      ...p,
-      estadoExtra: "SI"
-    }))
-  );
+  window.listaExtra = typeof ordenarListaExtraPorGrado === "function"
+    ? ordenarListaExtraPorGrado(
+        listaFinal.map(p => ({
+          ...p,
+          estadoExtra: "SI"
+        }))
+      )
+    : listaFinal;
 
   let texto = "";
   texto += `SERVICIO EXTRAORDINARIO AJUSTADO\n\n`;
