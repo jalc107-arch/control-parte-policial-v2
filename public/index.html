@@ -775,20 +775,35 @@
   <div class="filtro-box">
     <div class="filtro-titulo">Cargos requeridos para el servicio</div>
 
-    <div class="fila-grados-excluir" style="display:flex; flex-wrap:wrap; gap:18px; align-items:center; margin-top:8px;">
-      <label style="display:flex; align-items:center; gap:6px;">
-        <input type="checkbox" id="requiere_supervisor" onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();">
-        Requiere supervisor
+    <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:center; margin-top:10px;">
+      <label style="display:flex; align-items:center; gap:8px; min-width:220px; font-weight:600; color:#122033; margin:0;">
+        <input
+          type="checkbox"
+          id="requiere_supervisor"
+          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();"
+          style="margin:0;"
+        >
+        <span>Requiere supervisor</span>
       </label>
 
-      <label style="display:flex; align-items:center; gap:6px;">
-        <input type="checkbox" id="requiere_jefe_servicio" onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();">
-        Requiere jefe de servicio
+      <label style="display:flex; align-items:center; gap:8px; min-width:250px; font-weight:600; color:#122033; margin:0;">
+        <input
+          type="checkbox"
+          id="requiere_jefe_servicio"
+          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();"
+          style="margin:0;"
+        >
+        <span>Requiere jefe de servicio</span>
       </label>
 
-      <label style="display:flex; align-items:center; gap:6px;">
-        <input type="checkbox" id="requiere_jefe_pmu" onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();">
-        Requiere jefe PMU
+      <label style="display:flex; align-items:center; gap:8px; min-width:220px; font-weight:600; color:#122033; margin:0;">
+        <input
+          type="checkbox"
+          id="requiere_jefe_pmu"
+          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();"
+          style="margin:0;"
+        >
+        <span>Requiere jefe PMU</span>
       </label>
     </div>
   </div>
