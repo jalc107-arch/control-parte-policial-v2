@@ -1959,7 +1959,6 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
     const esOficial = esGradoOficial(gradoLimpio);
     const esAdmin = rolLimpio === "ADMIN_EXCEL";
 
-    // 🔒 Validación
     if (!esOficial && !esAdmin) {
       return res.status(403).json({
         ok: false,
@@ -1977,7 +1976,7 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
         subunidad,
         estacion,
         organico,
-        COUNT(*) AS veces,
+        COUNT(*)::int AS veces,
         MIN(fecha) AS primera_vez,
         MAX(fecha) AS ultima_vez
       FROM servicios_extraordinarios
@@ -2028,10 +2027,37 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
     }
 
     query += `
-      GROUP BY grado, apellidos, nombres, cedula, unidad, subunidad, estacion, organico
+      GROUP BY
+        grado,
+        apellidos,
+        nombres,
+        cedula,
+        unidad,
+        subunidad,
+        estacion,
+        organico
       ORDER BY
-        ${construirOrdenGradoSQL()}
-        `;
+        CASE UPPER(TRIM(grado))
+          WHEN 'CR' THEN 1
+          WHEN 'TC' THEN 2
+          WHEN 'MY' THEN 3
+          WHEN 'CT' THEN 4
+          WHEN 'TE' THEN 5
+          WHEN 'ST' THEN 6
+          WHEN 'CM' THEN 7
+          WHEN 'SC' THEN 8
+          WHEN 'IJ' THEN 9
+          WHEN 'IT' THEN 10
+          WHEN 'SI' THEN 11
+          WHEN 'PT' THEN 12
+          WHEN 'PP' THEN 13
+          WHEN 'AXP' THEN 14
+          ELSE 99
+        END,
+        apellidos ASC,
+        nombres ASC,
+        cedula ASC
+    `;
 
     const result = await pool.query(query, params);
 
