@@ -552,24 +552,27 @@
 }
     
     /* ===== CARGOS REQUERIDOS (MÓDULO 7) ===== */
+/* ===== CARGOS REQUERIDOS (MÓDULO 7) ===== */
 .cargos-requeridos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
   margin-top: 10px;
 }
 
 .card-cargo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  justify-content: center;
+  gap: 8px;
+  min-height: 58px;
+  padding: 10px 12px;
   border: 1px solid #D9E2EC;
   border-radius: 10px;
   background: #F8FAFC;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 220px;
+  text-align: center;
 }
 
 .card-cargo:hover {
@@ -578,22 +581,63 @@
 }
 
 .card-cargo input {
-  transform: scale(1.2);
+  width: auto;
+  margin: 0;
+  transform: scale(1.05);
 }
 
 .card-cargo span {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.15;
   color: #122033;
 }
 
 .card-cargo.activo {
   background: #0B1F3A;
-  color: #fff;
   border-color: #0B1F3A;
 }
 
 .card-cargo.activo span {
-  color: #fff;
+  color: #FFFFFF;
+}
+
+/* texto más pequeño para selección de personal */
+#supervisor_servicio_box,
+#jefe_servicio_box,
+#jefe_pmu_box {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+#supervisor_servicio_box .item-check,
+#jefe_servicio_box .item-check,
+#jefe_pmu_box .item-check {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 4px 2px;
+  margin-bottom: 4px;
+  color: #122033;
+}
+
+#supervisor_servicio_box input[type="radio"],
+#jefe_servicio_box input[type="radio"],
+#jefe_pmu_box input[type="radio"] {
+  width: auto;
+  margin-right: 6px;
+  transform: scale(0.9);
+}
+
+@media (max-width: 768px) {
+  .cargos-requeridos {
+    grid-template-columns: 1fr;
+  }
+
+  .card-cargo {
+    justify-content: flex-start;
+    text-align: left;
+  }
 }
     
 </style>
