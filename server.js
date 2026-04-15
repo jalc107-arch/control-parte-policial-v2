@@ -1279,7 +1279,7 @@ function excelFechaAISO(valor) {
 // ==============================
 // GUARDA PARTE PDF
 // ==============================
-app.post("/guardar-parte-pdf", async (req, res) => {
+app.post("/guardar-parte-pdf", upload.single("foto_parte"), async (req, res) => {
   const {
     tipo,
     unidad,
@@ -1297,6 +1297,13 @@ app.post("/guardar-parte-pdf", async (req, res) => {
   const esOficial = esGradoOficial(grado);
 
   try {
+    // 🔴 VALIDAR FOTO EN BACKEND
+if (!req.file) {
+  return res.status(400).json({
+    ok: false,
+    mensaje: "Debes adjuntar la fotografía del parte"
+  });
+}
     const { estado, esMediodia } = validarHorarioParte();
 
     const config = await pool.query(
