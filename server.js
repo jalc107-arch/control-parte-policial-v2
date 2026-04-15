@@ -1959,12 +1959,12 @@ app.post("/historial-servicio-extraordinario", async (req, res) => {
     const esOficial = esGradoOficial(gradoLimpio);
     const esAdmin = rolLimpio === "ADMIN_EXCEL";
 
-    if (!esOficial && !esAdmin) {
-      return res.status(403).json({
-        ok: false,
-        error: "No autorizado para consultar historial"
-      });
-    }
+   // if (!esOficial && !esAdmin) {
+//   return res.status(403).json({
+//     ok: false,
+//     error: "No autorizado"
+//   });
+// }
 
     let query = `
       SELECT
