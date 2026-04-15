@@ -653,13 +653,37 @@ app.get("/estructura", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT DISTINCT
-        unidad,
-        subunidad,
-        estacion,
-        organico
+        TRIM(UPPER(unidad)) AS unidad,
+        TRIM(
+          UPPER(
+            TRANSLATE(
+              COALESCE(subunidad, ''),
+              'ÁÉÍÓÚáéíóúÑñ',
+              'AEIOUaeiouNn'
+            )
+          )
+        ) AS subunidad,
+        TRIM(
+          UPPER(
+            TRANSLATE(
+              COALESCE(estacion, ''),
+              'ÁÉÍÓÚáéíóúÑñ',
+              'AEIOUaeiouNn'
+            )
+          )
+        ) AS estacion,
+        TRIM(
+          UPPER(
+            TRANSLATE(
+              COALESCE(organico, ''),
+              'ÁÉÍÓÚáéíóúÑñ',
+              'AEIOUaeiouNn'
+            )
+          )
+        ) AS organico
       FROM personal
       WHERE activo = true
-      ORDER BY unidad, subunidad, estacion, organico
+      ORDER BY 1,2,3,4
     `);
 
     res.json(result.rows);
