@@ -6921,17 +6921,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.addEventListener("change", (e) => {
-  if (
-    e.target?.name === "supervisor_servicio" ||
-    e.target?.name === "jefe_servicio" ||
-    e.target?.name === "jefe_pmu" ||
-    e.target?.id === "chkSupervisor" ||
-    e.target?.id === "chkJefeServicio" ||
-    e.target?.id === "chkPMU"
-  ) {
-    validarDistribucionExtra();
-  }
-});
+    if (
+      e.target?.name === "supervisor_servicio" ||
+      e.target?.name === "jefe_servicio" ||
+      e.target?.name === "jefe_pmu" ||
+      e.target?.id === "requiere_supervisor" ||
+      e.target?.id === "requiere_jefe_servicio" ||
+      e.target?.id === "requiere_jefe_pmu"
+    ) {
+      toggleCargoRequeridoExtra();
+      validarDistribucionExtra();
+    }
+
+    if (e.target.closest("#checks_subunidad_apoyo_extra")) {
+      cargarEstacionesApoyoExtraDependiente();
+      cargarOrganicosApoyoExtraDependiente();
+    }
+
+    if (e.target.closest("#checks_estacion_apoyo_extra")) {
+      cargarOrganicosApoyoExtraDependiente();
+    }
+  });
 
   fecha?.addEventListener("change", async () => {
     await cargarServiciosModulo12();
@@ -6947,7 +6957,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   subunidad?.addEventListener("change", async () => {
     await consultarEstadoModulo12();
-    limpiarPersonalModulo12();
   });
 });
 
