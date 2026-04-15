@@ -3514,6 +3514,13 @@ await consultarNovedades();
 
   if (!unidad) return alert("Debes seleccionar la unidad");
   if (!lista) return alert("No hay listado");
+
+  const fotoParte = document.getElementById("foto_parte");
+
+if (!fotoParte || !fotoParte.files || !fotoParte.files.length) {
+  alert("Debes adjuntar la fotografía del parte antes de generar.");
+  return;
+}
   
   const personas = [...lista.querySelectorAll(".persona")];
   if (!personas.length) return alert("No hay personal");
