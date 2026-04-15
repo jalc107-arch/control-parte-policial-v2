@@ -975,6 +975,8 @@
 
 <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
   <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
+
+    
     
     <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
       <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
@@ -7096,6 +7098,54 @@ if (!estacionesMarcadasActuales.length) {
   actualizarRutaDependenciaParte();
 }
 
+function cargarOrganicosApoyoExtraDependiente() {
+  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
+  const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
+  const estaciones = obtenerValoresChecks("checks_estacion_apoyo_extra");
+
+  const contenedor = document.getElementById("checks_organico_apoyo_extra");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+
+  let filtrados = estructuraGlobal.filter(x =>
+    String(x.unidad || "").trim() === String(unidad || "").trim()
+  );
+
+  if (subunidades.length) {
+    filtrados = filtrados.filter(x =>
+      subunidades.includes(String(x.subunidad || "").trim())
+    );
+  }
+
+  if (estaciones.length) {
+    filtrados = filtrados.filter(x =>
+      estaciones.includes(String(x.estacion || "").trim())
+    );
+  }
+
+  // 🔥 NORMALIZA y evita duplicados tipo FONTIBON / FONTIBÓN
+  const organicos = [
+    ...new Map(
+      filtrados
+        .map(x => String(x.organico || "").trim())
+        .filter(Boolean)
+        .map(nombre => [
+          nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
+          nombre
+        ])
+    ).values()
+  ].sort();
+
+  organicos.forEach(o => {
+    const label = document.createElement("label");
+    label.innerHTML = `
+      <input type="checkbox" value="${o}"> ${o}
+    `;
+    contenedor.appendChild(label);
+  });
+}
+  
 function cargarOrganicosMultiple() {
   const unidad = document.getElementById("unidad_select")?.value || "";
   const subunidadesMarcadas = obtenerChecksMarcados("checks_subunidad_parte");
