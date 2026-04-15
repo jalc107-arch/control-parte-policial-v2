@@ -5385,6 +5385,10 @@ function cargarResponsablesServicioExtra() {
     ? window.ultimoResultadoConsulta
     : [];
 
+  const seleccionadoSupervisor = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
+  const seleccionadoJefe = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
+  const seleccionadoPMU = document.querySelector('input[name="jefe_pmu"]:checked')?.value || "";
+
   function grupoPorGrado(grado = "") {
     const g = String(grado || "").trim().toUpperCase();
 
@@ -5426,7 +5430,6 @@ function cargarResponsablesServicioExtra() {
 
   function filtrarPorGradoRequerido(lista = [], grupoRequerido = "") {
     if (!grupoRequerido || grupoRequerido === "TODOS") return lista;
-
     return lista.filter(p => grupoPorGrado(p.grado) === grupoRequerido);
   }
 
@@ -5442,7 +5445,15 @@ function cargarResponsablesServicioExtra() {
     });
   }
 
-  function renderOpciones(box, lista, radioName, textoVacio) {
+  function excluirCedulas(lista = [], cedulas = []) {
+    const set = new Set(
+      cedulas.map(x => String(x || "").trim()).filter(Boolean)
+    );
+
+    return lista.filter(p => !set.has(String(p.cedula || "").trim()));
+  }
+
+  function renderOpciones(box, lista, radioName, textoVacio, valorSeleccionado = "") {
     box.innerHTML = "";
 
     if (!lista.length) {
@@ -5458,13 +5469,15 @@ function cargarResponsablesServicioExtra() {
       const estacion = String(p.estacion || "").trim();
       const subunidad = String(p.subunidad || "").trim();
 
+      const checked = valorSeleccionado === cedula ? "checked" : "";
+
       const label = document.createElement("label");
       label.className = "item-check";
       label.style.display = "block";
       label.style.marginBottom = "8px";
 
       label.innerHTML = `
-        <input type="radio" name="${radioName}" value="${cedula}">
+        <input type="radio" name="${radioName}" value="${cedula}" ${checked}>
         ${grado} - ${apellidos} ${nombres} - CC ${cedula}
         ${subunidad ? ` - ${subunidad}` : ""}
         ${estacion ? ` - ${estacion}` : ""}
@@ -5483,12 +5496,19 @@ function cargarResponsablesServicioExtra() {
   } else if (!gradoSupervisor) {
     supervisorBox.innerHTML = `<div class="ayuda">Debes seleccionar el grado para supervisor.</div>`;
   } else {
-    const candidatosSupervisor = filtrarPorGradoRequerido(base, gradoSupervisor);
+    let candidatosSupervisor = filtrarPorGradoRequerido(base, gradoSupervisor);
+
+    candidatosSupervisor = excluirCedulas(candidatosSupervisor, [
+      seleccionadoJefe,
+      seleccionadoPMU
+    ]);
+
     renderOpciones(
       supervisorBox,
       candidatosSupervisor,
       "supervisor_servicio",
-      "No hay candidatos disponibles para supervisor."
+      "No hay candidatos disponibles para supervisor.",
+      seleccionadoSupervisor
     );
   }
 
@@ -5498,12 +5518,19 @@ function cargarResponsablesServicioExtra() {
   } else if (!gradoJefe) {
     jefeBox.innerHTML = `<div class="ayuda">Debes seleccionar el grado para jefe de servicio.</div>`;
   } else {
-    const candidatosJefe = filtrarPorGradoRequerido(base, gradoJefe);
+    let candidatosJefe = filtrarPorGradoRequerido(base, gradoJefe);
+
+    candidatosJefe = excluirCedulas(candidatosJefe, [
+      seleccionadoSupervisor,
+      seleccionadoPMU
+    ]);
+
     renderOpciones(
       jefeBox,
       candidatosJefe,
       "jefe_servicio",
-      "No hay candidatos disponibles para jefe de servicio."
+      "No hay candidatos disponibles para jefe de servicio.",
+      seleccionadoJefe
     );
   }
 
@@ -5513,12 +5540,19 @@ function cargarResponsablesServicioExtra() {
   } else if (!gradoPMU) {
     pmuBox.innerHTML = `<div class="ayuda">Debes seleccionar el grado para jefe de PMU.</div>`;
   } else {
-    const candidatosPMU = filtrarPorGradoRequerido(base, gradoPMU);
+    let candidatosPMU = filtrarPorGradoRequerido(base, gradoPMU);
+
+    candidatosPMU = excluirCedulas(candidatosPMU, [
+      seleccionadoSupervisor,
+      seleccionadoJefe
+    ]);
+
     renderOpciones(
       pmuBox,
       candidatosPMU,
       "jefe_pmu",
-      "No hay candidatos disponibles para jefe de PMU."
+      "No hay candidatos disponibles para jefe de PMU.",
+      seleccionadoPMU
     );
   }
 
@@ -6942,27 +6976,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.addEventListener("change", (e) => {
-    if (
-      e.target?.name === "supervisor_servicio" ||
-      e.target?.name === "jefe_servicio" ||
-      e.target?.name === "jefe_pmu" ||
-      e.target?.id === "requiere_supervisor" ||
-      e.target?.id === "requiere_jefe_servicio" ||
-      e.target?.id === "requiere_jefe_pmu"
-    ) {
-      toggleCargoRequeridoExtra();
-      validarDistribucionExtra();
-    }
+  if (
+    e.target?.name === "supervisor_servicio" ||
+    e.target?.name === "jefe_servicio" ||
+    e.target?.name === "jefe_pmu" ||
+    e.target?.id === "requiere_supervisor" ||
+    e.target?.id === "requiere_jefe_servicio" ||
+    e.target?.id === "requiere_jefe_pmu" ||
+    e.target?.id === "grado_supervisor_servicio" ||
+    e.target?.id === "grado_jefe_servicio" ||
+    e.target?.id === "grado_jefe_pmu"
+  ) {
+    toggleCargoRequeridoExtra();
+    cargarResponsablesServicioExtra();
+    validarDistribucionExtra();
+  }
 
-    if (e.target.closest("#checks_subunidad_apoyo_extra")) {
-      cargarEstacionesApoyoExtraDependiente();
-      cargarOrganicosApoyoExtraDependiente();
-    }
+  if (e.target.closest("#checks_subunidad_apoyo_extra")) {
+    cargarEstacionesApoyoExtraDependiente();
+    cargarOrganicosApoyoExtraDependiente();
+  }
 
-    if (e.target.closest("#checks_estacion_apoyo_extra")) {
-      cargarOrganicosApoyoExtraDependiente();
-    }
-  });
+  if (e.target.closest("#checks_estacion_apoyo_extra")) {
+    cargarOrganicosApoyoExtraDependiente();
+  }
+});
 
   fecha?.addEventListener("change", async () => {
     await cargarServiciosModulo12();
