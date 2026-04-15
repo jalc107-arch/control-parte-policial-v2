@@ -5021,7 +5021,6 @@ async function generarDistribucionExtraPorSubunidad() {
     return;
   }
 
-  // 🔥 CORRECCIÓN: asegurar coherencia de subunidades visibles
   if (!subunidadesMarcadas.length) {
     subunidadesMarcadas = [
       ...new Set(
@@ -5092,7 +5091,6 @@ async function generarDistribucionExtraPorSubunidad() {
     }
 
     clave = clave.replace(/\s+/g, " ").trim();
-
     if (!clave) return;
 
     if (!agrupado[clave]) {
@@ -5110,7 +5108,9 @@ async function generarDistribucionExtraPorSubunidad() {
 
       const grados = [
         ...new Set(
-          disponiblesGrupo.map(p => String(p.grado || "").trim().toUpperCase()).filter(Boolean)
+          disponiblesGrupo
+            .map(p => String(p.grado || "").trim().toUpperCase())
+            .filter(Boolean)
         )
       ].sort((a, b) => {
         const ia = ordenGrados.indexOf(a);
@@ -5138,7 +5138,12 @@ async function generarDistribucionExtraPorSubunidad() {
           String(p.grado || "").trim().toUpperCase() === g
         ).length;
 
-        html += `<th>${g}<br><span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span></th>`;
+        html += `
+          <th>
+            ${g}<br>
+            <span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span>
+          </th>
+        `;
       });
 
       html += `</tr></thead><tbody><tr>`;
@@ -5155,7 +5160,6 @@ async function generarDistribucionExtraPorSubunidad() {
               min="0"
               max="${cantidadDisponible}"
               value="0"
-              data-prev-value="0"
               id="extra_${idSeguro}_${g}"
               class="input-cantidad-extra"
               oninput="limitarCantidadExtra(this, ${cantidadDisponible}, '${idSeguro}', '${g}')"
@@ -5164,8 +5168,12 @@ async function generarDistribucionExtraPorSubunidad() {
         `;
       });
 
-      html += `</tr></tbody></table>
-        <pre id="resumen_${idSeguro}">0-0-0-0 = 0</pre>`;
+      html += `
+          </tr>
+          </tbody>
+        </table>
+        <pre id="resumen_${idSeguro}">0-0-0-0 = 0</pre>
+      `;
 
       bloque.innerHTML = html;
       contenedor.appendChild(bloque);
@@ -5246,12 +5254,7 @@ function obtenerTotalesDistribuidosExtra() {
     else if (auxiliaresSet.has(grado)) auxiliares += valor;
   });
 
-  return {
-    oficiales,
-    ejecutivo,
-    patrulleros,
-    auxiliares
-  };
+  return { oficiales, ejecutivo, patrulleros, auxiliares };
 } 
 
 function obtenerGrupoPorGradoExtra(grado = "") {
@@ -5269,7 +5272,6 @@ function limitarCantidadExtra(input, cantidadDisponible, idSeguro, grado) {
   let valor = parseInt(input.value || "0", 10);
   if (isNaN(valor) || valor < 0) valor = 0;
 
-  // límite por disponibilidad de esa casilla
   if (valor > cantidadDisponible) {
     valor = cantidadDisponible;
   }
@@ -5278,7 +5280,6 @@ function limitarCantidadExtra(input, cantidadDisponible, idSeguro, grado) {
 
   if (!grupo) {
     input.value = valor;
-    input.dataset.prevValue = String(valor);
     actualizarResumenSubunidadExtra(idSeguro);
     validarDistribucionExtra();
     return;
@@ -5293,24 +5294,18 @@ function limitarCantidadExtra(input, cantidadDisponible, idSeguro, grado) {
 
   const distribuidos = obtenerTotalesDistribuidosExtra();
 
-  // lo que ya tenía esta casilla antes del cambio
-  const valorAnterior = parseInt(input.dataset.prevValue || "0", 10) || 0;
+  // OJO: aquí se resta el valor actual del input, no el previo
+  const valorActualEnPantalla = parseInt(input.value || "0", 10) || 0;
+  const totalOtros = Math.max(0, (distribuidos[grupo] || 0) - valorActualEnPantalla);
 
-  // total del grupo sin contar esta casilla
-  const totalSinEste = Math.max(0, (distribuidos[grupo] || 0) - valorAnterior);
+  const maxPermitidoGrupo = Math.max(0, (requeridos[grupo] || 0) - totalOtros);
+  const maxFinal = Math.min(cantidadDisponible, maxPermitidoGrupo);
 
-  // cuánto falta realmente para completar el grupo
-  const restanteGrupo = Math.max(0, (requeridos[grupo] || 0) - totalSinEste);
-
-  // máximo final permitido en esta casilla
-  const maxPermitido = Math.min(cantidadDisponible, restanteGrupo);
-
-  if (valor > maxPermitido) {
-    valor = maxPermitido;
+  if (valor > maxFinal) {
+    valor = maxFinal;
   }
 
   input.value = valor;
-  input.dataset.prevValue = String(valor);
 
   actualizarResumenSubunidadExtra(idSeguro);
   validarDistribucionExtra();
