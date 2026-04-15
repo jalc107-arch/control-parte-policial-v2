@@ -3513,52 +3513,23 @@ async function aplicarServicioExtraordinarioPorGrupos() {
     return;
   }
 
-  const requiereSupervisor = document.getElementById("requiere_supervisor")?.checked;
-const requiereJefe = document.getElementById("requiere_jefe_servicio")?.checked;
-const requierePMU = document.getElementById("requiere_jefe_pmu")?.checked;
+  const supervisor = window.seleccionServicio?.supervisor;
+  const jefe = window.seleccionServicio?.jefe;
+  const jefePmu = window.seleccionServicio?.pmu;
 
-const supervisorCedula = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
-const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
-const jefePmuCedula = document.querySelector('input[name="jefe_pmu"]:checked')?.value || "";
+  if (!supervisor || !jefe || !jefePmu) {
+    alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
+    return;
+  }
 
-if (
-  (requiereSupervisor && !supervisorCedula) ||
-  (requiereJefe && !jefeCedula) ||
-  (requierePMU && !jefePmuCedula)
-) {
-  let faltantes = [];
+  if (supervisor === jefe || supervisor === jefePmu || jefe === jefePmu) {
+    alert("No puedes asignar la misma persona a múltiples cargos.");
+    return;
+  }
 
-  if (requiereSupervisor && !supervisorCedula) faltantes.push("supervisor");
-  if (requiereJefe && !jefeCedula) faltantes.push("jefe del servicio");
-  if (requierePMU && !jefePmuCedula) faltantes.push("jefe de PMU");
-
-  alert(`Debes seleccionar: ${faltantes.join(", ")}.`);
-  return;
-}
-
-  const requiereSupervisor = document.getElementById("requiere_supervisor")?.checked;
-const requiereJefe = document.getElementById("requiere_jefe_servicio")?.checked;
-const requierePMU = document.getElementById("requiere_jefe_pmu")?.checked;
-
-const supervisorCedula = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
-const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
-const jefePmuCedula = document.querySelector('input[name="jefe_pmu"]:checked')?.value || "";
-
-const faltantes = [];
-if (requiereSupervisor && !supervisorCedula) faltantes.push("supervisor");
-if (requiereJefe && !jefeCedula) faltantes.push("jefe del servicio");
-if (requierePMU && !jefePmuCedula) faltantes.push("jefe de PMU");
-
-if (faltantes.length) {
-  alert(`Debes seleccionar: ${faltantes.join(", ")}.`);
-  return;
-}
-
-const cargosElegidos = [supervisorCedula, jefeCedula, jefePmuCedula].filter(Boolean);
-if (new Set(cargosElegidos).size !== cargosElegidos.length) {
-  alert("No puedes asignar la misma persona a múltiples cargos.");
-  return;
-}
+  const supervisorCedula = String(supervisor).trim();
+  const jefeCedula = String(jefe).trim();
+  const jefePmuCedula = String(jefePmu).trim();
 
   if (!Array.isArray(window.ultimoResultadoConsulta) || !window.ultimoResultadoConsulta.length) {
     alert("Primero debes consultar novedades en el módulo 6.");
