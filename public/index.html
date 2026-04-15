@@ -3496,8 +3496,8 @@ async function aplicarServicioExtraordinarioPorGrupos() {
     window.listaExtra = [];
     window.ultimosSeleccionadosExtra = [];
 
-    const resultadoExtra = document.getElementById("resultado_extra");
-    if (resultadoExtra) resultadoExtra.innerText = "";
+    const resultadoExtraTmp = document.getElementById("resultado_extra");
+    if (resultadoExtraTmp) resultadoExtraTmp.innerText = "";
 
     if (typeof renderizarExtraordinario === "function") {
       renderizarExtraordinario([]);
@@ -3513,23 +3513,33 @@ async function aplicarServicioExtraordinarioPorGrupos() {
     return;
   }
 
-  const supervisor = window.seleccionServicio?.supervisor;
-  const jefe = window.seleccionServicio?.jefe;
-  const jefePmu = window.seleccionServicio?.pmu;
+  const requiereSupervisor = !!document.getElementById("requiere_supervisor")?.checked;
+  const requiereJefe = !!document.getElementById("requiere_jefe_servicio")?.checked;
+  const requierePMU = !!document.getElementById("requiere_jefe_pmu")?.checked;
 
-  if (!supervisor || !jefe || !jefePmu) {
-    alert("Debes seleccionar supervisor, jefe del servicio y jefe de PMU.");
+  const supervisor = window.seleccionServicio?.supervisor || "";
+  const jefe = window.seleccionServicio?.jefe || "";
+  const jefePmu = window.seleccionServicio?.pmu || "";
+
+  const supervisorCedula = String(supervisor || "").trim();
+  const jefeCedula = String(jefe || "").trim();
+  const jefePmuCedula = String(jefePmu || "").trim();
+
+  const faltantes = [];
+  if (requiereSupervisor && !supervisorCedula) faltantes.push("supervisor");
+  if (requiereJefe && !jefeCedula) faltantes.push("jefe del servicio");
+  if (requierePMU && !jefePmuCedula) faltantes.push("jefe de PMU");
+
+  if (faltantes.length) {
+    alert(`Debes seleccionar: ${faltantes.join(", ")}.`);
     return;
   }
 
-  if (supervisor === jefe || supervisor === jefePmu || jefe === jefePmu) {
+  const cargosElegidos = [supervisorCedula, jefeCedula, jefePmuCedula].filter(Boolean);
+  if (new Set(cargosElegidos).size !== cargosElegidos.length) {
     alert("No puedes asignar la misma persona a múltiples cargos.");
     return;
   }
-
-  const supervisorCedula = String(supervisor).trim();
-  const jefeCedula = String(jefe).trim();
-  const jefePmuCedula = String(jefePmu).trim();
 
   if (!Array.isArray(window.ultimoResultadoConsulta) || !window.ultimoResultadoConsulta.length) {
     alert("Primero debes consultar novedades en el módulo 6.");
@@ -3537,12 +3547,12 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   }
 
   const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
-  const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x).trim()));
+  const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x || "").trim()));
 
   if (
-    ocupadosSet.has(supervisorCedula) ||
-    ocupadosSet.has(jefeCedula) ||
-    ocupadosSet.has(jefePmuCedula)
+    (supervisorCedula && ocupadosSet.has(supervisorCedula)) ||
+    (jefeCedula && ocupadosSet.has(jefeCedula)) ||
+    (jefePmuCedula && ocupadosSet.has(jefePmuCedula))
   ) {
     alert("Uno de los responsables ya está asignado a otro servicio ese día.");
     return;
@@ -3552,7 +3562,7 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   const seleccionadosFinales = [];
   const usados = new Set();
 
-  const tarjetas = Array.from(document.querySelectorAll("#contenedor_distribucion_extra .sub-card"));
+  const tarjetas = Array.from(document.querySelectorAll("#contenedor_distribucion_extra .sub-card, #contenedor_distribucion_extra .tabla-wrap"));
 
   if (!tarjetas.length) {
     alert("Primero debes generar la distribución por dependencia.");
@@ -3572,10 +3582,16 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   }
 
   for (const tarjeta of tarjetas) {
-    const titulo = tarjeta.querySelector("h4")?.innerText?.trim() || "";
+    const titulo =
+      tarjeta.querySelector("h4")?.innerText?.trim() ||
+      tarjeta.querySelector(".bloque-titulo-tabla")?.innerText?.trim() ||
+      "";
+
     if (!titulo) continue;
 
-    const partes = titulo.split(" - ").map(x => String(x || "").trim());
+    const partes = titulo.split(" - ").map(x => String(x || "").trim()).filter(Boolean);
+    if (partes.length < 3) continue;
+
     const unidadDep = partes[0] || "";
     const subunidadDep = partes[1] || "";
     const estacionDep = partes.slice(2).join(" - ").trim();
@@ -3631,7 +3647,9 @@ async function aplicarServicioExtraordinarioPorGrupos() {
       const elegidos = candidatosOrdenados.slice(0, cantidad);
 
       if (elegidos.length < cantidad) {
-        alert(`No hay suficientes ${item.cargo} disponibles en ${unidadDep} - ${subunidadDep} - ${estacionDep}. Solicitaste ${cantidad} y solo hay ${elegidos.length}.`);
+        alert(
+          `No hay suficientes ${item.cargo} disponibles en ${unidadDep} - ${subunidadDep} - ${estacionDep}. Solicitaste ${cantidad} y solo hay ${elegidos.length}.`
+        );
         return;
       }
 
@@ -3651,34 +3669,50 @@ async function aplicarServicioExtraordinarioPorGrupos() {
   }
 
   const base = [...window.ultimoResultadoConsulta];
-
-  const sup = base.find(p => String(p.cedula || "").trim() === supervisorCedula);
-  const jefeObj = base.find(p => String(p.cedula || "").trim() === jefeCedula);
-  const pmuObj = base.find(p => String(p.cedula || "").trim() === jefePmuCedula);
-
   const listaFinal = [];
 
-  if (sup) {
+  if (requiereSupervisor && supervisorCedula) {
+    const sup = base.find(p => String(p.cedula || "").trim() === supervisorCedula);
+    if (!sup) {
+      alert("No se encontró el supervisor seleccionado en la consulta actual.");
+      return;
+    }
+
     listaFinal.push({
       ...sup,
+      tipo_novedad: "SERVICIO EXTRAORDINARIO",
       cargoServicio: "SUPERVISOR",
       tipoAsignacion: "FIJO",
       estadoExtra: "SI"
     });
   }
 
-  if (jefeObj) {
+  if (requiereJefe && jefeCedula) {
+    const jefeObj = base.find(p => String(p.cedula || "").trim() === jefeCedula);
+    if (!jefeObj) {
+      alert("No se encontró el jefe del servicio seleccionado en la consulta actual.");
+      return;
+    }
+
     listaFinal.push({
       ...jefeObj,
+      tipo_novedad: "SERVICIO EXTRAORDINARIO",
       cargoServicio: "JEFE DE SERVICIO",
       tipoAsignacion: "FIJO",
       estadoExtra: "SI"
     });
   }
 
-  if (pmuObj) {
+  if (requierePMU && jefePmuCedula) {
+    const pmuObj = base.find(p => String(p.cedula || "").trim() === jefePmuCedula);
+    if (!pmuObj) {
+      alert("No se encontró el jefe de PMU seleccionado en la consulta actual.");
+      return;
+    }
+
     listaFinal.push({
       ...pmuObj,
+      tipo_novedad: "SERVICIO EXTRAORDINARIO",
       cargoServicio: "JEFE DE PMU",
       tipoAsignacion: "FIJO",
       estadoExtra: "SI"
@@ -3716,10 +3750,14 @@ async function aplicarServicioExtraordinarioPorGrupos() {
     resultadoExtra.innerText = texto;
   }
 
-  renderizarExtraordinario(window.listaExtra);
-  renderizarConsultaDesdeMemoria();
-}
+  if (typeof renderizarExtraordinario === "function") {
+    renderizarExtraordinario(window.listaExtra);
+  }
 
+  if (typeof renderizarConsultaDesdeMemoria === "function") {
+    renderizarConsultaDesdeMemoria();
+  }
+}
   
   async function generarParte() {
   const ok = await guardarNovedades(false);
