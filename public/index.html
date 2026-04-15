@@ -985,7 +985,8 @@
 
         <div class="campo-corto">
           <label><b>Nivel para tomar personal al servicio:</b></label>
-<select id="nivelDistribucion" class="input-select">
+<select id="nivelDistribucion" class="input-select"
+  onchange="cargarEstacionesApoyoExtraDependiente(); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
   <option value="subunidad">Subunidad</option>
   <option value="estacion">Subunidad - Estación o grupo</option>
   <option value="organico">Subunidad - Estación o grupo - Orgánico</option>
@@ -7372,51 +7373,79 @@ if (!estacionesMarcadasActuales.length) {
 }
 
 function cargarOrganicosApoyoExtraDependiente() {
-  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
-  const subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
-  const estaciones = obtenerValoresChecks("checks_estacion_apoyo_extra");
+  const unidad = String(document.getElementById("unidad_apoyo_extra")?.value || "").trim();
+  const nivel = String(document.getElementById("nivelDistribucion")?.value || "estacion").trim();
+  const contenedorOrg = document.getElementById("checks_organico_apoyo_extra");
 
-  const contenedor = document.getElementById("checks_organico_apoyo_extra");
-  if (!contenedor) return;
+  if (!contenedorOrg) return;
 
-  contenedor.innerHTML = "";
+  contenedorOrg.innerHTML = "";
+
+  if (!unidad) return;
+
+  const subunidadesMarcadas = Array.from(
+    document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => String(c.value || "").trim());
+
+  const estacionesMarcadas = Array.from(
+    document.querySelectorAll('#checks_estacion_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => String(c.value || "").trim());
 
   let filtrados = estructuraGlobal.filter(x =>
-    String(x.unidad || "").trim() === String(unidad || "").trim()
+    String(x.unidad || "").trim() === unidad
   );
 
-  if (subunidades.length) {
+  if (subunidadesMarcadas.length) {
     filtrados = filtrados.filter(x =>
-      subunidades.includes(String(x.subunidad || "").trim())
+      subunidadesMarcadas.includes(String(x.subunidad || "").trim())
     );
   }
 
-  if (estaciones.length) {
-    filtrados = filtrados.filter(x =>
-      estaciones.includes(String(x.estacion || "").trim())
-    );
+  if (estacionesMarcadas.length) {
+    filtrados = filtrados.filter(x => {
+      const sub = String(x.subunidad || "").trim();
+      const est = String(x.estacion || "").trim();
+      const compuesto = `${sub} - ${est}`;
+      return estacionesMarcadas.includes(compuesto);
+    });
   }
 
-  // 🔥 NORMALIZA y evita duplicados tipo FONTIBON / FONTIBÓN
-  const organicos = [
+  if (nivel !== "organico") {
+    contenedorOrg.innerHTML = `<div class="ayuda">El nivel actual no requiere selección de orgánico.</div>`;
+    actualizarRutaApoyoExtra();
+    return;
+  }
+
+  const opciones = [
     ...new Map(
       filtrados
-        .map(x => String(x.organico || "").trim())
+        .map(x => {
+          const sub = String(x.subunidad || "").trim();
+          const est = String(x.estacion || "").trim();
+          const org = String(x.organico || "").trim();
+          if (!sub || !est || !org) return null;
+          return `${sub} - ${est} - ${org}`;
+        })
         .filter(Boolean)
         .map(nombre => [
           nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
           nombre
         ])
     ).values()
-  ].sort();
+  ].sort((a, b) => a.localeCompare(b, "es"));
 
-  organicos.forEach(o => {
-    const label = document.createElement("label");
-    label.innerHTML = `
-      <input type="checkbox" value="${o}"> ${o}
-    `;
-    contenedor.appendChild(label);
-  });
+  contenedorOrg.innerHTML = opciones.map(op => `
+    <label class="item-check">
+      <input
+        type="checkbox"
+        value="${op}"
+        onchange="actualizarRutaApoyoExtra();"
+      >
+      ${op}
+    </label>
+  `).join("");
+
+  actualizarRutaApoyoExtra();
 }
   
 function cargarOrganicosMultiple() {
@@ -7520,198 +7549,164 @@ function cargarUnidadApoyoExtra() {
 }
 
 function cargarSubunidadesApoyoExtraDependiente() {
-  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
-  const contenedor = document.getElementById("checks_subunidad_apoyo_extra");
-  const contenedorEstaciones = document.getElementById("checks_estacion_apoyo_extra");
+  const unidad = String(document.getElementById("unidad_apoyo_extra")?.value || "").trim();
+  const contenedorSub = document.getElementById("checks_subunidad_apoyo_extra");
+  const contenedorEst = document.getElementById("checks_estacion_apoyo_extra");
+  const contenedorOrg = document.getElementById("checks_organico_apoyo_extra");
 
-  if (!contenedor) return;
+  if (!contenedorSub || !contenedorEst || !contenedorOrg) return;
 
-  contenedor.innerHTML = "";
-  if (contenedorEstaciones) contenedorEstaciones.innerHTML = "";
+  contenedorSub.innerHTML = "";
+  contenedorEst.innerHTML = "";
+  contenedorOrg.innerHTML = "";
 
-  if (!unidad) {
-    actualizarRutaApoyoExtra();
-    return;
-  }
+  if (!unidad) return;
 
-  const base = Array.isArray(ultimoResultadoConsulta) ? ultimoResultadoConsulta : [];
-
-  if (!base.length) {
-    contenedor.innerHTML = `<div class="ayuda">Primero debes consultar novedades en el módulo 6.</div>`;
-    actualizarRutaApoyoExtra();
-    return;
-  }
-
-  const supervisorCedula = String(window.seleccionServicio?.supervisor || "").trim();
-  const jefeCedula = String(window.seleccionServicio?.jefe || "").trim();
-  const pmuCedula = String(window.seleccionServicio?.pmu || "").trim();
-
-  const bloqueados = new Set(
-    [supervisorCedula, jefeCedula, pmuCedula].filter(Boolean)
+  let filtrados = estructuraGlobal.filter(x =>
+    String(x.unidad || "").trim() === unidad
   );
 
-  const subunidades = [...new Set(
-    base
-      .filter(p => {
-        const unidadP = String(p.unidad || "").trim();
-        const subunidadP = String(p.subunidad || "").trim();
-        const aptitud = String(p.aptitud || "").trim().toUpperCase();
-        const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
-        const cedulaP = String(p.cedula || "").trim();
+  const subunidades = [
+    ...new Map(
+      filtrados
+        .map(x => String(x.subunidad || "").trim())
+        .filter(Boolean)
+        .map(nombre => [
+          nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
+          nombre
+        ])
+    ).values()
+  ].sort((a, b) => a.localeCompare(b, "es"));
 
-        return (
-          unidadP === unidad &&
-          subunidadP &&
-          aptitud === "APTO" &&
-          (novedad === "" || novedad === "DISPONIBLE") &&
-          !bloqueados.has(cedulaP)
-        );
-      })
-      .map(p => String(p.subunidad || "").trim())
-  )].sort();
+  contenedorSub.innerHTML = subunidades.map(sub => `
+    <label class="item-check">
+      <input
+        type="checkbox"
+        value="${sub}"
+        onchange="cargarEstacionesApoyoExtraDependiente(); cargarOrganicosApoyoExtraDependiente();"
+      >
+      ${sub}
+    </label>
+  `).join("");
 
-  if (!subunidades.length) {
-    contenedor.innerHTML = `<div class="ayuda">No hay subunidades disponibles según la consulta general.</div>`;
-    actualizarRutaApoyoExtra();
-    return;
-  }
-
-  subunidades.forEach(sub => {
-    const label = document.createElement("label");
-    label.className = "check-item";
-
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = sub;
-    input.onchange = () => {
-      cargarEstacionesApoyoExtraDependiente();
-      actualizarRutaApoyoExtra();
-    };
-
-    label.appendChild(input);
-    label.appendChild(document.createTextNode(sub));
-    contenedor.appendChild(label);
-  });
-
-  cargarEstacionesApoyoExtraDependiente();
   actualizarRutaApoyoExtra();
 }
 
 function cargarEstacionesApoyoExtraDependiente() {
-  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
-  const subunidades = obtenerChecksMarcados("checks_subunidad_apoyo_extra");
-  const contenedor = document.getElementById("checks_estacion_apoyo_extra");
+  const unidad = String(document.getElementById("unidad_apoyo_extra")?.value || "").trim();
+  const nivel = String(document.getElementById("nivelDistribucion")?.value || "estacion").trim();
+  const contenedorEst = document.getElementById("checks_estacion_apoyo_extra");
+  const contenedorOrg = document.getElementById("checks_organico_apoyo_extra");
 
-  if (!contenedor) return;
+  if (!contenedorEst || !contenedorOrg) return;
 
-  contenedor.innerHTML = "";
+  contenedorEst.innerHTML = "";
+  contenedorOrg.innerHTML = "";
 
-  if (!unidad || !subunidades.length) {
+  if (!unidad) return;
+
+  const subunidadesMarcadas = Array.from(
+    document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => String(c.value || "").trim());
+
+  let filtrados = estructuraGlobal.filter(x =>
+    String(x.unidad || "").trim() === unidad
+  );
+
+  if (subunidadesMarcadas.length) {
+    filtrados = filtrados.filter(x =>
+      subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    );
+  }
+
+  let opciones = [];
+
+  if (nivel === "subunidad") {
+    contenedorEst.innerHTML = `<div class="ayuda">En nivel Subunidad no se requiere seleccionar estación o grupo.</div>`;
     actualizarRutaApoyoExtra();
     return;
   }
 
-  const base = Array.isArray(ultimoResultadoConsulta) ? ultimoResultadoConsulta : [];
+  if (nivel === "estacion" || nivel === "organico") {
+    opciones = [
+      ...new Map(
+        filtrados
+          .map(x => {
+            const sub = String(x.subunidad || "").trim();
+            const est = String(x.estacion || "").trim();
+            if (!sub || !est) return null;
+            return `${sub} - ${est}`;
+          })
+          .filter(Boolean)
+          .map(nombre => [
+            nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
+            nombre
+          ])
+      ).values()
+    ].sort((a, b) => a.localeCompare(b, "es"));
+  }
 
-  const supervisorCedula = String(window.seleccionServicio?.supervisor || "").trim();
-  const jefeCedula = String(window.seleccionServicio?.jefe || "").trim();
-  const pmuCedula = String(window.seleccionServicio?.pmu || "").trim();
-
-  const bloqueados = new Set(
-    [supervisorCedula, jefeCedula, pmuCedula].filter(Boolean)
-  );
-
-  const dependencias = base
-    .filter(p => {
-      const unidadP = String(p.unidad || "").trim();
-      const subunidadP = String(p.subunidad || "").trim();
-      const estacionP = String(p.estacion || "").trim();
-      const aptitud = String(p.aptitud || "").trim().toUpperCase();
-      const novedad = String(p.tipo_novedad || "").trim().toUpperCase();
-      const cedulaP = String(p.cedula || "").trim();
-
-      return (
-        unidadP === unidad &&
-        subunidades.includes(subunidadP) &&
-        estacionP &&
-        aptitud === "APTO" &&
-        (novedad === "" || novedad === "DISPONIBLE") &&
-        !bloqueados.has(cedulaP)
-      );
-    })
-    .map(p => ({
-      subunidad: String(p.subunidad || "").trim(),
-      estacion: String(p.estacion || "").trim()
-    }));
-
-  const unicasMap = new Map();
-
-  dependencias.forEach(dep => {
-    const key = `${dep.subunidad}|||${dep.estacion}`;
-    if (!unicasMap.has(key)) {
-      unicasMap.set(key, dep);
-    }
-  });
-
-  const dependenciasUnicas = [...unicasMap.values()].sort((a, b) => {
-    const ta = `${a.subunidad} - ${a.estacion}`;
-    const tb = `${b.subunidad} - ${b.estacion}`;
-    return ta.localeCompare(tb, "es");
-  });
-
-  dependenciasUnicas.forEach(dep => {
-    const label = document.createElement("label");
-    label.className = "check-item";
-
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = `${dep.subunidad}|||${dep.estacion}`;
-    input.onchange = () => actualizarRutaApoyoExtra();
-
-    label.appendChild(input);
-    label.appendChild(document.createTextNode(`${dep.subunidad} - ${dep.estacion}`));
-    contenedor.appendChild(label);
-  });
+  contenedorEst.innerHTML = opciones.map(op => `
+    <label class="item-check">
+      <input
+        type="checkbox"
+        value="${op}"
+        onchange="cargarOrganicosApoyoExtraDependiente();"
+      >
+      ${op}
+    </label>
+  `).join("");
 
   actualizarRutaApoyoExtra();
 }
 
 function actualizarRutaApoyoExtra() {
-  const box = document.getElementById("ruta_apoyo_extra");
-  if (!box) return;
+  const ayuda = document.getElementById("ruta_apoyo_extra");
+  if (!ayuda) return;
 
-  const unidad = document.getElementById("unidad_apoyo_extra")?.value || "";
-  const subunidades = obtenerChecksMarcados("checks_subunidad_apoyo_extra");
-  const estacionesMarcadas = obtenerChecksMarcados("checks_estacion_apoyo_extra");
+  const unidad = String(document.getElementById("unidad_apoyo_extra")?.value || "").trim();
+  const nivel = String(document.getElementById("nivelDistribucion")?.value || "estacion").trim();
+
+  const subunidades = Array.from(
+    document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => String(c.value || "").trim());
+
+  const estaciones = Array.from(
+    document.querySelectorAll('#checks_estacion_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => String(c.value || "").trim());
+
+  const organicos = Array.from(
+    document.querySelectorAll('#checks_organico_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => String(c.value || "").trim());
 
   if (!unidad) {
-    box.innerHTML = "Selecciona una unidad.";
+    ayuda.style.display = "none";
+    ayuda.innerText = "";
     return;
   }
 
-  if (!subunidades.length) {
-    box.innerHTML = `Unidad seleccionada: <b>${unidad}</b>`;
-    return;
+  let texto = `Unidad base: ${unidad}`;
+
+  if (nivel === "subunidad") {
+    texto += subunidades.length
+      ? ` | Toma por subunidad: ${subunidades.join(", ")}`
+      : ` | Toma por subunidad: todas`;
   }
 
-  const rutas = [];
-
-  if (estacionesMarcadas.length) {
-    estacionesMarcadas.forEach(valor => {
-      const [subunidad, estacion] = String(valor).split("|||");
-      if (subunidad && estacion) {
-        rutas.push(`${unidad} - ${subunidad} - ${estacion}`);
-      }
-    });
-  } else {
-    subunidades.forEach(sub => {
-      rutas.push(`${unidad} - ${sub}`);
-    });
+  if (nivel === "estacion") {
+    texto += estaciones.length
+      ? ` | Toma por subunidad-estación/grupo: ${estaciones.join(", ")}`
+      : ` | Toma por subunidad-estación/grupo: todas las visibles`;
   }
 
-  box.innerHTML = rutas.length
-    ? rutas.map(r => `<div>${r}</div>`).join("")
-    : `Unidad seleccionada: <b>${unidad}</b>`;
+  if (nivel === "organico") {
+    texto += organicos.length
+      ? ` | Toma por subunidad-estación-orgánico: ${organicos.join(", ")}`
+      : ` | Toma por subunidad-estación-orgánico: todos los visibles`;
+  }
+
+  ayuda.style.display = "block";
+  ayuda.innerText = texto;
 }
 
 function contarDisponiblesPorDependencia(unidad, subunidad, estacion) {
