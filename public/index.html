@@ -5268,10 +5268,10 @@ function obtenerTotalesDistribuidosExtra() {
   let patrulleros = 0;
   let auxiliares = 0;
 
-  const inputs = document.querySelectorAll('.input-cantidad-extra');
+  const inputs = document.querySelectorAll(".input-cantidad-extra");
 
   inputs.forEach(input => {
-    const partes = input.id.split("_");
+    const partes = String(input.id || "").split("_");
     const grado = String(partes[partes.length - 1] || "").trim().toUpperCase();
     const valor = parseInt(input.value || "0", 10) || 0;
 
@@ -5287,9 +5287,9 @@ function obtenerTotalesDistribuidosExtra() {
     patrulleros,
     auxiliares
   };
-}  
+} 
 
-  function obtenerGrupoPorGradoExtra(grado = "") {
+function obtenerGrupoPorGradoExtra(grado = "") {
   const g = String(grado || "").trim().toUpperCase();
 
   if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "oficiales";
@@ -5301,64 +5301,54 @@ function obtenerTotalesDistribuidosExtra() {
 }
 
 function limitarCantidadExtra(input, cantidadDisponible, idSeguro, grado) {
-  try {
-    const valorCrudo = parseInt(input.value || "0", 10);
-    let valorNuevo = isNaN(valorCrudo) ? 0 : valorCrudo;
+  let valor = parseInt(input.value || "0", 10);
+  if (isNaN(valor) || valor < 0) valor = 0;
 
-    // nunca negativo
-    if (valorNuevo < 0) valorNuevo = 0;
+  // límite por disponibilidad de esa casilla
+  if (valor > cantidadDisponible) {
+    valor = cantidadDisponible;
+  }
 
-    // nunca más que lo disponible en esa casilla
-    if (valorNuevo > cantidadDisponible) {
-      valorNuevo = cantidadDisponible;
-    }
+  const grupo = obtenerGrupoPorGradoExtra(grado);
 
-    const grupo = obtenerGrupoPorGradoExtra(grado);
-
-    // si no identifica grupo, solo normaliza y actualiza
-    if (!grupo) {
-      input.value = valorNuevo;
-      input.dataset.prevValue = String(valorNuevo);
-      actualizarResumenSubunidadExtra(idSeguro);
-      validarDistribucionExtra();
-      return;
-    }
-
-    const requeridos = {
-      oficiales: parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10) || 0,
-      ejecutivo: parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10) || 0,
-      patrulleros: parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10) || 0,
-      auxiliares: parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10) || 0
-    };
-
-    const valorAnterior = parseInt(input.dataset.prevValue || "0", 10) || 0;
-
-    // total actual distribuido por grupo
-    const distribuidos = obtenerTotalesDistribuidosExtra();
-
-    // quito el valor anterior de esta misma casilla para recalcular bien
-    const totalActualSinEste = Math.max(0, (distribuidos[grupo] || 0) - valorAnterior);
-
-    // máximo que aún puedo poner en esta casilla sin pasarme del requerido global
-    const restanteGrupo = Math.max(0, (requeridos[grupo] || 0) - totalActualSinEste);
-
-    // el valor permitido final es el menor entre:
-    // - lo disponible en la casilla
-    // - lo que falta para completar el grupo
-    const maximoPermitido = Math.min(cantidadDisponible, restanteGrupo);
-
-    if (valorNuevo > maximoPermitido) {
-      valorNuevo = maximoPermitido;
-    }
-
-    input.value = valorNuevo;
-    input.dataset.prevValue = String(valorNuevo);
-
+  if (!grupo) {
+    input.value = valor;
+    input.dataset.prevValue = String(valor);
     actualizarResumenSubunidadExtra(idSeguro);
     validarDistribucionExtra();
-  } catch (error) {
-    console.error("Error en limitarCantidadExtra:", error);
+    return;
   }
+
+  const requeridos = {
+    oficiales: parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10) || 0,
+    ejecutivo: parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10) || 0,
+    patrulleros: parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10) || 0,
+    auxiliares: parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10) || 0
+  };
+
+  const distribuidos = obtenerTotalesDistribuidosExtra();
+
+  // lo que ya tenía esta casilla antes del cambio
+  const valorAnterior = parseInt(input.dataset.prevValue || "0", 10) || 0;
+
+  // total del grupo sin contar esta casilla
+  const totalSinEste = Math.max(0, (distribuidos[grupo] || 0) - valorAnterior);
+
+  // cuánto falta realmente para completar el grupo
+  const restanteGrupo = Math.max(0, (requeridos[grupo] || 0) - totalSinEste);
+
+  // máximo final permitido en esta casilla
+  const maxPermitido = Math.min(cantidadDisponible, restanteGrupo);
+
+  if (valor > maxPermitido) {
+    valor = maxPermitido;
+  }
+
+  input.value = valor;
+  input.dataset.prevValue = String(valor);
+
+  actualizarResumenSubunidadExtra(idSeguro);
+  validarDistribucionExtra();
 }
   
 function toggleCargoRequeridoExtra() {
