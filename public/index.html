@@ -5366,144 +5366,160 @@ function controlarLimiteSolicitadoExtra(input) {
   validarDistribucionExtra();
 } 
   
-  // 👇 PEGA AQUÍ LA FUNCIÓN
-async function cargarResponsablesServicioExtra() {
-  const boxSupervisor = document.getElementById("supervisor_servicio_box");
-  const boxJefe = document.getElementById("jefe_servicio_box");
-  const boxPmu = document.getElementById("jefe_pmu_box");
+function cargarResponsablesServicioExtra() {
+  const supervisorBox = document.getElementById("supervisor_servicio_box");
+  const jefeBox = document.getElementById("jefe_servicio_box");
+  const pmuBox = document.getElementById("jefe_pmu_box");
 
-  if (!boxSupervisor || !boxJefe || !boxPmu) return;
+  if (!supervisorBox || !jefeBox || !pmuBox) return;
 
-  boxSupervisor.innerHTML = "";
-  boxJefe.innerHTML = "";
-  boxPmu.innerHTML = "";
+  const requiereSupervisor = document.getElementById("requiere_supervisor")?.checked;
+  const requiereJefe = document.getElementById("requiere_jefe_servicio")?.checked;
+  const requierePMU = document.getElementById("requiere_jefe_pmu")?.checked;
 
-  if (!window.ultimoResultadoConsulta || !window.ultimoResultadoConsulta.length) {
-    boxSupervisor.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
-    boxJefe.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
-    boxPmu.innerHTML = `<div class="ayuda">Primero consulta novedades.</div>`;
-    return;
-  }
-
-  const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
-  if (!fechaServicio) {
-    boxSupervisor.innerHTML = `<div class="ayuda">Primero selecciona la fecha del servicio.</div>`;
-    boxJefe.innerHTML = `<div class="ayuda">Primero selecciona la fecha del servicio.</div>`;
-    boxPmu.innerHTML = `<div class="ayuda">Primero selecciona la fecha del servicio.</div>`;
-    return;
-  }
-
-  const gradoSup = document.getElementById("grado_supervisor_servicio")?.value || "";
+  const gradoSupervisor = document.getElementById("grado_supervisor_servicio")?.value || "";
   const gradoJefe = document.getElementById("grado_jefe_servicio")?.value || "";
-  const gradoPmu = document.getElementById("grado_jefe_pmu")?.value || "";
+  const gradoPMU = document.getElementById("grado_jefe_pmu")?.value || "";
 
-  const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
-  const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x).trim()));
+  const personas = Array.isArray(window.ultimoResultadoConsulta)
+    ? window.ultimoResultadoConsulta
+    : [];
 
-  const personal = window.ultimoResultadoConsulta.filter(p => {
-    const nov = String(p.tipo_novedad || "").toUpperCase().trim();
-    const apt = String(p.aptitud || "").toUpperCase().trim();
-    const ced = String(p.cedula || "").trim();
+  function grupoPorGrado(grado = "") {
+    const g = String(grado || "").trim().toUpperCase();
 
-    return (
-      (nov === "" || nov === "DISPONIBLE") &&
-      apt === "APTO" &&
-      !ocupadosSet.has(ced)
-    );
-  });
-
-  if (!personal.length) {
-    boxSupervisor.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre para esa fecha.</div>`;
-    boxJefe.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre para esa fecha.</div>`;
-    boxPmu.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre para esa fecha.</div>`;
-    return;
-  }
-
-  function grupo(grado) {
-    const g = String(grado || "").toUpperCase().trim();
     if (["CR","TC","MY","CT","TE","ST"].includes(g)) return "OFICIALES";
     if (["CM","SC","IJ","IT","SI"].includes(g)) return "EJECUTIVO";
     if (["PT","PP"].includes(g)) return "PATRULLEROS";
-    if (["AXP"].includes(g)) return "AUXILIARES";
+    if (["AXP"].includes(g)) return "AXP";
     return "OTROS";
   }
 
-  function filtrar(lista, necesidad) {
-    if (!necesidad || necesidad === "TODOS") return lista;
-    return lista.filter(p => grupo(p.grado) === necesidad);
-  }
+  function ordenarPorJerarquiaYAntiguedad(lista = []) {
+    const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AXP"];
 
-  function seleccionadoActual(name) {
-    return document.querySelector(`input[name="${name}"]:checked`)?.value || "";
-  }
+    return [...lista].sort((a, b) => {
+      const ga = String(a.grado || "").trim().toUpperCase();
+      const gb = String(b.grado || "").trim().toUpperCase();
 
-  function pintar(box, lista, name) {
-  if (!lista.length) {
-    box.innerHTML = `<div class="ayuda">No hay personal que cumpla ese grado.</div>`;
-    return;
-  }
+      const ia = ordenGrados.indexOf(ga);
+      const ib = ordenGrados.indexOf(gb);
 
-  box.innerHTML = "";
-
-  lista.forEach(p => {
-    const label = document.createElement("label");
-    label.className = "check-item";
-    label.style.cursor = "pointer";
-
-    const input = document.createElement("input");
-    
-    input.type = "radio";
-    input.name = name;
-    input.value = p.cedula;
-    input.style.marginRight = "6px";
-
-    // marcar seleccionado si ya estaba en memoria
-if (name === "supervisor_servicio" && window.seleccionServicio.supervisor === p.cedula) {
-  input.checked = true;
-}
-if (name === "jefe_servicio" && window.seleccionServicio.jefe === p.cedula) {
-  input.checked = true;
-}
-if (name === "jefe_pmu" && window.seleccionServicio.pmu === p.cedula) {
-  input.checked = true;
-}
-
-    const texto = `${p.grado} ${p.apellidos} ${p.nombres} - ${p.subunidad}`;
-
-    input.addEventListener("change", () => {
-      if (name === "supervisor_servicio") {
-        window.seleccionServicio.supervisor = input.value;
-      }
-      if (name === "jefe_servicio") {
-        window.seleccionServicio.jefe = input.value;
-      }
-      if (name === "jefe_pmu") {
-        window.seleccionServicio.pmu = input.value;
+      if ((ia === -1 ? 999 : ia) !== (ib === -1 ? 999 : ib)) {
+        return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
       }
 
-      generarDistribucionExtraPorSubunidad();
+      const fa = a.fecha_ascenso ? new Date(a.fecha_ascenso).getTime() : Number.MAX_SAFE_INTEGER;
+      const fb = b.fecha_ascenso ? new Date(b.fecha_ascenso).getTime() : Number.MAX_SAFE_INTEGER;
+      if (fa !== fb) return fa - fb;
+
+      const oa = a.orden_antiguedad ?? Number.MAX_SAFE_INTEGER;
+      const ob = b.orden_antiguedad ?? Number.MAX_SAFE_INTEGER;
+      if (oa !== ob) return oa - ob;
+
+      const aa = String(a.apellidos || "").localeCompare(String(b.apellidos || ""), "es");
+      if (aa !== 0) return aa;
+
+      return String(a.nombres || "").localeCompare(String(b.nombres || ""), "es");
     });
+  }
 
-    label.appendChild(input);
-    label.appendChild(document.createTextNode(texto));
-    box.appendChild(label);
-  });
+  function filtrarPorGradoRequerido(lista = [], grupoRequerido = "") {
+    if (!grupoRequerido || grupoRequerido === "TODOS") return lista;
+
+    return lista.filter(p => grupoPorGrado(p.grado) === grupoRequerido);
+  }
+
+  function dejarSoloDisponibles(lista = []) {
+    return lista.filter(p => {
+      const aptitud = String(p.aptitud || "").trim().toUpperCase();
+      const tipoNovedad = String(p.tipo_novedad || "").trim().toUpperCase();
+
+      const apto = !aptitud || aptitud === "APTO";
+      const disponible = !tipoNovedad || tipoNovedad === "DISPONIBLE";
+
+      return apto && disponible;
+    });
+  }
+
+  function renderOpciones(box, lista, radioName, textoVacio) {
+    box.innerHTML = "";
+
+    if (!lista.length) {
+      box.innerHTML = `<div class="ayuda">${textoVacio}</div>`;
+      return;
+    }
+
+    lista.forEach((p, i) => {
+      const grado = String(p.grado || "").trim();
+      const apellidos = String(p.apellidos || "").trim();
+      const nombres = String(p.nombres || "").trim();
+      const cedula = String(p.cedula || "").trim();
+      const estacion = String(p.estacion || "").trim();
+      const subunidad = String(p.subunidad || "").trim();
+
+      const label = document.createElement("label");
+      label.className = "item-check";
+      label.style.display = "block";
+      label.style.marginBottom = "8px";
+
+      label.innerHTML = `
+        <input type="radio" name="${radioName}" value="${cedula}">
+        ${grado} - ${apellidos} ${nombres} - CC ${cedula}
+        ${subunidad ? ` - ${subunidad}` : ""}
+        ${estacion ? ` - ${estacion}` : ""}
+      `;
+
+      box.appendChild(label);
+    });
+  }
+
+  // Base de candidatos
+  let base = dejarSoloDisponibles(personas);
+  base = ordenarPorJerarquiaYAntiguedad(base);
+
+  // SUPERVISOR
+  if (!requiereSupervisor) {
+    supervisorBox.innerHTML = `<div class="ayuda">Supervisor no requerido para este servicio.</div>`;
+  } else {
+    const candidatosSupervisor = filtrarPorGradoRequerido(base, gradoSupervisor);
+    renderOpciones(
+      supervisorBox,
+      candidatosSupervisor,
+      "supervisor_servicio",
+      "No hay candidatos disponibles para supervisor."
+    );
+  }
+
+  // JEFE SERVICIO
+  if (!requiereJefe) {
+    jefeBox.innerHTML = `<div class="ayuda">Jefe de servicio no requerido para este servicio.</div>`;
+  } else {
+    const candidatosJefe = filtrarPorGradoRequerido(base, gradoJefe);
+    renderOpciones(
+      jefeBox,
+      candidatosJefe,
+      "jefe_servicio",
+      "No hay candidatos disponibles para jefe de servicio."
+    );
+  }
+
+  // JEFE PMU
+  if (!requierePMU) {
+    pmuBox.innerHTML = `<div class="ayuda">Jefe de PMU no requerido para este servicio.</div>`;
+  } else {
+    const candidatosPMU = filtrarPorGradoRequerido(base, gradoPMU);
+    renderOpciones(
+      pmuBox,
+      candidatosPMU,
+      "jefe_pmu",
+      "No hay candidatos disponibles para jefe de PMU."
+    );
+  }
+
+  validarDistribucionExtra();
 }
-
-  pintar(boxSupervisor, filtrar(personal, gradoSup), "supervisor_servicio");
-  pintar(boxJefe, filtrar(personal, gradoJefe), "jefe_servicio");
-  pintar(boxPmu, filtrar(personal, gradoPmu), "jefe_pmu");
-
-  refrescarDependenciasApoyoExtra();
-
-window.seleccionServicio = window.seleccionServicio || {
-  supervisor: "",
-  jefe: "",
-  pmu: ""
-};
   
-  actualizarResumenGlobalExtra();
-}
 function cargarUnidadModulo11() {
   const select = document.getElementById("m11_unidad");
   if (!select) return;
