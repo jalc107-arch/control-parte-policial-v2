@@ -984,12 +984,12 @@
         <h3>Configuración de distribución</h3>
 
         <div class="campo-corto">
-          <label for="nivelDistribucion"><b>Nivel de distribución</b></label>
-          <select id="nivelDistribucion" class="input-select">
-            <option value="unidad">Unidad</option>
-            <option value="estacion">Unidad - Estación/Grupo</option>
-            <option value="organico">Unidad - Estación/Grupo - Orgánico</option>
-          </select>
+          <label><b>Nivel para tomar personal al servicio:</b></label>
+<select id="nivelDistribucion" class="input-select">
+  <option value="subunidad">Subunidad</option>
+  <option value="estacion">Subunidad - Estación o grupo</option>
+  <option value="organico">Subunidad - Estación o grupo - Orgánico</option>
+</select>
         </div>
 
         <div style="margin-top:14px;">
@@ -4895,48 +4895,34 @@ async function consultarControlCumplimientoDiario() {
   
 async function generarDistribucionExtraPorSubunidad() {
   const nivel = document.getElementById("nivelDistribucion")?.value || "estacion";
+  const unidadSeleccionada = String(document.getElementById("unidad_apoyo_extra")?.value || "").trim();
 
-  const incluirSupervisor = document.getElementById("chkSupervisor")?.checked;
-  const incluirJefe = document.getElementById("chkJefeServicio")?.checked;
-  const incluirPMU = document.getElementById("chkPMU")?.checked;
+  const excluirGrados = Array.from(
+    document.querySelectorAll(".excluirGrado:checked")
+  ).map(el => String(el.value || "").trim().toUpperCase());
 
-  const excluirGrados = Array.from(document.querySelectorAll(".excluirGrado:checked"))
-    .map(el => String(el.value || "").trim().toUpperCase());
-
-  let subunidades = Array.from(
+  let subunidadesMarcadas = Array.from(
     document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]:checked')
-  ).map(c => c.value);
+  ).map(c => String(c.value || "").trim());
 
   const estacionesMarcadas = Array.from(
     document.querySelectorAll('#checks_estacion_apoyo_extra input[type="checkbox"]:checked')
-  ).map(c => c.value);
+  ).map(c => String(c.value || "").trim());
 
-  // si el usuario no desmarca nada → usar todas
-  if (!subunidades.length) {
-    subunidades = [
-      ...new Set(
-        estructuraGlobal.map(x => (x.subunidad || "").trim()).filter(Boolean)
-      )
-    ];
-  }
-
-  console.log("SUBUNIDADES USADAS:", subunidades);
+  const organicosMarcados = Array.from(
+    document.querySelectorAll('#checks_organico_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => String(c.value || "").trim());
 
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
 
   if (!contenedor || !validacion) return;
 
-  if (!subunidades.length) {
-    seleccionarTodasChecks("checks_subunidad_apoyo_extra");
-    subunidades = obtenerValoresChecks("checks_subunidad_apoyo_extra");
-  }
-
   contenedor.innerHTML = "";
   validacion.innerText = "Sin validar";
 
-  if (!subunidades.length) {
-    contenedor.innerHTML = `<div class="ayuda">Selecciona al menos una subunidad.</div>`;
+  if (!unidadSeleccionada) {
+    contenedor.innerHTML = `<div class="ayuda">Debes seleccionar la unidad.</div>`;
     return;
   }
 
@@ -4960,10 +4946,12 @@ async function generarDistribucionExtraPorSubunidad() {
   const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
   const jefePmuCedula = document.querySelector('input[name="jefe_pmu"]:checked')?.value || "";
 
-  const disponibles = disponiblesBase.filter(p => {
+  let disponibles = disponiblesBase.filter(p => {
     const ced = String(p.cedula || "").trim();
+    const unidadActual = String(p.unidad || "").trim();
 
     return (
+      unidadActual === unidadSeleccionada &&
       !ocupadosSet.has(ced) &&
       ced !== supervisorCedula &&
       ced !== jefeCedula &&
@@ -4971,20 +4959,34 @@ async function generarDistribucionExtraPorSubunidad() {
     );
   });
 
-  let disponiblesFiltrados = disponibles;
+  if (!disponibles.length) {
+    contenedor.innerHTML = `<div class="ayuda">No hay personal disponible en la unidad seleccionada.</div>`;
+    return;
+  }
 
-  // filtrar por subunidad
-  if (subunidades.length) {
-    disponiblesFiltrados = disponiblesFiltrados.filter(p =>
-      subunidades.includes(String(p.subunidad || "").trim())
+  // Si no marcó subunidades, usar todas las de la unidad seleccionada
+  if (!subunidadesMarcadas.length) {
+    subunidadesMarcadas = [
+      ...new Set(
+        disponibles
+          .map(x => String(x.subunidad || "").trim())
+          .filter(Boolean)
+      )
+    ];
+  }
+
+  // Filtrar por subunidades seleccionadas
+  if (subunidadesMarcadas.length) {
+    disponibles = disponibles.filter(p =>
+      subunidadesMarcadas.includes(String(p.subunidad || "").trim())
     );
   }
 
-  // filtrar por estación/grupo si seleccionó alguna
+  // Filtrar por estaciones / grupos seleccionados
   if (estacionesMarcadas.length) {
-    disponiblesFiltrados = disponiblesFiltrados.filter(p => {
-      const estacionActual = String(p.estacion || "").trim();
+    disponibles = disponibles.filter(p => {
       const subunidadActual = String(p.subunidad || "").trim();
+      const estacionActual = String(p.estacion || "").trim();
       const compuesto = `${subunidadActual} - ${estacionActual}`;
       return (
         estacionesMarcadas.includes(estacionActual) ||
@@ -4993,40 +4995,56 @@ async function generarDistribucionExtraPorSubunidad() {
     });
   }
 
-  // excluir grados
+  // Filtrar por orgánicos seleccionados
+  if (organicosMarcados.length) {
+    disponibles = disponibles.filter(p => {
+      const subunidadActual = String(p.subunidad || "").trim();
+      const estacionActual = String(p.estacion || "").trim();
+      const organicoActual = String(p.organico || "").trim();
+
+      const compuesto1 = organicoActual;
+      const compuesto2 = `${subunidadActual} - ${estacionActual} - ${organicoActual}`;
+
+      return (
+        organicosMarcados.includes(compuesto1) ||
+        organicosMarcados.includes(compuesto2)
+      );
+    });
+  }
+
+  // Excluir grados
   if (excluirGrados.length) {
-    disponiblesFiltrados = disponiblesFiltrados.filter(p =>
+    disponibles = disponibles.filter(p =>
       !excluirGrados.includes(String(p.grado || "").trim().toUpperCase())
     );
   }
 
-  if (!disponiblesFiltrados.length) {
-    contenedor.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre de otro servicio para esa fecha.</div>`;
+  if (!disponibles.length) {
+    contenedor.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre de otro servicio para esa fecha con los filtros seleccionados.</div>`;
     return;
   }
 
   const ordenGrados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AXP"];
   let seGeneroAlMenosUno = false;
-
   const agrupado = {};
 
-  disponiblesFiltrados.forEach(p => {
-    const unidadActual = String(p.unidad || "").trim();
+  disponibles.forEach(p => {
     const subunidadActual = String(p.subunidad || "").trim();
     const estacionActual = String(p.estacion || "").trim();
     const organicoActual = String(p.organico || "").trim();
 
     let clave = "";
 
-    if (nivel === "unidad") {
-      clave = unidadActual;
+    if (nivel === "subunidad") {
+      clave = subunidadActual;
     } else if (nivel === "estacion") {
-      clave = `${unidadActual} - ${subunidadActual} - ${estacionActual}`;
+      clave = `${subunidadActual} - ${estacionActual}`;
     } else if (nivel === "organico") {
-      clave = `${unidadActual} - ${subunidadActual} - ${estacionActual} - ${organicoActual}`;
+      clave = `${subunidadActual} - ${estacionActual} - ${organicoActual}`;
     }
 
-    if (!clave.trim()) return;
+    clave = clave.replace(/\s+/g, " ").trim();
+    if (!clave) return;
 
     if (!agrupado[clave]) {
       agrupado[clave] = [];
@@ -5035,7 +5053,7 @@ async function generarDistribucionExtraPorSubunidad() {
     agrupado[clave].push(p);
   });
 
-  Object.keys(agrupado).sort().forEach(clave => {
+  Object.keys(agrupado).sort((a, b) => a.localeCompare(b, "es")).forEach(clave => {
     const disponiblesGrupo = agrupado[clave];
 
     if (!disponiblesGrupo.length) return;
@@ -5062,7 +5080,7 @@ async function generarDistribucionExtraPorSubunidad() {
     const idSeguro = clave.replace(/[^a-zA-Z0-9]/g, "_");
 
     let html = `
-      <div class="bloque-titulo-tabla">${clave}</div>
+      <div class="bloque-titulo-tabla">${unidadSeleccionada} - ${clave}</div>
       <table class="tabla-app">
         <thead>
           <tr>
@@ -5073,7 +5091,12 @@ async function generarDistribucionExtraPorSubunidad() {
         String(p.grado || "").trim().toUpperCase() === g
       ).length;
 
-      html += `<th>${g}<br><span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span></th>`;
+      html += `
+        <th>
+          ${g}<br>
+          <span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span>
+        </th>
+      `;
     });
 
     html += `
@@ -5138,10 +5161,11 @@ async function generarDistribucionExtraPorSubunidad() {
   }
 
   console.log("CONFIG DISTRIBUCIÓN:", {
+    unidadSeleccionada,
     nivel,
-    incluirSupervisor,
-    incluirJefe,
-    incluirPMU,
+    subunidadesMarcadas,
+    estacionesMarcadas,
+    organicosMarcados,
     excluirGrados
   });
 }
