@@ -4941,7 +4941,7 @@ async function generarDistribucionExtraPorSubunidad() {
   validacion.innerText = "Sin validar";
 
   if (!unidadSeleccionada) {
-    contenedor.innerHTML = `<div class="ayuda">Debes seleccionar la unidad.</div>`;
+    contenedor.innerHTML = `<div class="ayuda">Debes seleccionar la unidad base.</div>`;
     return;
   }
 
@@ -4953,13 +4953,13 @@ async function generarDistribucionExtraPorSubunidad() {
 
   const disponiblesBase = extraerDisponiblesConsulta();
 
-  if (!disponiblesBase.length) {
-    contenedor.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE.</div>`;
+  if (!Array.isArray(disponiblesBase) || !disponiblesBase.length) {
+    contenedor.innerHTML = `<div class="ayuda">No hay personal APTO y DISPONIBLE en la consulta actual.</div>`;
     return;
   }
 
   const cedulasOcupadas = await obtenerCedulasOcupadasServicioExtra();
-  const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x).trim()));
+  const ocupadosSet = new Set((cedulasOcupadas || []).map(x => String(x || "").trim()));
 
   const supervisorCedula = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
   const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
@@ -4983,25 +4983,25 @@ async function generarDistribucionExtraPorSubunidad() {
     return;
   }
 
-  // Si no marcó subunidades, usar todas las de la unidad seleccionada
+  // Si no marcó subunidades, toma todas las visibles de esa unidad
   if (!subunidadesMarcadas.length) {
     subunidadesMarcadas = [
       ...new Set(
         disponibles
-          .map(x => String(x.subunidad || "").trim())
+          .map(p => String(p.subunidad || "").trim())
           .filter(Boolean)
       )
-    ];
+    ].sort((a, b) => a.localeCompare(b, "es"));
   }
 
-  // Filtrar por subunidades seleccionadas
+  // Filtrar por subunidad
   if (subunidadesMarcadas.length) {
     disponibles = disponibles.filter(p =>
       subunidadesMarcadas.includes(String(p.subunidad || "").trim())
     );
   }
 
-  // Filtrar por estaciones / grupos seleccionados
+  // Filtrar por estación / grupo
   if (estacionesMarcadas.length) {
     disponibles = disponibles.filter(p => {
       const subunidadActual = String(p.subunidad || "").trim();
@@ -5014,7 +5014,7 @@ async function generarDistribucionExtraPorSubunidad() {
     });
   }
 
-  // Filtrar por orgánicos seleccionados
+  // Filtrar por orgánico
   if (organicosMarcados.length) {
     disponibles = disponibles.filter(p => {
       const subunidadActual = String(p.subunidad || "").trim();
@@ -5044,8 +5044,8 @@ async function generarDistribucionExtraPorSubunidad() {
   }
 
   const ordenGrados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AXP"];
-  let seGeneroAlMenosUno = false;
   const agrupado = {};
+  let seGeneroAlMenosUno = false;
 
   disponibles.forEach(p => {
     const subunidadActual = String(p.subunidad || "").trim();
@@ -5063,6 +5063,7 @@ async function generarDistribucionExtraPorSubunidad() {
     }
 
     clave = clave.replace(/\s+/g, " ").trim();
+
     if (!clave) return;
 
     if (!agrupado[clave]) {
@@ -5072,112 +5073,100 @@ async function generarDistribucionExtraPorSubunidad() {
     agrupado[clave].push(p);
   });
 
-  Object.keys(agrupado).sort((a, b) => a.localeCompare(b, "es")).forEach(clave => {
-    const disponiblesGrupo = agrupado[clave];
+  Object.keys(agrupado)
+    .sort((a, b) => a.localeCompare(b, "es"))
+    .forEach(clave => {
+      const disponiblesGrupo = agrupado[clave];
+      if (!disponiblesGrupo.length) return;
 
-    if (!disponiblesGrupo.length) return;
+      const grados = [
+        ...new Set(
+          disponiblesGrupo
+            .map(p => String(p.grado || "").trim().toUpperCase())
+            .filter(Boolean)
+        )
+      ].sort((a, b) => {
+        const ia = ordenGrados.indexOf(a);
+        const ib = ordenGrados.indexOf(b);
+        return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      });
 
-    const grados = [
-      ...new Set(
-        disponiblesGrupo
-          .map(p => String(p.grado || "").trim().toUpperCase())
-          .filter(Boolean)
-      )
-    ].sort((a, b) => {
-      const ia = ordenGrados.indexOf(a);
-      const ib = ordenGrados.indexOf(b);
-      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-    });
+      if (!grados.length) return;
 
-    if (!grados.length) return;
+      seGeneroAlMenosUno = true;
 
-    seGeneroAlMenosUno = true;
+      const bloque = document.createElement("div");
+      bloque.className = "tabla-wrap";
 
-    const bloque = document.createElement("div");
-    bloque.className = "tabla-wrap";
+      const idSeguro = clave.replace(/[^a-zA-Z0-9]/g, "_");
 
-    const idSeguro = clave.replace(/[^a-zA-Z0-9]/g, "_");
+      let html = `
+        <div class="bloque-titulo-tabla">${unidadSeleccionada} - ${clave}</div>
+        <table class="tabla-app">
+          <thead>
+            <tr>
+      `;
 
-    let html = `
-      <div class="bloque-titulo-tabla">${unidadSeleccionada} - ${clave}</div>
-      <table class="tabla-app">
-        <thead>
-          <tr>
-    `;
+      grados.forEach(g => {
+        const cantidadDisponible = disponiblesGrupo.filter(p =>
+          String(p.grado || "").trim().toUpperCase() === g
+        ).length;
 
-    grados.forEach(g => {
-      const cantidadDisponible = disponiblesGrupo.filter(p =>
-        String(p.grado || "").trim().toUpperCase() === g
-      ).length;
+        html += `
+          <th>
+            ${g}<br>
+            <span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span>
+          </th>
+        `;
+      });
 
       html += `
-        <th>
-          ${g}<br>
-          <span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span>
-        </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
       `;
-    });
 
-    html += `
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-    `;
+      grados.forEach(g => {
+        const cantidadDisponible = disponiblesGrupo.filter(p =>
+          String(p.grado || "").trim().toUpperCase() === g
+        ).length;
 
-    grados.forEach(g => {
-      const cantidadDisponible = disponiblesGrupo.filter(p =>
-        String(p.grado || "").trim().toUpperCase() === g
-      ).length;
+        html += `
+          <td>
+            <input
+              type="number"
+              min="0"
+              max="${cantidadDisponible}"
+              value="0"
+              data-prev-value="0"
+              id="extra_${idSeguro}_${g}"
+              class="input-cantidad-extra"
+              oninput="limitarCantidadExtra(this, ${cantidadDisponible}, '${idSeguro}', '${g}')"
+            />
+          </td>
+        `;
+      });
 
       html += `
-        <td>
-          <input
-            type="number"
-            min="0"
-            max="${cantidadDisponible}"
-            value="0"
-            id="extra_${idSeguro}_${g}"
-            class="input-cantidad-extra"
-            oninput="
-              let valor = parseInt(this.value || '0', 10);
-
-              if (valor > ${cantidadDisponible}) {
-                this.value = ${cantidadDisponible};
-                valor = ${cantidadDisponible};
-              }
-
-              if (valor < 0) {
-                this.value = 0;
-                valor = 0;
-              }
-
-              actualizarResumenSubunidadExtra('${idSeguro}');
-              validarDistribucionExtra();
-            "
-          />
-        </td>
+            </tr>
+          </tbody>
+        </table>
+        <pre id="resumen_${idSeguro}">0-0-0-0 = 0</pre>
       `;
+
+      bloque.innerHTML = html;
+      contenedor.appendChild(bloque);
+
+      actualizarResumenSubunidadExtra(idSeguro);
     });
-
-    html += `
-          </tr>
-        </tbody>
-      </table>
-      <pre id="resumen_${idSeguro}">0-0-0-0 = 0</pre>
-    `;
-
-    bloque.innerHTML = html;
-    contenedor.appendChild(bloque);
-
-    actualizarResumenSubunidadExtra(idSeguro);
-  });
 
   if (!seGeneroAlMenosUno) {
     validacion.innerText = "No se generó distribución. Revisa los filtros seleccionados.";
-  } else {
-    validarDistribucionExtra();
+    return;
   }
+
+  validarDistribucionExtra();
 
   console.log("CONFIG DISTRIBUCIÓN:", {
     unidadSeleccionada,
@@ -5227,6 +5216,110 @@ function actualizarResumenSubunidadExtra(subunidad) {
     resumen.innerText = `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
   } else {
     console.warn("No se encontró resumen para:", subunidad);
+  }
+}
+
+function obtenerTotalesDistribuidosExtra() {
+  const oficialesSet = new Set(["CR", "TC", "MY", "CT", "TE", "ST"]);
+  const ejecutivoSet = new Set(["CM", "SC", "IJ", "IT", "SI"]);
+  const patrullerosSet = new Set(["PT", "PP"]);
+  const auxiliaresSet = new Set(["AXP"]);
+
+  let oficiales = 0;
+  let ejecutivo = 0;
+  let patrulleros = 0;
+  let auxiliares = 0;
+
+  const inputs = document.querySelectorAll('.input-cantidad-extra');
+
+  inputs.forEach(input => {
+    const partes = input.id.split("_");
+    const grado = String(partes[partes.length - 1] || "").trim().toUpperCase();
+    const valor = parseInt(input.value || "0", 10) || 0;
+
+    if (oficialesSet.has(grado)) oficiales += valor;
+    else if (ejecutivoSet.has(grado)) ejecutivo += valor;
+    else if (patrullerosSet.has(grado)) patrulleros += valor;
+    else if (auxiliaresSet.has(grado)) auxiliares += valor;
+  });
+
+  return {
+    oficiales,
+    ejecutivo,
+    patrulleros,
+    auxiliares
+  };
+}  
+
+  function obtenerGrupoPorGradoExtra(grado = "") {
+  const g = String(grado || "").trim().toUpperCase();
+
+  if (["CR", "TC", "MY", "CT", "TE", "ST"].includes(g)) return "oficiales";
+  if (["CM", "SC", "IJ", "IT", "SI"].includes(g)) return "ejecutivo";
+  if (["PT", "PP"].includes(g)) return "patrulleros";
+  if (["AXP"].includes(g)) return "auxiliares";
+
+  return "";
+}
+
+function limitarCantidadExtra(input, cantidadDisponible, idSeguro, grado) {
+  try {
+    const valorCrudo = parseInt(input.value || "0", 10);
+    let valorNuevo = isNaN(valorCrudo) ? 0 : valorCrudo;
+
+    // nunca negativo
+    if (valorNuevo < 0) valorNuevo = 0;
+
+    // nunca más que lo disponible en esa casilla
+    if (valorNuevo > cantidadDisponible) {
+      valorNuevo = cantidadDisponible;
+    }
+
+    const grupo = obtenerGrupoPorGradoExtra(grado);
+
+    // si no identifica grupo, solo normaliza y actualiza
+    if (!grupo) {
+      input.value = valorNuevo;
+      input.dataset.prevValue = String(valorNuevo);
+      actualizarResumenSubunidadExtra(idSeguro);
+      validarDistribucionExtra();
+      return;
+    }
+
+    const requeridos = {
+      oficiales: parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10) || 0,
+      ejecutivo: parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10) || 0,
+      patrulleros: parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10) || 0,
+      auxiliares: parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10) || 0
+    };
+
+    const valorAnterior = parseInt(input.dataset.prevValue || "0", 10) || 0;
+
+    // total actual distribuido por grupo
+    const distribuidos = obtenerTotalesDistribuidosExtra();
+
+    // quito el valor anterior de esta misma casilla para recalcular bien
+    const totalActualSinEste = Math.max(0, (distribuidos[grupo] || 0) - valorAnterior);
+
+    // máximo que aún puedo poner en esta casilla sin pasarme del requerido global
+    const restanteGrupo = Math.max(0, (requeridos[grupo] || 0) - totalActualSinEste);
+
+    // el valor permitido final es el menor entre:
+    // - lo disponible en la casilla
+    // - lo que falta para completar el grupo
+    const maximoPermitido = Math.min(cantidadDisponible, restanteGrupo);
+
+    if (valorNuevo > maximoPermitido) {
+      valorNuevo = maximoPermitido;
+    }
+
+    input.value = valorNuevo;
+    input.dataset.prevValue = String(valorNuevo);
+
+    actualizarResumenSubunidadExtra(idSeguro);
+    validarDistribucionExtra();
+  } catch (error) {
+    console.error("Error en limitarCantidadExtra:", error);
   }
 }
   
