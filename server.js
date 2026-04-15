@@ -1368,8 +1368,17 @@ if (!req.file) {
       });
     }
 
-    const subunidadTexto = subunidades.join(", ");
-    const estacionTexto = estaciones.join(", ");
+    const subunidadTexto = Array.isArray(subunidades)
+  ? subunidades.join(", ")
+  : subunidades
+  ? String(subunidades)
+  : "";
+
+const estacionTexto = Array.isArray(estaciones)
+  ? estaciones.join(", ")
+  : estaciones
+  ? String(estaciones)
+  : "";
 
     // 🔥 GUARDAR NOVEDADES
     if (Array.isArray(novedades) && novedades.length > 0) {
