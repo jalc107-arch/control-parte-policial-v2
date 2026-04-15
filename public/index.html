@@ -4990,7 +4990,13 @@ function actualizarResumenSubunidadExtra(subunidad) {
   let patrulleros = 0;
   let auxiliares = 0;
 
+  // 🔹 IMPORTANTE: ahora usa el idSeguro generado
   const inputs = document.querySelectorAll(`[id^="extra_${subunidad}_"]`);
+
+  if (!inputs.length) {
+    console.warn("No se encontraron inputs para:", subunidad);
+    return;
+  }
 
   inputs.forEach(input => {
     const partes = input.id.split("_");
@@ -5006,8 +5012,11 @@ function actualizarResumenSubunidadExtra(subunidad) {
   const total = oficiales + ejecutivo + patrulleros + auxiliares;
 
   const resumen = document.getElementById(`resumen_${subunidad}`);
+
   if (resumen) {
     resumen.innerText = `${oficiales}-${ejecutivo}-${patrulleros}-${auxiliares} = ${total}`;
+  } else {
+    console.warn("No se encontró resumen para:", subunidad);
   }
 }
   
