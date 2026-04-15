@@ -674,12 +674,12 @@
           <button onclick="descargarPDF()">Descargar</button>
         </div>
         <div class="campo-corto">
-          <input 
-  type="file" 
-  id="foto_parte" 
+          <input
+  type="file"
+  id="foto_parte"
   name="foto_parte"
-  accept="image/*" 
-  capture="environment" 
+  accept="image/*"
+  capture="environment"
   class="input-archivo-minimal">
         </div>
         <pre id="resultado"></pre>
@@ -2680,12 +2680,18 @@ async function procesarFotoConSello() {
 // DESCARGAR PDF
 // =========================
   
-   async function descargarPDF() {
+async function descargarPDF() {
   const resultado = document.getElementById("resultado");
   let contenido = resultado?.innerText?.trim() || "";
 
   if (!contenido) {
     alert("Primero genera el parte");
+    return;
+  }
+
+  const fotoInput = document.getElementById("foto_parte");
+  if (!fotoInput || !fotoInput.files || !fotoInput.files.length) {
+    alert("Debes adjuntar la fotografía del parte antes de descargar.");
     return;
   }
 
@@ -2706,90 +2712,92 @@ async function procesarFotoConSello() {
   `);
   ventana.document.close();
 
-let consecutivoGPSE = "GPSE-PENDIENTE";
+  let consecutivoGPSE = "GPSE-PENDIENTE";
 
-try {
-  const gradoUsuario = document.getElementById("grado")?.value?.trim()?.toUpperCase() || "";
-  const rolUsuario = (document.getElementById("bloqueExcel")?.style.display === "block")
-    ? "ADMIN_EXCEL"
-    : "OPERADOR_PARTE";
+  try {
+    const gradoUsuario = document.getElementById("grado")?.value?.trim()?.toUpperCase() || "";
+    const rolUsuario = (document.getElementById("bloqueExcel")?.style.display === "block")
+      ? "ADMIN_EXCEL"
+      : "OPERADOR_PARTE";
 
-  const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
-  const dataVal = await validar.json();
+    const validar = await fetch(`/validar-parte?grado=${encodeURIComponent(gradoUsuario)}&rol=${encodeURIComponent(rolUsuario)}`);
+    const dataVal = await validar.json();
 
-  const unidad = document.getElementById("unidad_select")?.value || "";
-  const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
-  const estaciones = obtenerChecksMarcados("checks_estacion_parte");
-  const grado = document.getElementById("grado")?.value?.trim() || "";
-  const nombre = document.getElementById("nombre_elabora")?.value?.trim() || "";
-  const cedula = document.getElementById("cedula_elabora")?.value?.trim() || "";
-  const telefono = document.getElementById("telefono_elabora")?.value?.trim() || "";
+    const unidad = document.getElementById("unidad_select")?.value || "";
+    const subunidades = obtenerChecksMarcados("checks_subunidad_parte");
+    const estaciones = obtenerChecksMarcados("checks_estacion_parte");
+    const grado = document.getElementById("grado")?.value?.trim() || "";
+    const nombre = document.getElementById("nombre_elabora")?.value?.trim() || "";
+    const cedula = document.getElementById("cedula_elabora")?.value?.trim() || "";
+    const telefono = document.getElementById("telefono_elabora")?.value?.trim() || "";
 
-  const personas = document.querySelectorAll(".persona");
-  const novedadesSeleccionadas = [];
+    const personas = document.querySelectorAll(".persona");
+    const novedadesSeleccionadas = [];
 
-  personas.forEach(p => {
-    const select = p.querySelector("select");
-    if (!select) return;
-    const cedulaPersona = select.id.replace("novedad-", "");
-    const tipo = select.value || "";
-    novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
-  });
-
-  if (dataVal.guardarOficial) {
-    const resGuardar = await fetch("/guardar-parte-pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tipo: dataVal.tipo || null,
-        unidad,
-        subunidades,
-        estaciones,
-        grado_responsable: grado,
-        nombre_responsable: nombre,
-        cedula_responsable: cedula,
-        telefono_responsable: telefono,
-        texto_parte: contenido,
-        novedades: novedadesSeleccionadas
-      })
+    personas.forEach(p => {
+      const select = p.querySelector("select");
+      if (!select) return;
+      const cedulaPersona = select.id.replace("novedad-", "");
+      const tipo = select.value || "";
+      novedadesSeleccionadas.push({ cedula: cedulaPersona, tipo });
     });
 
-    const dataGuardar = await resGuardar.json();
+    if (dataVal.guardarOficial) {
+      const formData = new FormData();
+      formData.append("foto_parte", fotoInput.files[0]);
+      formData.append("tipo", dataVal.tipo || "");
+      formData.append("unidad", unidad);
+      formData.append("grado_responsable", grado);
+      formData.append("nombre_responsable", nombre);
+      formData.append("cedula_responsable", cedula);
+      formData.append("telefono_responsable", telefono);
+      formData.append("texto_parte", contenido);
+      formData.append("subunidades", JSON.stringify(subunidades));
+      formData.append("estaciones", JSON.stringify(estaciones));
+      formData.append("novedades", JSON.stringify(novedadesSeleccionadas));
 
-    if (!resGuardar.ok || !dataGuardar?.ok) {
-      throw new Error(dataGuardar?.mensaje || dataGuardar?.error || "No se pudo guardar el parte");
+      const resGuardar = await fetch("/guardar-parte-pdf", {
+        method: "POST",
+        body: formData
+      });
+
+      const dataGuardar = await resGuardar.json();
+
+      if (!resGuardar.ok || !dataGuardar?.ok) {
+        throw new Error(dataGuardar?.mensaje || dataGuardar?.error || "No se pudo guardar el parte");
+      }
+
+      if (!dataGuardar?.consecutivo) {
+        throw new Error("El servidor guardó el parte pero no devolvió el consecutivo");
+      }
+
+      consecutivoGPSE = dataGuardar.consecutivo;
+    } else {
+      consecutivoGPSE = "NO APLICA";
     }
 
-    if (!dataGuardar?.consecutivo) {
-      throw new Error("El servidor guardó el parte pero no devolvió el consecutivo");
-    }
-
-    consecutivoGPSE = dataGuardar.consecutivo;
-  } else {
-    consecutivoGPSE = "NO APLICA";
+  } catch (e) {
+    console.error("No se pudo obtener consecutivo real:", e);
+    alert(`No se pudo obtener el consecutivo: ${e.message}`);
+    ventana.close();
+    return;
   }
 
-} catch (e) {
-  console.error("No se pudo obtener consecutivo real:", e);
-  alert(`No se pudo obtener el consecutivo: ${e.message}`);
-  return;
-}
-     
   const fotoBase64 = await procesarFotoConSello();
   const qrTexto = construirTextoQRUbicacion();
   const qrUrl = qrTexto
     ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTexto)}`
     : "";
 
-const ahoraBogota = new Date().toLocaleString("es-CO", {
-  timeZone: "America/Bogota",
-  hour12: false
-});
+  const ahoraBogota = new Date().toLocaleString("es-CO", {
+    timeZone: "America/Bogota",
+    hour12: false
+  });
 
-const partesFecha = ahoraBogota.split(",");
-const fechaPDF = (partesFecha[0] || "").trim();
-const horaPDF = (partesFecha[1] || "").trim();
-     
+  const partesFecha = ahoraBogota.split(",");
+  const fechaPDF = (partesFecha[0] || "").trim();
+  const horaPDF = (partesFecha[1] || "").trim();
+
   ventana.document.open();
   ventana.document.write(`
     <html>
@@ -2871,16 +2879,16 @@ const horaPDF = (partesFecha[1] || "").trim();
 
         <div class="encabezado">
           <div class="titulo">
-  <div style="font-size:20px; font-weight:bold; margin-bottom:8px;">
-    REGISTRO DEL PARTE
-  </div>
-  <div style="font-size:12px; line-height:1.5;">
-    <div><b>Sistema:</b> Gestión de Partes y Servicios Extraordinarios</div>
-    ${consecutivoGPSE ? `<div><b>Consecutivo:</b> ${consecutivoGPSE}</div>` : ""}
-    <div><b>Fecha:</b> ${fechaPDF}</div>
-    <div><b>Hora:</b> ${horaPDF}</div>
-  </div>
-</div>
+            <div style="font-size:20px; font-weight:bold; margin-bottom:8px;">
+              REGISTRO DEL PARTE
+            </div>
+            <div style="font-size:12px; line-height:1.5;">
+              <div><b>Sistema:</b> Gestión de Partes y Servicios Extraordinarios</div>
+              ${consecutivoGPSE ? `<div><b>Consecutivo:</b> ${consecutivoGPSE}</div>` : ""}
+              <div><b>Fecha:</b> ${fechaPDF}</div>
+              <div><b>Hora:</b> ${horaPDF}</div>
+            </div>
+          </div>
           <div class="lado-derecho">
             ${qrUrl ? `<div class="qr-box"><img src="${qrUrl}" /><div class="label">Ubicación</div></div>` : ""}
             ${fotoBase64 ? `<div class="foto-box"><img src="${fotoBase64}" /><div class="label">Evidencia</div></div>` : ""}
