@@ -639,6 +639,48 @@
     text-align: left;
   }
 }
+
+    .grid-config-distribucion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: end;
+}
+
+.fila-excluir-grados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 14px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.fila-excluir-grados label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+}
+
+#unidad_apoyo_extra {
+  margin-top: 0;
+}
+
+#ruta_apoyo_extra {
+  background: #F8FAFC;
+  border: 1px solid #D9E2EC;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #122033;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@media (max-width: 768px) {
+  .grid-config-distribucion {
+    grid-template-columns: 1fr;
+  }
+}
     
 </style>
 </head>
@@ -977,125 +1019,125 @@
       <pre id="resumen_global_extra">0-0-0-0 = 0</pre>
     </div>
 
-    <div class="sub-card">
-      <h3>7.3 Dependencias que apoyan</h3>
+<div class="sub-card">
+  <h3>7.3 Dependencias que apoyan</h3>
 
-      <div class="sub-card" style="margin-top:15px;">
-        <h3>Configuración de distribución</h3>
+  <div class="filtro-box">
+    <div class="filtro-titulo">Configuración de distribución</div>
 
-        <div class="campo-corto">
-          <label><b>Nivel para tomar personal al servicio:</b></label>
-<select id="nivelDistribucion" class="input-select"
-  onchange="cargarEstacionesApoyoExtraDependiente(); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
-  <option value="subunidad">Subunidad</option>
-  <option value="estacion">Subunidad - Estación o grupo</option>
-  <option value="organico">Subunidad - Estación o grupo - Orgánico</option>
-</select>
-        </div>
-
-        <div style="margin-top:14px;">
-          <label><b>Excluir grados</b></label>
-          <div class="fila-grados-excluir" style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin-top:8px;">
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="CR" class="excluirGrado"> CR
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="TC" class="excluirGrado"> TC
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="MY" class="excluirGrado"> MY
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="CT" class="excluirGrado"> CT
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="TE" class="excluirGrado"> TE
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="ST" class="excluirGrado"> ST
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="CM" class="excluirGrado"> CM
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="SC" class="excluirGrado"> SC
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="IJ" class="excluirGrado"> IJ
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="IT" class="excluirGrado"> IT
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="SI" class="excluirGrado"> SI
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="PT" class="excluirGrado"> PT
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="PP" class="excluirGrado"> PP
-            </label>
-            <label style="display:flex; align-items:center; gap:6px;">
-              <input type="checkbox" value="AXP" class="excluirGrado"> AXP
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="campo-corto">
-        <select id="unidad_apoyo_extra" onchange="cargarSubunidadesApoyoExtraDependiente()">
-          <option value="">Seleccionar UNIDAD</option>
+    <div class="grid-config-distribucion">
+      <div>
+        <label><b>Nivel de distribución</b></label>
+        <select
+          id="nivelDistribucion"
+          class="input-select"
+          onchange="cargarEstacionesApoyoExtraDependiente(); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();"
+        >
+          <option value="subunidad">Subunidad</option>
+          <option value="estacion">Subunidad - Estación o grupo</option>
+          <option value="organico">Subunidad - Estación o grupo - Orgánico</option>
         </select>
       </div>
 
-      <div class="filtro-box">
-        <div class="filtro-titulo">Subunidad(es) que apoyan</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
-            Seleccionar todas
-          </button>
-          <button type="button" onclick="limpiarChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); limpiarChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();">
-            Limpiar
-          </button>
-        </div>
-        <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Estación(es) / Grupo(s) que apoyan</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_estacion_apoyo_extra'); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
-            Seleccionar todas
-          </button>
-          <button type="button" onclick="limpiarChecks('checks_estacion_apoyo_extra'); limpiarChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();">
-            Limpiar
-          </button>
-        </div>
-        <div id="checks_estacion_apoyo_extra" class="checks-contenedor"></div>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Orgánico(s) que apoyan</div>
-        <div class="filtro-botones">
-          <button type="button" onclick="seleccionarTodasChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();">
-            Seleccionar todas
-          </button>
-          <button type="button" onclick="limpiarChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();">
-            Limpiar
-          </button>
-        </div>
-        <div id="checks_organico_apoyo_extra" class="checks-contenedor"></div>
-      </div>
-
-      <div class="ayuda" id="ruta_apoyo_extra" style="display:none;"></div>
-
-      <div class="acciones-inline">
-        <button type="button" onclick="generarDistribucionExtraPorSubunidad()">
-          Generar distribución por dependencia
-        </button>
+      <div>
+        <label><b>Unidad base</b></label>
+        <select
+          id="unidad_apoyo_extra"
+          class="input-select"
+          onchange="cargarSubunidadesApoyoExtraDependiente();"
+        >
+          <option value="">Seleccionar UNIDAD</option>
+        </select>
       </div>
     </div>
 
+    <div style="margin-top:12px;">
+      <label><b>Excluir grados</b></label>
+      <div class="fila-excluir-grados">
+        <label><input type="checkbox" value="CR" class="excluirGrado"> CR</label>
+        <label><input type="checkbox" value="TC" class="excluirGrado"> TC</label>
+        <label><input type="checkbox" value="MY" class="excluirGrado"> MY</label>
+        <label><input type="checkbox" value="CT" class="excluirGrado"> CT</label>
+        <label><input type="checkbox" value="TE" class="excluirGrado"> TE</label>
+        <label><input type="checkbox" value="ST" class="excluirGrado"> ST</label>
+        <label><input type="checkbox" value="CM" class="excluirGrado"> CM</label>
+        <label><input type="checkbox" value="SC" class="excluirGrado"> SC</label>
+        <label><input type="checkbox" value="IJ" class="excluirGrado"> IJ</label>
+        <label><input type="checkbox" value="IT" class="excluirGrado"> IT</label>
+        <label><input type="checkbox" value="SI" class="excluirGrado"> SI</label>
+        <label><input type="checkbox" value="PT" class="excluirGrado"> PT</label>
+        <label><input type="checkbox" value="PP" class="excluirGrado"> PP</label>
+        <label><input type="checkbox" value="AXP" class="excluirGrado"> AXP</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="filtro-box">
+    <div class="filtro-titulo">Subunidad(es) que apoyan</div>
+    <div class="filtro-botones">
+      <button
+        type="button"
+        onclick="seleccionarTodasChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();"
+      >
+        Seleccionar todas
+      </button>
+      <button
+        type="button"
+        onclick="limpiarChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();"
+      >
+        Limpiar
+      </button>
+    </div>
+    <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
+  </div>
+
+  <div class="filtro-box">
+    <div class="filtro-titulo">Estación(es) / Grupo(s) que apoyan</div>
+    <div class="filtro-botones">
+      <button
+        type="button"
+        onclick="seleccionarTodasChecks('checks_estacion_apoyo_extra'); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();"
+      >
+        Seleccionar todas
+      </button>
+      <button
+        type="button"
+        onclick="limpiarChecks('checks_estacion_apoyo_extra'); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();"
+      >
+        Limpiar
+      </button>
+    </div>
+    <div id="checks_estacion_apoyo_extra" class="checks-contenedor"></div>
+  </div>
+
+  <div class="filtro-box">
+    <div class="filtro-titulo">Orgánico(s) que apoyan</div>
+    <div class="filtro-botones">
+      <button
+        type="button"
+        onclick="seleccionarTodasChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();"
+      >
+        Seleccionar todas
+      </button>
+      <button
+        type="button"
+        onclick="limpiarChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();"
+      >
+        Limpiar
+      </button>
+    </div>
+    <div id="checks_organico_apoyo_extra" class="checks-contenedor"></div>
+  </div>
+
+  <div class="ayuda" id="ruta_apoyo_extra" style="display:none; margin-top:10px;"></div>
+
+  <div class="acciones-inline" style="margin-top:14px;">
+    <button type="button" onclick="generarDistribucionExtraPorSubunidad()">
+      Generar distribución por dependencia
+    </button>
+  </div>
+</div>
+    
     <div class="sub-card">
       <h3>7.4 Distribución por dependencia y grado</h3>
       <div id="contenedor_distribucion_extra"></div>
