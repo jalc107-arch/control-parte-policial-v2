@@ -551,6 +551,50 @@
   border: 2px solid #0B1F3A;
 }
     
+    /* ===== CARGOS REQUERIDOS (MÓDULO 7) ===== */
+.cargos-requeridos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.card-cargo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #D9E2EC;
+  border-radius: 10px;
+  background: #F8FAFC;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 220px;
+}
+
+.card-cargo:hover {
+  background: #E6F0FA;
+  border-color: #0B1F3A;
+}
+
+.card-cargo input {
+  transform: scale(1.2);
+}
+
+.card-cargo span {
+  font-weight: 600;
+  color: #122033;
+}
+
+.card-cargo.activo {
+  background: #0B1F3A;
+  color: #fff;
+  border-color: #0B1F3A;
+}
+
+.card-cargo.activo span {
+  color: #fff;
+}
     
 </style>
 </head>
@@ -775,38 +819,36 @@
   <div class="filtro-box">
     <div class="filtro-titulo">Cargos requeridos para el servicio</div>
 
-    <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:center; margin-top:10px;">
-      <label style="display:flex; align-items:center; gap:8px; min-width:220px; font-weight:600; color:#122033; margin:0;">
-        <input
-          type="checkbox"
-          id="requiere_supervisor"
-          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();"
-          style="margin:0;"
-        >
-        <span>Requiere supervisor</span>
-      </label>
+   <div class="cargos-requeridos">
 
-      <label style="display:flex; align-items:center; gap:8px; min-width:250px; font-weight:600; color:#122033; margin:0;">
-        <input
-          type="checkbox"
-          id="requiere_jefe_servicio"
-          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();"
-          style="margin:0;"
-        >
-        <span>Requiere jefe de servicio</span>
-      </label>
+  <label class="card-cargo">
+    <input
+      type="checkbox"
+      id="requiere_supervisor"
+      onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
+    >
+    <span>Supervisor</span>
+  </label>
 
-      <label style="display:flex; align-items:center; gap:8px; min-width:220px; font-weight:600; color:#122033; margin:0;">
-        <input
-          type="checkbox"
-          id="requiere_jefe_pmu"
-          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();"
-          style="margin:0;"
-        >
-        <span>Requiere jefe PMU</span>
-      </label>
-    </div>
-  </div>
+  <label class="card-cargo">
+    <input
+      type="checkbox"
+      id="requiere_jefe_servicio"
+      onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
+    >
+    <span>Jefe de servicio</span>
+  </label>
+
+  <label class="card-cargo">
+    <input
+      type="checkbox"
+      id="requiere_jefe_pmu"
+      onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
+    >
+    <span>Jefe PMU</span>
+  </label>
+
+</div>
 
   <div class="filtro-box">
     <div class="filtro-titulo">Necesidad de grado para cargos</div>
@@ -8048,6 +8090,17 @@ async function validarServicioCerradoM11() {
   } catch (error) {
     console.error(error);
     return false;
+  }
+}
+  
+function activarCard(input) {
+  const label = input.closest(".card-cargo");
+  if (!label) return;
+
+  if (input.checked) {
+    label.classList.add("activo");
+  } else {
+    label.classList.remove("activo");
   }
 }
   
