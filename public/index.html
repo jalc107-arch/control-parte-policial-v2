@@ -6817,6 +6817,19 @@ document.addEventListener("DOMContentLoaded", () => {
     fecha.value = new Date().toISOString().split("T")[0];
   }
 
+  document.addEventListener("change", (e) => {
+  if (
+    e.target?.name === "supervisor_servicio" ||
+    e.target?.name === "jefe_servicio" ||
+    e.target?.name === "jefe_pmu" ||
+    e.target?.id === "chkSupervisor" ||
+    e.target?.id === "chkJefeServicio" ||
+    e.target?.id === "chkPMU"
+  ) {
+    validarDistribucionExtra();
+  }
+});
+
   fecha?.addEventListener("change", async () => {
     await cargarServiciosModulo12();
   });
