@@ -5021,7 +5021,7 @@ async function generarDistribucionExtraPorSubunidad() {
     return;
   }
 
-  // Si no marcó subunidades, toma todas las visibles de esa unidad
+  // 🔥 CORRECCIÓN: asegurar coherencia de subunidades visibles
   if (!subunidadesMarcadas.length) {
     subunidadesMarcadas = [
       ...new Set(
@@ -5032,14 +5032,10 @@ async function generarDistribucionExtraPorSubunidad() {
     ].sort((a, b) => a.localeCompare(b, "es"));
   }
 
-  // Filtrar por subunidad
-  if (subunidadesMarcadas.length) {
-    disponibles = disponibles.filter(p =>
-      subunidadesMarcadas.includes(String(p.subunidad || "").trim())
-    );
-  }
+  disponibles = disponibles.filter(p =>
+    subunidadesMarcadas.includes(String(p.subunidad || "").trim())
+  );
 
-  // Filtrar por estación / grupo
   if (estacionesMarcadas.length) {
     disponibles = disponibles.filter(p => {
       const subunidadActual = String(p.subunidad || "").trim();
@@ -5052,24 +5048,19 @@ async function generarDistribucionExtraPorSubunidad() {
     });
   }
 
-  // Filtrar por orgánico
   if (organicosMarcados.length) {
     disponibles = disponibles.filter(p => {
       const subunidadActual = String(p.subunidad || "").trim();
       const estacionActual = String(p.estacion || "").trim();
       const organicoActual = String(p.organico || "").trim();
 
-      const compuesto1 = organicoActual;
-      const compuesto2 = `${subunidadActual} - ${estacionActual} - ${organicoActual}`;
-
       return (
-        organicosMarcados.includes(compuesto1) ||
-        organicosMarcados.includes(compuesto2)
+        organicosMarcados.includes(organicoActual) ||
+        organicosMarcados.includes(`${subunidadActual} - ${estacionActual} - ${organicoActual}`)
       );
     });
   }
 
-  // Excluir grados
   if (excluirGrados.length) {
     disponibles = disponibles.filter(p =>
       !excluirGrados.includes(String(p.grado || "").trim().toUpperCase())
@@ -5077,7 +5068,7 @@ async function generarDistribucionExtraPorSubunidad() {
   }
 
   if (!disponibles.length) {
-    contenedor.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre de otro servicio para esa fecha con los filtros seleccionados.</div>`;
+    contenedor.innerHTML = `<div class="ayuda">No hay personal disponible con los filtros seleccionados.</div>`;
     return;
   }
 
@@ -5096,7 +5087,7 @@ async function generarDistribucionExtraPorSubunidad() {
       clave = subunidadActual;
     } else if (nivel === "estacion") {
       clave = `${subunidadActual} - ${estacionActual}`;
-    } else if (nivel === "organico") {
+    } else {
       clave = `${subunidadActual} - ${estacionActual} - ${organicoActual}`;
     }
 
@@ -5119,9 +5110,7 @@ async function generarDistribucionExtraPorSubunidad() {
 
       const grados = [
         ...new Set(
-          disponiblesGrupo
-            .map(p => String(p.grado || "").trim().toUpperCase())
-            .filter(Boolean)
+          disponiblesGrupo.map(p => String(p.grado || "").trim().toUpperCase()).filter(Boolean)
         )
       ].sort((a, b) => {
         const ia = ordenGrados.indexOf(a);
@@ -5141,8 +5130,7 @@ async function generarDistribucionExtraPorSubunidad() {
       let html = `
         <div class="bloque-titulo-tabla">${unidadSeleccionada} - ${clave}</div>
         <table class="tabla-app">
-          <thead>
-            <tr>
+          <thead><tr>
       `;
 
       grados.forEach(g => {
@@ -5150,20 +5138,10 @@ async function generarDistribucionExtraPorSubunidad() {
           String(p.grado || "").trim().toUpperCase() === g
         ).length;
 
-        html += `
-          <th>
-            ${g}<br>
-            <span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span>
-          </th>
-        `;
+        html += `<th>${g}<br><span style="font-size:11px;color:#52606D;">Disp: ${cantidadDisponible}</span></th>`;
       });
 
-      html += `
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-      `;
+      html += `</tr></thead><tbody><tr>`;
 
       grados.forEach(g => {
         const cantidadDisponible = disponiblesGrupo.filter(p =>
@@ -5186,12 +5164,8 @@ async function generarDistribucionExtraPorSubunidad() {
         `;
       });
 
-      html += `
-            </tr>
-          </tbody>
-        </table>
-        <pre id="resumen_${idSeguro}">0-0-0-0 = 0</pre>
-      `;
+      html += `</tr></tbody></table>
+        <pre id="resumen_${idSeguro}">0-0-0-0 = 0</pre>`;
 
       bloque.innerHTML = html;
       contenedor.appendChild(bloque);
@@ -5200,20 +5174,11 @@ async function generarDistribucionExtraPorSubunidad() {
     });
 
   if (!seGeneroAlMenosUno) {
-    validacion.innerText = "No se generó distribución. Revisa los filtros seleccionados.";
+    validacion.innerText = "No se generó distribución.";
     return;
   }
 
   validarDistribucionExtra();
-
-  console.log("CONFIG DISTRIBUCIÓN:", {
-    unidadSeleccionada,
-    nivel,
-    subunidadesMarcadas,
-    estacionesMarcadas,
-    organicosMarcados,
-    excluirGrados
-  });
 }
 
 function actualizarResumenSubunidadExtra(subunidad) {
