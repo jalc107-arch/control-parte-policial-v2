@@ -5020,6 +5020,7 @@ function actualizarResumenSubunidadExtra(subunidad) {
   }
 }
   
+
   
 function actualizarResumenGlobalExtra() {
   const oficialesInput = document.getElementById("total_oficiales_extra");
@@ -5093,55 +5094,130 @@ function actualizarResumenGlobalExtra() {
 }
   
 function validarDistribucionExtra() {
-  const reqOficiales = parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10);
-  const reqEjecutivo = parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10);
-  const reqPatrulleros = parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10);
-  const reqAuxiliares = parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10);
+  const contenedor = document.getElementById("contenedor_distribucion_extra");
+  const validacion = document.getElementById("validacion_distribucion_extra");
 
-  const inputs = Array.from(
-    document.querySelectorAll('#contenedor_distribucion_extra input[type="number"]')
+  if (!contenedor || !validacion) return;
+
+  const supervisorCedula = document.querySelector('input[name="supervisor_servicio"]:checked')?.value || "";
+  const jefeCedula = document.querySelector('input[name="jefe_servicio"]:checked')?.value || "";
+  const jefePmuCedula = document.querySelector('input[name="jefe_pmu"]:checked')?.value || "";
+
+  const incluirSupervisor = document.getElementById("chkSupervisor")?.checked;
+  const incluirJefe = document.getElementById("chkJefeServicio")?.checked;
+  const incluirPMU = document.getElementById("chkPMU")?.checked;
+
+  const excluirGrados = Array.from(document.querySelectorAll(".excluirGrado:checked"))
+    .map(el => String(el.value || "").trim().toUpperCase());
+
+  const oficialesSet = new Set(["CR","TC","MY","CT","TE","ST"]);
+  const ejecutivoSet = new Set(["CM","SC","IJ","IT","SI"]);
+  const patrullerosSet = new Set(["PT","PP"]);
+  const auxiliaresSet = new Set(["AXP"]);
+
+  const disponiblesBase = extraerDisponiblesConsulta();
+
+  const fechaServicio = document.getElementById("fecha_servicio_extra")?.value || "";
+  const resumenGlobal = {
+    oficiales: 0,
+    ejecutivo: 0,
+    patrulleros: 0,
+    auxiliares: 0
+  };
+
+  let requeridos = {
+    oficiales: parseInt(document.getElementById("total_oficiales_extra")?.value || "0", 10),
+    ejecutivo: parseInt(document.getElementById("total_ejecutivo_extra")?.value || "0", 10),
+    patrulleros: parseInt(document.getElementById("total_patrulleros_extra")?.value || "0", 10),
+    auxiliares: parseInt(document.getElementById("total_auxiliares_extra")?.value || "0", 10)
+  };
+
+  // Excluir grados marcados
+  let disponiblesFiltrados = disponiblesBase.filter(p =>
+    !excluirGrados.includes(String(p.grado || "").trim().toUpperCase())
   );
 
-  let sumOficiales = 0;
-  let sumEjecutivo = 0;
-  let sumPT = 0;
-  let sumPP = 0;
-  let sumAuxiliares = 0;
-
-  inputs.forEach(input => {
-    let valor = parseInt(input.value || "0", 10);
-    if (isNaN(valor) || valor < 0) valor = 0;
-
-    if (input.id.endsWith("_CR")) sumOficiales += valor;
-    else if (input.id.endsWith("_CM")) sumEjecutivo += valor;
-    else if (input.id.endsWith("_PT")) sumPT += valor;
-    else if (input.id.endsWith("_PP")) sumPP += valor;
-    else if (input.id.endsWith("_AXP")) sumAuxiliares += valor;
+  // Excluir personal ya reservado en roles
+  disponiblesFiltrados = disponiblesFiltrados.filter(p => {
+    const ced = String(p.cedula || "").trim();
+    return (
+      ced !== supervisorCedula &&
+      ced !== jefeCedula &&
+      ced !== jefePmuCedula
+    );
   });
 
-  const sumPatrullerosTotal = sumPT + sumPP;
+  // Restar roles obligatorios del disponible requerido
+  const reservados = [];
 
-  const solicitadoTexto = `${reqOficiales}-${reqEjecutivo}-${reqPatrulleros}-${reqAuxiliares} = ${reqOficiales + reqEjecutivo + reqPatrulleros + reqAuxiliares}`;
-  const distribuidoTexto = `${sumOficiales}-${sumEjecutivo}-${sumPatrullerosTotal}-${sumAuxiliares} = ${sumOficiales + sumEjecutivo + sumPatrullerosTotal + sumAuxiliares}`;
-
-  const validacion = document.getElementById("validacion_distribucion_extra");
-  if (!validacion) return;
-
-  const coincide =
-    sumOficiales === reqOficiales &&
-    sumEjecutivo === reqEjecutivo &&
-    sumPatrullerosTotal === reqPatrulleros &&
-    sumAuxiliares === reqAuxiliares;
-
-  if (coincide) {
-    validacion.innerText =
-      `Distribución correcta\nSolicitado: ${solicitadoTexto}\nDistribuido: ${distribuidoTexto}\n(PT: ${sumPT} | PP: ${sumPP})`;
-    validacion.style.color = "green";
-  } else {
-    validacion.innerText =
-      `Distribución no coincide\nSolicitado: ${solicitadoTexto}\nDistribuido: ${distribuidoTexto}\n(PT: ${sumPT} | PP: ${sumPP})`;
-    validacion.style.color = "red";
+  if (incluirSupervisor && supervisorCedula) {
+    const persona = disponiblesBase.find(p => String(p.cedula || "").trim() === supervisorCedula);
+    if (persona) reservados.push({ ...persona, rol_reservado: "SUPERVISOR" });
   }
+
+  if (incluirJefe && jefeCedula) {
+    const persona = disponiblesBase.find(p => String(p.cedula || "").trim() === jefeCedula);
+    if (persona) reservados.push({ ...persona, rol_reservado: "JEFE_SERVICIO" });
+  }
+
+  if (incluirPMU && jefePmuCedula) {
+    const persona = disponiblesBase.find(p => String(p.cedula || "").trim() === jefePmuCedula);
+    if (persona) reservados.push({ ...persona, rol_reservado: "JEFE_PMU" });
+  }
+
+  reservados.forEach(p => {
+    const grado = String(p.grado || "").trim().toUpperCase();
+
+    if (oficialesSet.has(grado)) {
+      requeridos.oficiales = Math.max(0, requeridos.oficiales - 1);
+    } else if (ejecutivoSet.has(grado)) {
+      requeridos.ejecutivo = Math.max(0, requeridos.ejecutivo - 1);
+    } else if (patrullerosSet.has(grado)) {
+      requeridos.patrulleros = Math.max(0, requeridos.patrulleros - 1);
+    } else if (auxiliaresSet.has(grado)) {
+      requeridos.auxiliares = Math.max(0, requeridos.auxiliares - 1);
+    }
+  });
+
+  const inputs = contenedor.querySelectorAll('input[id^="extra_"]');
+
+  inputs.forEach(input => {
+    const partes = input.id.split("_");
+    const grado = partes[partes.length - 1];
+    const valor = parseInt(input.value || "0", 10);
+
+    if (oficialesSet.has(grado)) resumenGlobal.oficiales += valor;
+    else if (ejecutivoSet.has(grado)) resumenGlobal.ejecutivo += valor;
+    else if (patrullerosSet.has(grado)) resumenGlobal.patrulleros += valor;
+    else if (auxiliaresSet.has(grado)) resumenGlobal.auxiliares += valor;
+  });
+
+  const cumple =
+    resumenGlobal.oficiales === requeridos.oficiales &&
+    resumenGlobal.ejecutivo === requeridos.ejecutivo &&
+    resumenGlobal.patrulleros === requeridos.patrulleros &&
+    resumenGlobal.auxiliares === requeridos.auxiliares;
+
+  const faltantes = {
+    oficiales: Math.max(0, requeridos.oficiales - resumenGlobal.oficiales),
+    ejecutivo: Math.max(0, requeridos.ejecutivo - resumenGlobal.ejecutivo),
+    patrulleros: Math.max(0, requeridos.patrulleros - resumenGlobal.patrulleros),
+    auxiliares: Math.max(0, requeridos.auxiliares - resumenGlobal.auxiliares)
+  };
+
+  const totalReservadosTexto = reservados.length
+    ? reservados.map(r => `${r.rol_reservado}: ${r.grado || ""} ${r.apellidos || ""} ${r.nombres || ""}`).join("\n")
+    : "Sin roles reservados";
+
+  validacion.innerText =
+    `REQUERIDO AJUSTADO:\n` +
+    `${requeridos.oficiales}-${requeridos.ejecutivo}-${requeridos.patrulleros}-${requeridos.auxiliares}\n\n` +
+    `DISTRIBUIDO:\n` +
+    `${resumenGlobal.oficiales}-${resumenGlobal.ejecutivo}-${resumenGlobal.patrulleros}-${resumenGlobal.auxiliares}\n\n` +
+    `FALTANTES:\n` +
+    `${faltantes.oficiales}-${faltantes.ejecutivo}-${faltantes.patrulleros}-${faltantes.auxiliares}\n\n` +
+    `ROLES RESERVADOS:\n${totalReservadosTexto}\n\n` +
+    (cumple ? "✅ Distribución válida" : "⚠️ La distribución no coincide con el requerido ajustado");
 }
 
 function controlarLimiteSolicitadoExtra(input) {
