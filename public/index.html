@@ -761,73 +761,94 @@
 
   <div id="panelExtraordinario" class="panel-contenido">
 
-    <div class="sub-card">
-      <h3>7.1 Datos del servicio</h3>
+<div class="sub-card">
+  <h3>7.1 Datos del servicio</h3>
 
-      <div class="campo-corto">
-        <input id="titulo_servicio_extra" type="text" placeholder="Título del servicio extraordinario" />
-      </div>
+  <div class="campo-corto">
+    <input id="titulo_servicio_extra" type="text" placeholder="Título del servicio extraordinario" />
+  </div>
 
-      <div class="campo-corto">
-        <input id="fecha_servicio_extra" type="date" onchange="cargarResponsablesServicioExtra()" />
-      </div>
+  <div class="campo-corto">
+    <input id="fecha_servicio_extra" type="date" onchange="cargarResponsablesServicioExtra()" />
+  </div>
 
-      <div class="filtro-box">
-        <div class="filtro-titulo">Necesidad de grado para cargos</div>
+  <div class="filtro-box">
+    <div class="filtro-titulo">Cargos requeridos para el servicio</div>
 
-        <label>Supervisor</label>
-        <select id="grado_supervisor_servicio" onchange="cargarResponsablesServicioExtra()">
-          <option value="">Grado supervisor</option>
-          <option value="OFICIALES">OFICIALES</option>
-          <option value="EJECUTIVO">EJECUTIVO</option>
-          <option value="PATRULLEROS">PATRULLEROS</option>
-          <option value="AXP">AUXILIARES</option>
-          <option value="TODOS">TODOS</option>
-        </select>
+    <div class="fila-grados-excluir" style="display:flex; flex-wrap:wrap; gap:18px; align-items:center; margin-top:8px;">
+      <label style="display:flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="requiere_supervisor" onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();">
+        Requiere supervisor
+      </label>
 
-        <label>Jefe de servicio</label>
-        <select id="grado_jefe_servicio" onchange="cargarResponsablesServicioExtra()">
-          <option value="">Grado jefe</option>
-          <option value="OFICIALES">OFICIALES</option>
-          <option value="EJECUTIVO">EJECUTIVO</option>
-          <option value="PATRULLEROS">PATRULLEROS</option>
-          <option value="AXP">AUXILIARES</option>
-          <option value="TODOS">TODOS</option>
-        </select>
+      <label style="display:flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="requiere_jefe_servicio" onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();">
+        Requiere jefe de servicio
+      </label>
 
-        <label>Jefe PMU</label>
-        <select id="grado_jefe_pmu" onchange="cargarResponsablesServicioExtra()">
-          <option value="">Grado PMU</option>
-          <option value="OFICIALES">OFICIALES</option>
-          <option value="EJECUTIVO">EJECUTIVO</option>
-          <option value="PATRULLEROS">PATRULLEROS</option>
-          <option value="AXP">AUXILIARES</option>
-          <option value="TODOS">TODOS</option>
-        </select>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Supervisor del servicio</div>
-        <div id="supervisor_servicio_box" class="checks-contenedor">
-          <div class="ayuda">Aquí irá la selección del supervisor.</div>
-        </div>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Jefe del servicio</div>
-        <div id="jefe_servicio_box" class="checks-contenedor">
-          <div class="ayuda">Aquí irá la selección del jefe del servicio.</div>
-        </div>
-      </div>
-
-      <div class="filtro-box">
-        <div class="filtro-titulo">Jefe de PMU</div>
-        <div id="jefe_pmu_box" class="checks-contenedor">
-          <div class="ayuda">Aquí irá la selección del jefe de PMU.</div>
-        </div>
-      </div>
+      <label style="display:flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="requiere_jefe_pmu" onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra();">
+        Requiere jefe PMU
+      </label>
     </div>
+  </div>
 
+  <div class="filtro-box">
+    <div class="filtro-titulo">Necesidad de grado para cargos</div>
+
+    <label>Supervisor</label>
+    <select id="grado_supervisor_servicio" onchange="cargarResponsablesServicioExtra()" disabled>
+      <option value="">Grado supervisor</option>
+      <option value="OFICIALES">OFICIALES</option>
+      <option value="EJECUTIVO">EJECUTIVO</option>
+      <option value="PATRULLEROS">PATRULLEROS</option>
+      <option value="AXP">AUXILIARES</option>
+      <option value="TODOS">TODOS</option>
+    </select>
+
+    <label>Jefe de servicio</label>
+    <select id="grado_jefe_servicio" onchange="cargarResponsablesServicioExtra()" disabled>
+      <option value="">Grado jefe</option>
+      <option value="OFICIALES">OFICIALES</option>
+      <option value="EJECUTIVO">EJECUTIVO</option>
+      <option value="PATRULLEROS">PATRULLEROS</option>
+      <option value="AXP">AUXILIARES</option>
+      <option value="TODOS">TODOS</option>
+    </select>
+
+    <label>Jefe PMU</label>
+    <select id="grado_jefe_pmu" onchange="cargarResponsablesServicioExtra()" disabled>
+      <option value="">Grado PMU</option>
+      <option value="OFICIALES">OFICIALES</option>
+      <option value="EJECUTIVO">EJECUTIVO</option>
+      <option value="PATRULLEROS">PATRULLEROS</option>
+      <option value="AXP">AUXILIARES</option>
+      <option value="TODOS">TODOS</option>
+    </select>
+  </div>
+
+  <div class="filtro-box" id="box_supervisor_servicio" style="display:none;">
+    <div class="filtro-titulo">Supervisor del servicio</div>
+    <div id="supervisor_servicio_box" class="checks-contenedor">
+      <div class="ayuda">Aquí irá la selección del supervisor.</div>
+    </div>
+  </div>
+
+  <div class="filtro-box" id="box_jefe_servicio" style="display:none;">
+    <div class="filtro-titulo">Jefe del servicio</div>
+    <div id="jefe_servicio_box" class="checks-contenedor">
+      <div class="ayuda">Aquí irá la selección del jefe del servicio.</div>
+    </div>
+  </div>
+
+  <div class="filtro-box" id="box_jefe_pmu" style="display:none;">
+    <div class="filtro-titulo">Jefe de PMU</div>
+    <div id="jefe_pmu_box" class="checks-contenedor">
+      <div class="ayuda">Aquí irá la selección del jefe de PMU.</div>
+    </div>
+  </div>
+</div>
+    
     <div class="sub-card">
       <h3>7.2 Totales requeridos</h3>
 
@@ -5069,7 +5090,38 @@ function actualizarResumenSubunidadExtra(subunidad) {
   }
 }
   
+function toggleCargoRequeridoExtra() {
+  const requiereSupervisor = document.getElementById("requiere_supervisor")?.checked;
+  const requiereJefe = document.getElementById("requiere_jefe_servicio")?.checked;
+  const requierePMU = document.getElementById("requiere_jefe_pmu")?.checked;
 
+  const gradoSupervisor = document.getElementById("grado_supervisor_servicio");
+  const gradoJefe = document.getElementById("grado_jefe_servicio");
+  const gradoPMU = document.getElementById("grado_jefe_pmu");
+
+  const boxSupervisor = document.getElementById("box_supervisor_servicio");
+  const boxJefe = document.getElementById("box_jefe_servicio");
+  const boxPMU = document.getElementById("box_jefe_pmu");
+
+  if (gradoSupervisor) {
+    gradoSupervisor.disabled = !requiereSupervisor;
+    if (!requiereSupervisor) gradoSupervisor.value = "";
+  }
+
+  if (gradoJefe) {
+    gradoJefe.disabled = !requiereJefe;
+    if (!requiereJefe) gradoJefe.value = "";
+  }
+
+  if (gradoPMU) {
+    gradoPMU.disabled = !requierePMU;
+    if (!requierePMU) gradoPMU.value = "";
+  }
+
+  if (boxSupervisor) boxSupervisor.style.display = requiereSupervisor ? "block" : "none";
+  if (boxJefe) boxJefe.style.display = requiereJefe ? "block" : "none";
+  if (boxPMU) boxPMU.style.display = requierePMU ? "block" : "none";
+}
   
 function actualizarResumenGlobalExtra() {
   const oficialesInput = document.getElementById("total_oficiales_extra");
@@ -6861,6 +6913,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const unidad = document.getElementById("m12_unidad");
   const servicio = document.getElementById("m12_servicio");
   const subunidad = document.getElementById("m12_subunidad");
+
+  toggleCargoRequeridoExtra();
 
   if (fecha && !fecha.value) {
     fecha.value = new Date().toISOString().split("T")[0];
