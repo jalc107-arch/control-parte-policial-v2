@@ -762,71 +762,72 @@
   <div id="panelExtraordinario" class="panel-contenido">
 
     <div class="sub-card">
-  <h3>7.1 Datos del servicio</h3>
+      <h3>7.1 Datos del servicio</h3>
 
-  <div class="campo-corto">
-    <input id="titulo_servicio_extra" type="text" placeholder="Título del servicio extraordinario" />
-  </div>
+      <div class="campo-corto">
+        <input id="titulo_servicio_extra" type="text" placeholder="Título del servicio extraordinario" />
+      </div>
 
-  <div class="campo-corto">
-    <input id="fecha_servicio_extra" type="date" onchange="cargarResponsablesServicioExtra()" />
-  </div>
+      <div class="campo-corto">
+        <input id="fecha_servicio_extra" type="date" onchange="cargarResponsablesServicioExtra()" />
+      </div>
 
-  <div class="filtro-box">
-    <div class="filtro-titulo">Necesidad de grado para cargos</div>
+      <div class="filtro-box">
+        <div class="filtro-titulo">Necesidad de grado para cargos</div>
 
-    <label>Supervisor</label>
-    <select id="grado_supervisor_servicio" onchange="cargarResponsablesServicioExtra()">
-      <option value="">Grado supervisor</option>
-      <option value="OFICIALES">OFICIALES</option>
-      <option value="EJECUTIVO">EJECUTIVO</option>
-      <option value="PATRULLEROS">PATRULLEROS</option>
-      <option value="AXP">AUXILIARES</option>
-      <option value="TODOS">TODOS</option>
-    </select>
+        <label>Supervisor</label>
+        <select id="grado_supervisor_servicio" onchange="cargarResponsablesServicioExtra()">
+          <option value="">Grado supervisor</option>
+          <option value="OFICIALES">OFICIALES</option>
+          <option value="EJECUTIVO">EJECUTIVO</option>
+          <option value="PATRULLEROS">PATRULLEROS</option>
+          <option value="AXP">AUXILIARES</option>
+          <option value="TODOS">TODOS</option>
+        </select>
 
-    <label>Jefe de servicio</label>
-    <select id="grado_jefe_servicio" onchange="cargarResponsablesServicioExtra()">
-      <option value="">Grado jefe</option>
-      <option value="OFICIALES">OFICIALES</option>
-      <option value="EJECUTIVO">EJECUTIVO</option>
-      <option value="PATRULLEROS">PATRULLEROS</option>
-      <option value="AXP">AUXILIARES</option>
-      <option value="TODOS">TODOS</option>
-    </select>
+        <label>Jefe de servicio</label>
+        <select id="grado_jefe_servicio" onchange="cargarResponsablesServicioExtra()">
+          <option value="">Grado jefe</option>
+          <option value="OFICIALES">OFICIALES</option>
+          <option value="EJECUTIVO">EJECUTIVO</option>
+          <option value="PATRULLEROS">PATRULLEROS</option>
+          <option value="AXP">AUXILIARES</option>
+          <option value="TODOS">TODOS</option>
+        </select>
 
-    <label>Jefe PMU</label>
-    <select id="grado_jefe_pmu" onchange="cargarResponsablesServicioExtra()">
-      <option value="">Grado PMU</option>
-      <option value="OFICIALES">OFICIALES</option>
-      <option value="EJECUTIVO">EJECUTIVO</option>
-      <option value="PATRULLEROS">PATRULLEROS</option>
-      <option value="AXP">AUXILIARES</option>
-      <option value="TODOS">TODOS</option>
-    </select>
-  </div>
+        <label>Jefe PMU</label>
+        <select id="grado_jefe_pmu" onchange="cargarResponsablesServicioExtra()">
+          <option value="">Grado PMU</option>
+          <option value="OFICIALES">OFICIALES</option>
+          <option value="EJECUTIVO">EJECUTIVO</option>
+          <option value="PATRULLEROS">PATRULLEROS</option>
+          <option value="AXP">AUXILIARES</option>
+          <option value="TODOS">TODOS</option>
+        </select>
+      </div>
 
-  <div class="filtro-box">
-    <div class="filtro-titulo">Supervisor del servicio</div>
-    <div id="supervisor_servicio_box" class="checks-contenedor">
-      <div class="ayuda">Aquí irá la selección del supervisor.</div>
+      <div class="filtro-box">
+        <div class="filtro-titulo">Supervisor del servicio</div>
+        <div id="supervisor_servicio_box" class="checks-contenedor">
+          <div class="ayuda">Aquí irá la selección del supervisor.</div>
+        </div>
+      </div>
+
+      <div class="filtro-box">
+        <div class="filtro-titulo">Jefe del servicio</div>
+        <div id="jefe_servicio_box" class="checks-contenedor">
+          <div class="ayuda">Aquí irá la selección del jefe del servicio.</div>
+        </div>
+      </div>
+
+      <div class="filtro-box">
+        <div class="filtro-titulo">Jefe de PMU</div>
+        <div id="jefe_pmu_box" class="checks-contenedor">
+          <div class="ayuda">Aquí irá la selección del jefe de PMU.</div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="filtro-box">
-    <div class="filtro-titulo">Jefe del servicio</div>
-    <div id="jefe_servicio_box" class="checks-contenedor">
-      <div class="ayuda">Aquí irá la selección del jefe del servicio.</div>
-    </div>
-  </div>
-
-  <div class="filtro-box">
-    <div class="filtro-titulo">Jefe de PMU</div>
-    <div id="jefe_pmu_box" class="checks-contenedor">
-      <div class="ayuda">Aquí irá la selección del jefe de PMU.</div>
-    </div>
-  </div>
-</div>
     <div class="sub-card">
       <h3>7.2 Totales requeridos</h3>
 
@@ -856,95 +857,97 @@
     </div>
 
     <div class="sub-card">
-  <h3>7.3 Dependencias que apoyan</h3>
+      <h3>7.3 Dependencias que apoyan</h3>
 
-  <div class="sub-card" style="margin-top:15px;">
+      <div class="sub-card" style="margin-top:15px;">
+        <h3>Configuración de distribución</h3>
 
-  <h3>Configuración de distribución</h3>
+        <div class="campo-corto">
+          <label for="nivelDistribucion"><b>Nivel de distribución</b></label>
+          <select id="nivelDistribucion" class="input-select">
+            <option value="unidad">Unidad</option>
+            <option value="estacion">Unidad - Estación/Grupo</option>
+            <option value="organico">Unidad - Estación/Grupo - Orgánico</option>
+          </select>
+        </div>
 
-  <!-- NIVEL -->
-  <label><b>Nivel de distribución:</b></label>
-  <select id="nivelDistribucion" class="input-select">
-    <option value="unidad">Unidad</option>
-    <option value="estacion">Unidad - Estación/Grupo</option>
-    <option value="organico">Unidad - Estación - Orgánico</option>
-  </select>
+        <div style="margin-top:14px;">
+          <label><b>Excluir grados</b></label>
+          <div class="fila-grados-excluir" style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin-top:8px;">
+            <label style="display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" value="CT" class="excluirGrado"> CT
+            </label>
+            <label style="display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" value="MY" class="excluirGrado"> MY
+            </label>
+            <label style="display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" value="CAP" class="excluirGrado"> CAP
+            </label>
+            <label style="display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" value="TEN" class="excluirGrado"> TEN
+            </label>
+          </div>
+        </div>
+      </div>
 
-  <br><br>
+      <div class="campo-corto">
+        <select id="unidad_apoyo_extra" onchange="cargarSubunidadesApoyoExtraDependiente()">
+          <option value="">Seleccionar UNIDAD</option>
+        </select>
+      </div>
 
-  <!-- ROLES -->
-  <label><b>Incluir roles:</b></label><br>
-  <label><input type="checkbox" id="chkSupervisor"> Supervisor</label><br>
-  <label><input type="checkbox" id="chkJefeServicio"> Jefe de servicio</label><br>
-  <label><input type="checkbox" id="chkPMU"> Jefe PMU</label>
+      <div class="filtro-box">
+        <div class="filtro-titulo">Subunidad(es) que apoyan</div>
+        <div class="filtro-botones">
+          <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
+            Seleccionar todas
+          </button>
+          <button type="button" onclick="limpiarChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); limpiarChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();">
+            Limpiar
+          </button>
+        </div>
+        <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
+      </div>
 
-  <br><br>
+      <div class="filtro-box">
+        <div class="filtro-titulo">Estación(es) / Grupo(s) que apoyan</div>
+        <div class="filtro-botones">
+          <button type="button" onclick="seleccionarTodasChecks('checks_estacion_apoyo_extra'); cargarOrganicosApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
+            Seleccionar todas
+          </button>
+          <button type="button" onclick="limpiarChecks('checks_estacion_apoyo_extra'); limpiarChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();">
+            Limpiar
+          </button>
+        </div>
+        <div id="checks_estacion_apoyo_extra" class="checks-contenedor"></div>
+      </div>
 
-  <!-- EXCLUSIÓN -->
-  <label><b>Excluir grados:</b></label><br>
-  <label><input type="checkbox" value="CR" class="excluirGrado"> CR</label>
-  <label><input type="checkbox" value="TC" class="excluirGrado"> TC</label>
-  <label><input type="checkbox" value="MY" class="excluirGrado"> MY</label>
-  <label><input type="checkbox" value="CT" class="excluirGrado"> CT</label>
-    <label><input type="checkbox" value="TE" class="excluirGrado"> TE</label>
-    <label><input type="checkbox" value="ST" class="excluirGrado"> ST</label>
-    <label><input type="checkbox" value="CM" class="excluirGrado"> CM</label>
-    <label><input type="checkbox" value="SC" class="excluirGrado"> SC</label>
-    <label><input type="checkbox" value="IJ" class="excluirGrado"> IJ</label>
-    <label><input type="checkbox" value="IT" class="excluirGrado"> IT</label>
-    <label><input type="checkbox" value="SI" class="excluirGrado"> SI</label>
-    <label><input type="checkbox" value="PT" class="excluirGrado"> PT</label>
-    <label><input type="checkbox" value="PP" class="excluirGrado"> PP</label>
-    <label><input type="checkbox" value="AXP" class="excluirGrado"> AXP</label>
-    
+      <div class="filtro-box">
+        <div class="filtro-titulo">Orgánico(s) que apoyan</div>
+        <div class="filtro-botones">
+          <button type="button" onclick="seleccionarTodasChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();">
+            Seleccionar todas
+          </button>
+          <button type="button" onclick="limpiarChecks('checks_organico_apoyo_extra'); actualizarRutaApoyoExtra();">
+            Limpiar
+          </button>
+        </div>
+        <div id="checks_organico_apoyo_extra" class="checks-contenedor"></div>
+      </div>
 
-</div>
+      <div class="ayuda" id="ruta_apoyo_extra" style="display:none;"></div>
 
-  <div class="campo-corto">
-    <select id="unidad_apoyo_extra" onchange="cargarSubunidadesApoyoExtraDependiente()">
-      <option value="">Seleccionar UNIDAD</option>
-    </select>
-  </div>
-
-  <div class="filtro-box">
-    <div class="filtro-titulo">Subunidad(es) que apoyan</div>
-    <div class="filtro-botones">
-      <button type="button" onclick="seleccionarTodasChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
-        Seleccionar todas
-      </button>
-      <button type="button" onclick="limpiarChecks('checks_subunidad_apoyo_extra'); cargarEstacionesApoyoExtraDependiente(); actualizarRutaApoyoExtra();">
-        Limpiar
-      </button>
+      <div class="acciones-inline">
+        <button type="button" onclick="generarDistribucionExtraPorSubunidad()">
+          Generar distribución por dependencia
+        </button>
+      </div>
     </div>
-    <div id="checks_subunidad_apoyo_extra" class="checks-contenedor"></div>
-  </div>
-
-  <div class="filtro-box">
-    <div class="filtro-titulo">Estación(es) / Grupo(s) que apoyan</div>
-    <div class="filtro-botones">
-      <button type="button" onclick="seleccionarTodasChecks('checks_estacion_apoyo_extra'); actualizarRutaApoyoExtra();">
-        Seleccionar todas
-      </button>
-      <button type="button" onclick="limpiarChecks('checks_estacion_apoyo_extra'); actualizarRutaApoyoExtra();">
-        Limpiar
-      </button>
-    </div>
-    <div id="checks_estacion_apoyo_extra" class="checks-contenedor"></div>
-  </div>
-
-<div class="ayuda" id="ruta_apoyo_extra" style="display:none;"></div>
-      
-  <div class="acciones-inline">
-    <button type="button" onclick="generarDistribucionExtraPorDependencia()">
-      Generar distribución por dependencia
-    </button>
-  </div>
-</div>
 
     <div class="sub-card">
-  <h3>7.4 Distribución por dependencia y grado</h3>
-  <div id="contenedor_distribucion_extra"></div>
-</div>
+      <h3>7.4 Distribución por dependencia y grado</h3>
+      <div id="contenedor_distribucion_extra"></div>
+    </div>
 
     <div class="sub-card">
       <h3>7.5 Validación de distribución</h3>
@@ -961,14 +964,17 @@
       <button type="button" onclick="aplicarServicioExtraordinarioPorGrupos()">Generar personal</button>
       <button type="button" onclick="guardarServicioExtraordinarioFinal()">Guardar servicio extraordinario</button>
       <button type="button" onclick="descargarServicioExtraordinario()">Descargar Excel</button>
-          </div>
+    </div>
+
   </div>
 </div>
 
-   <button id="btn_limpiar_prueba" style="display:none;" type="button" onclick="limpiarPruebaServicioExtra()">
+<button id="btn_limpiar_prueba" style="display:none;" type="button" onclick="limpiarPruebaServicioExtra()">
   Limpiar prueba
 </button>
 
+<div class="seccion" id="bloqueHistorialExtra" style="display:none;">
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
     
     <div class="seccion" id="bloqueHistorialExtra" style="display:none;">
       <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialExtra')">
