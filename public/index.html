@@ -819,36 +819,35 @@
   <div class="filtro-box">
     <div class="filtro-titulo">Cargos requeridos para el servicio</div>
 
-   <div class="cargos-requeridos">
+    <div class="cargos-requeridos">
+      <label class="card-cargo">
+        <input
+          type="checkbox"
+          id="requiere_supervisor"
+          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
+        >
+        <span>Supervisor</span>
+      </label>
 
-  <label class="card-cargo">
-    <input
-      type="checkbox"
-      id="requiere_supervisor"
-      onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
-    >
-    <span>Supervisor</span>
-  </label>
+      <label class="card-cargo">
+        <input
+          type="checkbox"
+          id="requiere_jefe_servicio"
+          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
+        >
+        <span>Jefe de servicio</span>
+      </label>
 
-  <label class="card-cargo">
-    <input
-      type="checkbox"
-      id="requiere_jefe_servicio"
-      onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
-    >
-    <span>Jefe de servicio</span>
-  </label>
-
-  <label class="card-cargo">
-    <input
-      type="checkbox"
-      id="requiere_jefe_pmu"
-      onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
-    >
-    <span>Jefe PMU</span>
-  </label>
-
-</div>
+      <label class="card-cargo">
+        <input
+          type="checkbox"
+          id="requiere_jefe_pmu"
+          onchange="toggleCargoRequeridoExtra(); cargarResponsablesServicioExtra(); activarCard(this);"
+        >
+        <span>Jefe PMU</span>
+      </label>
+    </div>
+  </div>
 
   <div class="filtro-box">
     <div class="filtro-titulo">Necesidad de grado para cargos</div>
