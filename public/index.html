@@ -4727,20 +4727,34 @@ async function consultarControlCumplimientoDiario() {
 
   
 async function generarDistribucionExtraPorSubunidad() {
+  const nivel = document.getElementById("nivelDistribucion")?.value || "estacion";
+
+  const incluirSupervisor = document.getElementById("chkSupervisor")?.checked;
+  const incluirJefe = document.getElementById("chkJefeServicio")?.checked;
+  const incluirPMU = document.getElementById("chkPMU")?.checked;
+
+  const excluirGrados = Array.from(document.querySelectorAll(".excluirGrado:checked"))
+    .map(el => String(el.value || "").trim().toUpperCase());
+
   let subunidades = Array.from(
     document.querySelectorAll('#checks_subunidad_apoyo_extra input[type="checkbox"]:checked')
   ).map(c => c.value);
 
-// si el usuario no desmarca nada → usar todas
-if (!subunidades.length) {
-  subunidades = [
-    ...new Set(
-      estructuraGlobal.map(x => (x.subunidad || "").trim()).filter(Boolean)
-    )
-  ];
-}
+  const estacionesMarcadas = Array.from(
+    document.querySelectorAll('#checks_estacion_apoyo_extra input[type="checkbox"]:checked')
+  ).map(c => c.value);
+
+  // si el usuario no desmarca nada → usar todas
+  if (!subunidades.length) {
+    subunidades = [
+      ...new Set(
+        estructuraGlobal.map(x => (x.subunidad || "").trim()).filter(Boolean)
+      )
+    ];
+  }
+
   console.log("SUBUNIDADES USADAS:", subunidades);
-  
+
   const contenedor = document.getElementById("contenedor_distribucion_extra");
   const validacion = document.getElementById("validacion_distribucion_extra");
 
@@ -4790,26 +4804,78 @@ if (!subunidades.length) {
     );
   });
 
-  if (!disponibles.length) {
+  let disponiblesFiltrados = disponibles;
+
+  // filtrar por subunidad
+  if (subunidades.length) {
+    disponiblesFiltrados = disponiblesFiltrados.filter(p =>
+      subunidades.includes(String(p.subunidad || "").trim())
+    );
+  }
+
+  // filtrar por estación/grupo si seleccionó alguna
+  if (estacionesMarcadas.length) {
+    disponiblesFiltrados = disponiblesFiltrados.filter(p => {
+      const estacionActual = String(p.estacion || "").trim();
+      const subunidadActual = String(p.subunidad || "").trim();
+      const compuesto = `${subunidadActual} - ${estacionActual}`;
+      return (
+        estacionesMarcadas.includes(estacionActual) ||
+        estacionesMarcadas.includes(compuesto)
+      );
+    });
+  }
+
+  // excluir grados
+  if (excluirGrados.length) {
+    disponiblesFiltrados = disponiblesFiltrados.filter(p =>
+      !excluirGrados.includes(String(p.grado || "").trim().toUpperCase())
+    );
+  }
+
+  if (!disponiblesFiltrados.length) {
     contenedor.innerHTML = `<div class="ayuda">No hay personal APTO, DISPONIBLE y libre de otro servicio para esa fecha.</div>`;
     return;
   }
 
-  const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AXP"];
+  const ordenGrados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AXP"];
   let seGeneroAlMenosUno = false;
 
-  subunidades.forEach(subunidad => {
-    const disponiblesSubunidad = disponibles.filter(p =>
-      String(p.subunidad || "").trim().toUpperCase() === String(subunidad || "").trim().toUpperCase()
-    );
+  const agrupado = {};
 
-    if (!disponiblesSubunidad.length) {
-      return;
+  disponiblesFiltrados.forEach(p => {
+    const unidadActual = String(p.unidad || "").trim();
+    const subunidadActual = String(p.subunidad || "").trim();
+    const estacionActual = String(p.estacion || "").trim();
+    const organicoActual = String(p.organico || "").trim();
+
+    let clave = "";
+
+    if (nivel === "unidad") {
+      clave = unidadActual;
+    } else if (nivel === "estacion") {
+      clave = `${unidadActual} - ${subunidadActual} - ${estacionActual}`;
+    } else if (nivel === "organico") {
+      clave = `${unidadActual} - ${subunidadActual} - ${estacionActual} - ${organicoActual}`;
     }
+
+    if (!clave.trim()) return;
+
+    if (!agrupado[clave]) {
+      agrupado[clave] = [];
+    }
+
+    agrupado[clave].push(p);
+  });
+
+  Object.keys(agrupado).sort().forEach(clave => {
+    const disponiblesGrupo = agrupado[clave];
+
+    if (!disponiblesGrupo.length) return;
 
     const grados = [
       ...new Set(
-        disponiblesSubunidad
+        disponiblesGrupo
           .map(p => String(p.grado || "").trim().toUpperCase())
           .filter(Boolean)
       )
@@ -4819,24 +4885,24 @@ if (!subunidades.length) {
       return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
     });
 
-    if (!grados.length) {
-      return;
-    }
+    if (!grados.length) return;
 
     seGeneroAlMenosUno = true;
 
     const bloque = document.createElement("div");
     bloque.className = "tabla-wrap";
 
+    const idSeguro = clave.replace(/[^a-zA-Z0-9]/g, "_");
+
     let html = `
-      <div class="bloque-titulo-tabla">${subunidad}</div>
+      <div class="bloque-titulo-tabla">${clave}</div>
       <table class="tabla-app">
         <thead>
           <tr>
     `;
 
     grados.forEach(g => {
-      const cantidadDisponible = disponiblesSubunidad.filter(p =>
+      const cantidadDisponible = disponiblesGrupo.filter(p =>
         String(p.grado || "").trim().toUpperCase() === g
       ).length;
 
@@ -4851,7 +4917,7 @@ if (!subunidades.length) {
     `;
 
     grados.forEach(g => {
-      const cantidadDisponible = disponiblesSubunidad.filter(p =>
+      const cantidadDisponible = disponiblesGrupo.filter(p =>
         String(p.grado || "").trim().toUpperCase() === g
       ).length;
 
@@ -4862,7 +4928,7 @@ if (!subunidades.length) {
             min="0"
             max="${cantidadDisponible}"
             value="0"
-            id="extra_${subunidad}_${g}"
+            id="extra_${idSeguro}_${g}"
             class="input-cantidad-extra"
             oninput="
               let valor = parseInt(this.value || '0', 10);
@@ -4877,8 +4943,7 @@ if (!subunidades.length) {
                 valor = 0;
               }
 
-              validarDistribucionExtra();
-              actualizarResumenSubunidadExtra('${subunidad}');
+              actualizarResumenSubunidadExtra('${idSeguro}');
               validarDistribucionExtra();
             "
           />
@@ -4890,20 +4955,28 @@ if (!subunidades.length) {
           </tr>
         </tbody>
       </table>
-      <pre id="resumen_${subunidad}">0-0-0-0 = 0</pre>
+      <pre id="resumen_${idSeguro}">0-0-0-0 = 0</pre>
     `;
 
     bloque.innerHTML = html;
     contenedor.appendChild(bloque);
 
-    actualizarResumenSubunidadExtra(subunidad);
+    actualizarResumenSubunidadExtra(idSeguro);
   });
 
   if (!seGeneroAlMenosUno) {
-    validacion.innerText = "No se generó distribución. Revisa si el resultado de consulta trae subunidad en cada funcionario.";
+    validacion.innerText = "No se generó distribución. Revisa los filtros seleccionados.";
   } else {
     validarDistribucionExtra();
   }
+
+  console.log("CONFIG DISTRIBUCIÓN:", {
+    nivel,
+    incluirSupervisor,
+    incluirJefe,
+    incluirPMU,
+    excluirGrados
+  });
 }
 
 function actualizarResumenSubunidadExtra(subunidad) {
