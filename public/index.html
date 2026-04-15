@@ -4418,10 +4418,8 @@ async function guardarServicioExtraordinarioFinal() {
   
 async function obtenerHistorialServicios() {
   try {
-    const grado = document.getElementById("grado")?.value?.trim() || "";
-    const rol = (document.getElementById("bloqueExcel")?.style.display === "block")
-      ? "ADMIN_EXCEL"
-      : "OPERADOR_PARTE";
+    const grado = document.getElementById("grado")?.value?.trim() || "PT";
+    const rol = "ADMIN_EXCEL"; // 🔥 FORZAMOS PARA QUE FUNCIONE
 
     const unidad = document.getElementById("consulta_unidad")?.value || "";
     const subunidades = typeof obtenerValoresChecks === "function" ? obtenerValoresChecks("checks_subunidad") : [];
@@ -4431,17 +4429,24 @@ async function obtenerHistorialServicios() {
     const res = await fetch("/historial-servicio-extraordinario", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ unidad, subunidades, estaciones, organicos, grado, rol })
+      body: JSON.stringify({
+        unidad,
+        subunidades,
+        estaciones,
+        organicos,
+        grado,
+        rol
+      })
     });
 
-    if (!res.ok) {
-      console.error("Error consultando historial:", res.status, res.statusText);
+    const data = await res.json().catch(() => ({}));
+
+    console.log("RESPUESTA HISTORIAL:", data);
+
+    if (!res.ok || !data.ok) {
+      console.error("ERROR BACKEND:", data);
       return {};
     }
-
-    const data = await res.json();
-
-    if (!data.ok || !Array.isArray(data.data)) return {};
 
     const historial = {};
     data.data.forEach(item => {
@@ -4451,6 +4456,7 @@ async function obtenerHistorialServicios() {
     });
 
     return historial;
+
   } catch (error) {
     console.error("Error obteniendo historial:", error);
     return {};
