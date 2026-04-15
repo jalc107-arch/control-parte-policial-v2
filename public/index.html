@@ -5450,7 +5450,7 @@ function cargarResponsablesServicioExtra() {
       return;
     }
 
-    lista.forEach((p, i) => {
+    lista.forEach((p) => {
       const grado = String(p.grado || "").trim();
       const apellidos = String(p.apellidos || "").trim();
       const nombres = String(p.nombres || "").trim();
@@ -5474,13 +5474,14 @@ function cargarResponsablesServicioExtra() {
     });
   }
 
-  // Base de candidatos
   let base = dejarSoloDisponibles(personas);
   base = ordenarPorJerarquiaYAntiguedad(base);
 
   // SUPERVISOR
   if (!requiereSupervisor) {
     supervisorBox.innerHTML = `<div class="ayuda">Supervisor no requerido para este servicio.</div>`;
+  } else if (!gradoSupervisor) {
+    supervisorBox.innerHTML = `<div class="ayuda">Debes seleccionar el grado para supervisor.</div>`;
   } else {
     const candidatosSupervisor = filtrarPorGradoRequerido(base, gradoSupervisor);
     renderOpciones(
@@ -5494,6 +5495,8 @@ function cargarResponsablesServicioExtra() {
   // JEFE SERVICIO
   if (!requiereJefe) {
     jefeBox.innerHTML = `<div class="ayuda">Jefe de servicio no requerido para este servicio.</div>`;
+  } else if (!gradoJefe) {
+    jefeBox.innerHTML = `<div class="ayuda">Debes seleccionar el grado para jefe de servicio.</div>`;
   } else {
     const candidatosJefe = filtrarPorGradoRequerido(base, gradoJefe);
     renderOpciones(
@@ -5507,6 +5510,8 @@ function cargarResponsablesServicioExtra() {
   // JEFE PMU
   if (!requierePMU) {
     pmuBox.innerHTML = `<div class="ayuda">Jefe de PMU no requerido para este servicio.</div>`;
+  } else if (!gradoPMU) {
+    pmuBox.innerHTML = `<div class="ayuda">Debes seleccionar el grado para jefe de PMU.</div>`;
   } else {
     const candidatosPMU = filtrarPorGradoRequerido(base, gradoPMU);
     renderOpciones(
