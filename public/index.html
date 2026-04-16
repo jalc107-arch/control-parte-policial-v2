@@ -21,6 +21,20 @@
     --radio-sm: 10px;
   }
 
+.btn-reset-sistema {
+  background: #8B0000;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-reset-sistema:hover {
+  background: #6E0000;
+}
+    
   * { box-sizing: border-box; }
 
   body {
@@ -1546,6 +1560,12 @@ async function validarResponsable() {
       return;
     }
 
+const bloqueAdminReset = document.getElementById("bloqueAdminReset");
+
+if (bloqueAdminReset) {
+  bloqueAdminReset.style.display = data.es_admin ? "block" : "none";
+}
+    
     window.usuarioRol = (data.rol || "").toUpperCase().trim();
     window.usuarioCedula = data.cedula || "";
     window.usuarioEsAdmin = !!data.es_admin;
@@ -7115,6 +7135,69 @@ function abrirVentanaPdfModulo11(titulo, texto) {
       <body>
         <div class="titulo">${escapeHtmlPdf(titulo)}</div>
         <div class="contenido">${contenidoSeguro}</div>
+
+async function resetTotalSistema() {
+  const confirmar1 = confirm("⚠️ Esto eliminará TODOS los datos del sistema.\n\n¿Desea continuar?");
+  if (!confirmar1) return;
+
+  const confirmar2 = confirm("🚨 Esta acción es irreversible.\n\n¿Está completamente seguro?");
+  if (!confirmar2) return;
+
+  try {
+    const res = await fetch("/reset-total-sistema", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      alert(`❌ Error: ${data?.error || data?.mensaje || "No se pudo reiniciar el sistema"}`);
+      return;
+    }
+
+    alert("✅ Sistema reiniciado correctamente");
+    window.location.reload();
+  } catch (error) {
+    console.error("ERROR RESET FRONT:", error);
+    alert("❌ Error de conexión con el servidor");
+  }
+}
+
+async function resetTotalSistema() {
+  const confirmar1 = confirm("⚠️ Esto eliminará TODOS los datos del sistema.\n\n¿Desea continuar?");
+  if (!confirmar1) return;
+
+  const confirmar2 = confirm("🚨 Esta acción es irreversible.\n\n¿Está completamente seguro?");
+  if (!confirmar2) return;
+
+  try {
+    const res = await fetch("/reset-total-sistema", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      alert(`❌ Error: ${data?.error || data?.mensaje || "No se pudo reiniciar el sistema"}`);
+      return;
+    }
+
+    alert("✅ Sistema reiniciado correctamente");
+    window.location.reload();
+  } catch (error) {
+    console.error("ERROR RESET FRONT:", error);
+    alert("❌ Error de conexión con el servidor");
+  }
+}
+
+document.getElementById("btnResetSistema")?.addEventListener("click", resetTotalSistema);
+        
         <script>
           window.onload = function () {
             window.print();
@@ -8323,5 +8406,11 @@ function activarCard(input) {
 <!-- LIBRERÍA PARA EXCEL -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
+    <div id="bloqueAdminReset" style="display:none; margin-top:20px;">
+  <button id="btnResetSistema" type="button" class="btn-reset-sistema">
+    ⚠️ Reiniciar sistema
+  </button>
+</div>
+    
 </body>
 </html>
