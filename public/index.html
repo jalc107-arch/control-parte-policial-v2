@@ -7140,37 +7140,7 @@ function abrirVentanaPdfModulo11(titulo, texto) {
         <div class="titulo">${escapeHtmlPdf(titulo)}</div>
         <div class="contenido">${contenidoSeguro}</div>
 
-async function resetTotalSistema() {
-  const confirmar1 = confirm("⚠️ Esto eliminará TODOS los datos del sistema.\n\n¿Desea continuar?");
-  if (!confirmar1) return;
 
-  const confirmar2 = confirm("🚨 Esta acción es irreversible.\n\n¿Está completamente seguro?");
-  if (!confirmar2) return;
-
-  try {
-    const res = await fetch("/reset-total-sistema", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.ok) {
-      alert(`❌ Error: ${data?.error || data?.mensaje || "No se pudo reiniciar el sistema"}`);
-      return;
-    }
-
-    alert("✅ Sistema reiniciado correctamente");
-    window.location.reload();
-  } catch (error) {
-    console.error("ERROR RESET FRONT:", error);
-    alert("❌ Error de conexión con el servidor");
-  }
-}
-
-document.getElementById("btnResetSistema")?.addEventListener("click", resetTotalSistema);
         
         <script>
           window.onload = function () {
@@ -8374,6 +8344,39 @@ function activarCard(input) {
     label.classList.remove("activo");
   }
 }
+
+async function resetTotalSistema() {
+  const confirmar1 = confirm("⚠️ Esto eliminará TODOS los datos del sistema.\n\n¿Desea continuar?");
+  if (!confirmar1) return;
+
+  const confirmar2 = confirm("🚨 Esta acción es irreversible.\n\n¿Está completamente seguro?");
+  if (!confirmar2) return;
+
+  try {
+    const res = await fetch("/reset-total-sistema", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      alert(`❌ Error: ${data?.error || data?.mensaje || "No se pudo reiniciar el sistema"}`);
+      return;
+    }
+
+    alert("✅ Sistema reiniciado correctamente");
+    window.location.reload();
+  } catch (error) {
+    console.error("ERROR RESET FRONT:", error);
+    alert("❌ Error de conexión con el servidor");
+  }
+}
+
+document.getElementById("btnResetSistema")?.addEventListener("click", resetTotalSistema);
+  
   
 </script>
 
