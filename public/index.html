@@ -8375,7 +8375,7 @@ async function resetTotalSistema() {
   }
 }
 
-document.getElementById("btnResetSistema")?.addEventListener("click", resetTotalSistema);
+
   
   
 </script>
@@ -8384,7 +8384,7 @@ document.getElementById("btnResetSistema")?.addEventListener("click", resetTotal
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
     <div id="bloqueAdminReset" style="display:none; margin-top:20px;">
-  <button id="btnResetSistema" type="button" class="btn-reset-sistema">
+  <button id="btnResetSistema" type="button" class="btn-reset-sistema" onclick="resetTotalSistema()">
     ⚠️ Reiniciar sistema
   </button>
 </div>
