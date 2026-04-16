@@ -3109,6 +3109,35 @@ app.post("/limpiar-prueba-servicio-extra", async (req, res) => {
   }
 });
 
+app.post("/reset-total-sistema", async (req, res) => {
+  try {
+    await pool.query("BEGIN");
+
+    await pool.query("DELETE FROM modulo12_partes");
+    await pool.query("DELETE FROM modulo11_control_servicio");
+    await pool.query("DELETE FROM servicios_extraordinarios");
+    await pool.query("DELETE FROM novedades");
+    await pool.query("DELETE FROM partes");
+    await pool.query("DELETE FROM otp_codigos");
+    await pool.query("DELETE FROM personal");
+
+    await pool.query("COMMIT");
+
+    return res.json({
+      ok: true,
+      mensaje: "Sistema reiniciado completamente"
+    });
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    console.error("ERROR RESET:", error);
+
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
+  }
+});
+
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
