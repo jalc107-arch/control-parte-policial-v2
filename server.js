@@ -698,6 +698,21 @@ app.get("/estructura", async (req, res) => {
 app.post("/personal-filtrado", async (req, res) => {
   const { unidad, subunidades = [], estaciones = [], organicos = [] } = req.body;
 
+  function normalizarLista(lista = []) {
+    return (Array.isArray(lista) ? lista : [lista])
+      .map(v => String(v || "").trim().toUpperCase())
+      .map(v =>
+        v
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/Ñ/g, "N")
+          .replace(/-/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+      .filter(Boolean);
+  }
+
   try {
     if (!unidad) {
       return res.status(400).json({
@@ -706,38 +721,69 @@ app.post("/personal-filtrado", async (req, res) => {
       });
     }
 
+    const subunidadesNorm = normalizarLista(subunidades);
+    const estacionesNorm = normalizarLista(estaciones);
+    const organicosNorm = normalizarLista(organicos);
+
     let query = `
       SELECT *
       FROM personal
       WHERE activo = true
-        AND unidad = $1
+        AND TRIM(UPPER(unidad)) = TRIM(UPPER($1))
     `;
 
     const params = [unidad];
     let index = 2;
 
-    if (Array.isArray(subunidades) && subunidades.length > 0) {
-      query += ` AND subunidad = ANY($${index})`;
-      params.push(subunidades);
+    if (subunidadesNorm.length > 0) {
+      query += `
+        AND REGEXP_REPLACE(
+              TRANSLATE(UPPER(TRIM(COALESCE(subunidad, ''))),
+              'ÁÉÍÓÚÑ',
+              'AEIOUN'),
+              '[-[:space:]]+',
+              ' ',
+              'g'
+            ) = ANY($${index})
+      `;
+      params.push(subunidadesNorm);
       index++;
     }
 
-    if (Array.isArray(estaciones) && estaciones.length > 0) {
-      query += ` AND estacion = ANY($${index})`;
-      params.push(estaciones);
+    if (estacionesNorm.length > 0) {
+      query += `
+        AND REGEXP_REPLACE(
+              TRANSLATE(UPPER(TRIM(COALESCE(estacion, ''))),
+              'ÁÉÍÓÚÑ',
+              'AEIOUN'),
+              '[-[:space:]]+',
+              ' ',
+              'g'
+            ) = ANY($${index})
+      `;
+      params.push(estacionesNorm);
       index++;
     }
 
-    if (Array.isArray(organicos) && organicos.length > 0) {
-      query += ` AND organico = ANY($${index})`;
-      params.push(organicos);
+    if (organicosNorm.length > 0) {
+      query += `
+        AND REGEXP_REPLACE(
+              TRANSLATE(UPPER(TRIM(COALESCE(organico, ''))),
+              'ÁÉÍÓÚÑ',
+              'AEIOUN'),
+              '[-[:space:]]+',
+              ' ',
+              'g'
+            ) = ANY($${index})
+      `;
+      params.push(organicosNorm);
       index++;
     }
 
     query += `
       ORDER BY
         ${construirOrdenGradoSQL()}
-        `;
+    `;
 
     const result = await pool.query(query, params);
 
