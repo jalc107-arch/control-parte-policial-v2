@@ -730,6 +730,7 @@ app.post("/personal-filtrado", async (req, res) => {
       FROM personal
       WHERE activo = true
         AND TRIM(UPPER(unidad)) = TRIM(UPPER($1))
+        AND UPPER(TRIM(COALESCE(aptitud, ''))) = 'APTO'
     `;
 
     const params = [unidad];
