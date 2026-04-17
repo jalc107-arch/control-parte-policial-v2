@@ -1918,7 +1918,14 @@ async function cargarPersonal() {
     const contenedor = document.getElementById("lista");
     contenedor.innerHTML = "";
 
-    if (!data.ok || !data.data || data.data.length === 0) {
+    let personal = Array.isArray(data.data) ? data.data : [];
+
+    // Solo mostrar personal APTO
+    personal = personal.filter(p =>
+      String(p.aptitud || "").toUpperCase().trim() === "APTO"
+    );
+
+    if (!data.ok || personal.length === 0) {
       contenedor.innerHTML = "<p>No hay personal para ese filtro.</p>";
       return;
     }
@@ -1926,17 +1933,17 @@ async function cargarPersonal() {
     document.getElementById("bloqueNovedades").style.display = "block";
     document.getElementById("bloqueParte").style.display = "block";
 
-    const ordenGrados = ["CR","TC","MY","CT","TE","ST","CM","SC","IJ","IT","SI","PT","PP","AXP"];
+    const ordenGrados = ["CR", "TC", "MY", "CT", "TE", "ST", "CM", "SC", "IJ", "IT", "SI", "PT", "PP", "AXP"];
 
-    data.data.sort((a, b) => {
-      const ga = (a.grado || "").toUpperCase();
-      const gb = (b.grado || "").toUpperCase();
+    personal.sort((a, b) => {
+      const ga = String(a.grado || "").toUpperCase().trim();
+      const gb = String(b.grado || "").toUpperCase().trim();
       const ia = ordenGrados.indexOf(ga);
       const ib = ordenGrados.indexOf(gb);
       return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
     });
 
-    data.data.forEach(p => {
+    personal.forEach(p => {
       const div = document.createElement("div");
       div.className = "persona";
 
@@ -1953,11 +1960,11 @@ async function cargarPersonal() {
           <option value="VACACIONES">VACACIONES</option>
           <option value="EXCUSADOS">EXCUSADOS</option>
           <option value="CONCURSO NE">CONCURSO NE</option>
-           <option value="CAPACITACION">CAPACITACION</option>
-           <option value="ESTADO GRAVIDEZ">ESTADO GRAVIDEZ</option>
-           <option value="TRASLADADO">TRASLADADO</option>
-           <option value="FORMACION POSTERIOR">FORMACION POSTERIOR</option>
-           <option value="PENDIENTE DE RETIRO">PENDIENTE DE RETIRO</option>          
+          <option value="CAPACITACION">CAPACITACION</option>
+          <option value="ESTADO GRAVIDEZ">ESTADO GRAVIDEZ</option>
+          <option value="TRASLADADO">TRASLADADO</option>
+          <option value="FORMACION POSTERIOR">FORMACION POSTERIOR</option>
+          <option value="PENDIENTE DE RETIRO">PENDIENTE DE RETIRO</option>
           <option value="SUSPENDIDOS">SUSPENDIDOS</option>
           <option value="CURSO ASCENSO">CURSO ASCENSO</option>
           <option value="COMISION EXTERIOR">COMISION EXTERIOR</option>
@@ -1984,12 +1991,15 @@ async function cargarPersonal() {
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((pos) => {
-        document.getElementById("latitud").value = pos.coords.latitude;
-        document.getElementById("longitud").value = pos.coords.longitude;
+        const lat = document.getElementById("latitud");
+        const lng = document.getElementById("longitud");
+
+        if (lat) lat.value = pos.coords.latitude;
+        if (lng) lng.value = pos.coords.longitude;
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error cargando personal:", error);
     alert("Error cargando personal");
   }
 }
