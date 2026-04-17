@@ -1332,6 +1332,25 @@
 
 <script>
 
+  function normalizarTexto(valor) {
+  return String(valor || "")
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // quita tildes
+    .replace(/Ñ/g, "N")
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function mostrarBonito(valor) {
+  return String(valor || "")
+    .toLowerCase()
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, l => l.toUpperCase()); // tipo título
+}
+
   function grupoGrado(grado = "") {
   const g = String(grado).toUpperCase().trim();
 
