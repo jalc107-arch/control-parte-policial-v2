@@ -1343,8 +1343,6 @@
     .trim();
 }
 
-check.value = estacion;
-
 
   function grupoGrado(grado = "") {
   const g = String(grado).toUpperCase().trim();
@@ -7545,43 +7543,54 @@ function cargarEstacionesMultiple() {
   const esOficial = !!window.responsable?.esOficial;
   const subunidadResponsable = String(window.responsable?.subunidad || "").trim();
 
-  let filtrados = estructuraGlobal.filter(x => x.unidad === unidad);
+  let filtrados = estructuraGlobal.filter(
+    x => String(x.unidad || "").trim() === String(unidad || "").trim()
+  );
 
   if (!esOficial && subunidadResponsable) {
     filtrados = filtrados.filter(
       x => String(x.subunidad || "").trim() === subunidadResponsable
     );
   } else if (subunidadesMarcadas.length) {
-    filtrados = filtrados.filter(x => subunidadesMarcadas.includes(x.subunidad));
+    filtrados = filtrados.filter(
+      x => subunidadesMarcadas.includes(String(x.subunidad || "").trim())
+    );
   }
 
   const estaciones = [
-  ...new Map(
-    filtrados
-      .map(x => String(x.estacion || "").trim())
-      .filter(Boolean)
-      .map(nombre => [
-        nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
-        nombre
-      ])
-  ).values()
-].sort();
+    ...new Map(
+      filtrados
+        .map(x => String(x.estacion || "").trim())
+        .filter(Boolean)
+        .map(nombre => [
+          nombre
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/Ñ/g, "N")
+            .replace(/-/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toUpperCase(),
+          String(nombre || "").trim().toUpperCase()
+        ])
+    ).values()
+  ].sort((a, b) => a.localeCompare(b, "es"));
 
   pintarChecks(
-  "checks_estacion_parte",
-  estaciones,
-  "mostrarOrganicoSegunEstacion(); actualizarRutaDependenciaParte();"
-);
+    "checks_estacion_parte",
+    estaciones,
+    "mostrarOrganicoSegunEstacion(); actualizarRutaDependenciaParte();"
+  );
 
-const bloqueOrganico = document.getElementById("bloqueOrganico");
-const estacionesMarcadasActuales = obtenerChecksMarcados("checks_estacion_parte");
+  const bloqueOrganico = document.getElementById("bloqueOrganico");
+  const estacionesMarcadasActuales = obtenerChecksMarcados("checks_estacion_parte");
 
-if (!estacionesMarcadasActuales.length) {
-  if (bloqueOrganico) bloqueOrganico.style.display = "none";
-  const contOrganico = document.getElementById("checks_organico_parte");
-  if (contOrganico) contOrganico.innerHTML = "";
-}
-  
+  if (!estacionesMarcadasActuales.length) {
+    if (bloqueOrganico) bloqueOrganico.style.display = "none";
+    const contOrganico = document.getElementById("checks_organico_parte");
+    if (contOrganico) contOrganico.innerHTML = "";
+  }
+
   actualizarRutaDependenciaParte();
 }
 
@@ -7672,24 +7681,43 @@ function cargarOrganicosMultiple() {
   }
 
   if (estacionesMarcadas.length) {
-    filtrados = filtrados.filter(
-      x => estacionesMarcadas.includes(String(x.estacion || "").trim())
-    );
+    filtrados = filtrados.filter(x => {
+      const estacionActual = String(x.estacion || "").trim();
+      const estacionNormalizada = estacionActual
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/Ñ/g, "N")
+        .replace(/-/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
+
+      return (
+        estacionesMarcadas.includes(estacionActual.toUpperCase()) ||
+        estacionesMarcadas.includes(estacionNormalizada)
+      );
+    });
   }
 
   let organicos = [
-  ...new Map(
-    filtrados
-      .map(x => String(x.organico || "").trim())
-      .filter(Boolean)
-      .map(nombre => [
-        nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),
-        nombre
-      ])
-  ).values()
-].sort();
+    ...new Map(
+      filtrados
+        .map(x => String(x.organico || "").trim())
+        .filter(Boolean)
+        .map(nombre => [
+          nombre
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/Ñ/g, "N")
+            .replace(/-/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toUpperCase(),
+          String(nombre || "").trim().toUpperCase()
+        ])
+    ).values()
+  ].sort((a, b) => a.localeCompare(b, "es"));
 
-  // Si no encontró por estación, muestra todos los orgánicos de la subunidad
   if (!organicos.length && subunidadesMarcadas.length) {
     let filtradosSubunidad = estructuraGlobal.filter(
       x =>
@@ -7700,10 +7728,10 @@ function cargarOrganicosMultiple() {
     organicos = [
       ...new Set(
         filtradosSubunidad
-          .map(x => String(x.organico || "").trim())
+          .map(x => String(x.organico || "").trim().toUpperCase())
           .filter(Boolean)
       )
-    ].sort();
+    ].sort((a, b) => a.localeCompare(b, "es"));
   }
 
   pintarChecks(
