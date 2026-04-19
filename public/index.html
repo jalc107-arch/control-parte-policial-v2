@@ -1365,6 +1365,33 @@ let estructuraGlobal = [];
 let ultimoResultadoConsulta = [];
 let ultimosSeleccionadosExtra = [];
 let otpValidado = false;
+
+async function restaurarSesion() {
+  const sesionActiva = localStorage.getItem("sesion_activa");
+  const sesionCedula = localStorage.getItem("sesion_cedula");
+  const sesionCodigoValidado = localStorage.getItem("sesion_codigo_validado");
+
+  if (sesionActiva !== "true" || sesionCodigoValidado !== "true" || !sesionCedula) {
+    return;
+  }
+
+  const inputCedula = document.getElementById("cedula_elabora");
+  if (inputCedula) {
+    inputCedula.value = sesionCedula;
+  }
+
+  otpValidado = true;
+
+  // 🔥 ESPERAR UN POQUITO PARA QUE TODO CARGUE
+  setTimeout(async () => {
+    try {
+      await validarResponsable();
+    } catch (e) {
+      console.error("Error restaurando sesión:", e);
+    }
+  }, 300);
+}
+  
 window.serviciosExtraTemporales = {};
 
 window.m11Resumen = [];
@@ -1493,8 +1520,16 @@ async function validarCodigoOTP() {
       alert(data.mensaje || "Código inválido");
       return;
     }
-
+    
     otpValidado = true;
+
+   
+// guardar sesión
+localStorage.setItem("sesion_activa", "true");
+localStorage.setItem("sesion_cedula", cedula);
+localStorage.setItem("sesion_codigo_validado", "true");
+localStorage.setItem("sesion_fecha", new Date().toISOString());
+    
     alert("Código validado correctamente");
     await validarResponsable();
   } catch (error) {
@@ -8427,8 +8462,9 @@ async function resetTotalSistema() {
   }
 }
 
-
-  
+window.addEventListener("load", () => {
+  restaurarSesion();
+}); 
   
 </script>
 
