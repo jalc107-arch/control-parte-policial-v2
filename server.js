@@ -726,12 +726,11 @@ app.post("/personal-filtrado", async (req, res) => {
     const organicosNorm = normalizarLista(organicos);
 
     let query = `
-  SELECT *
-  FROM personal
-  WHERE activo = true
-    AND TRIM(UPPER(unidad)) = TRIM(UPPER($1))
-    AND UPPER(TRIM(COALESCE(aptitud, ''))) = 'APTO'
-`;
+      SELECT *
+      FROM personal
+      WHERE activo = true
+        AND TRIM(UPPER(unidad)) = TRIM(UPPER($1))
+    `;
 
     const params = [unidad];
     let index = 2;
