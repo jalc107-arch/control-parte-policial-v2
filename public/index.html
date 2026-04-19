@@ -1941,7 +1941,8 @@ if (document.getElementById("organico_select")) {
         organicoSelect.appendChild(option);
       });
     }
-async function cargarPersonal() {
+
+  async function cargarPersonal() {
   const cedulaValidada = document.getElementById("cedula_elabora").value.trim();
   if (!cedulaValidada) {
     alert("Primero debes validar al responsable");
@@ -1976,11 +1977,6 @@ async function cargarPersonal() {
 
     let personal = Array.isArray(data.data) ? data.data : [];
 
-    // Solo mostrar personal APTO
-    personal = personal.filter(p =>
-      String(p.aptitud || "").toUpperCase().trim() === "APTO"
-    );
-
     if (!data.ok || personal.length === 0) {
       contenedor.innerHTML = "<p>No hay personal para ese filtro.</p>";
       return;
@@ -2000,6 +1996,11 @@ async function cargarPersonal() {
     });
 
     personal.forEach(p => {
+      const aptitudTexto = String(p.aptitud || "").trim();
+      const badgeAptitud = aptitudTexto && aptitudTexto.toUpperCase() !== "APTO"
+        ? `<div style="margin-top:4px; font-size:11px; font-weight:700; color:#B42318;">APTITUD: ${aptitudTexto}</div>`
+        : "";
+
       const div = document.createElement("div");
       div.className = "persona";
 
@@ -2008,6 +2009,7 @@ async function cargarPersonal() {
           ${p.grado || ""} ${p.apellidos || ""} ${p.nombres || ""}
           <span class="persona-cc">CC ${p.cedula || ""}</span>
         </b>
+        ${badgeAptitud}
         <select id="novedad-${p.cedula}">
           <option value="">DISPONIBLE</option>
           <option value="SERVICIO">SERVICIO</option>
