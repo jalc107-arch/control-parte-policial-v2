@@ -699,6 +699,13 @@
 </style>
 </head>
 <body>
+
+  <div style="display:flex; justify-content:flex-end; padding:10px;">
+  <button onclick="cerrarSesion()" class="btn-cerrar-sesion">
+    🔒 Cerrar sesión
+  </button>
+</div>
+  
   <h1>📍 Control de Partes</h1>
 
   <div class="card">
@@ -1366,46 +1373,34 @@ let ultimoResultadoConsulta = [];
 let ultimosSeleccionadosExtra = [];
 let otpValidado = false;
 
-async function restaurarSesion() {
-  try {
-    const sesionActiva = localStorage.getItem("sesion_activa");
-    const sesionCedula = localStorage.getItem("sesion_cedula");
-    const sesionCodigoValidado = localStorage.getItem("sesion_codigo_validado");
+function restaurarSesion() {
+  const sesionActiva = localStorage.getItem("sesion_activa");
+  const sesionCedula = localStorage.getItem("sesion_cedula");
+  const sesionCodigoValidado = localStorage.getItem("sesion_codigo_validado");
 
-    console.log("RESTAURAR SESION:", {
-      sesionActiva,
-      sesionCedula,
-      sesionCodigoValidado
-    });
+  if (sesionActiva === "true" && sesionCedula) {
 
-    if (sesionActiva !== "true" || sesionCodigoValidado !== "true" || !sesionCedula) {
-      return;
-    }
-
-    // ✅ llenar el campo correcto, el visible
+    // 🔥 restaurar cédula
     const inputCedulaResponsable = document.getElementById("cedula_responsable");
     if (inputCedulaResponsable) {
       inputCedulaResponsable.value = sesionCedula;
     }
 
-    // opcional: también llenar el oculto
-    const inputCedulaElabora = document.getElementById("cedula_elabora");
-    if (inputCedulaElabora) {
-      inputCedulaElabora.value = sesionCedula;
-    }
-
     otpValidado = true;
 
-    setTimeout(async () => {
-      try {
-        await validarResponsable();
-      } catch (e) {
-        console.error("Error restaurando sesión:", e);
-      }
-    }, 300);
+    // 🔥 MOSTRAR BOTÓN
+    const btn = document.querySelector(".btn-cerrar-sesion");
+    if (btn) btn.style.display = "block";
 
-  } catch (error) {
-    console.error("Error general restaurando sesión:", error);
+    // 🔥 validar automáticamente
+    validarResponsable();
+
+  } else {
+
+    // 🔥 OCULTAR BOTÓN
+    const btn = document.querySelector(".btn-cerrar-sesion");
+    if (btn) btn.style.display = "none";
+
   }
 }
   
@@ -3202,6 +3197,23 @@ async function descargarPDF() {
             position: relative;
             z-index: 1;
           }
+
+          .btn-cerrar-sesion {
+  background: #8B0000;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.btn-cerrar-sesion:hover {
+  background: #5A0000;
+}
+
+          
         </style>
       </head>
       <body>
@@ -8456,6 +8468,22 @@ function activarCard(input) {
   } else {
     label.classList.remove("activo");
   }
+}
+
+  function cerrarSesion() {
+  // 🧹 borrar toda la sesión
+  localStorage.removeItem("sesion_activa");
+  localStorage.removeItem("sesion_cedula");
+  localStorage.removeItem("sesion_codigo_validado");
+  localStorage.removeItem("sesion_fecha");
+
+  // reset variable
+  otpValidado = false;
+
+  alert("Sesión cerrada correctamente");
+
+  // 🔄 recargar limpio
+  window.location.reload();
 }
 
 async function resetTotalSistema() {
