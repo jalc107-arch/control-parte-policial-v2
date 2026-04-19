@@ -1367,29 +1367,46 @@ let ultimosSeleccionadosExtra = [];
 let otpValidado = false;
 
 async function restaurarSesion() {
-  const sesionActiva = localStorage.getItem("sesion_activa");
-  const sesionCedula = localStorage.getItem("sesion_cedula");
-  const sesionCodigoValidado = localStorage.getItem("sesion_codigo_validado");
+  try {
+    const sesionActiva = localStorage.getItem("sesion_activa");
+    const sesionCedula = localStorage.getItem("sesion_cedula");
+    const sesionCodigoValidado = localStorage.getItem("sesion_codigo_validado");
 
-  if (sesionActiva !== "true" || sesionCodigoValidado !== "true" || !sesionCedula) {
-    return;
-  }
+    console.log("RESTAURAR SESION:", {
+      sesionActiva,
+      sesionCedula,
+      sesionCodigoValidado
+    });
 
-  const inputCedula = document.getElementById("cedula_elabora");
-  if (inputCedula) {
-    inputCedula.value = sesionCedula;
-  }
-
-  otpValidado = true;
-
-  // 🔥 ESPERAR UN POQUITO PARA QUE TODO CARGUE
-  setTimeout(async () => {
-    try {
-      await validarResponsable();
-    } catch (e) {
-      console.error("Error restaurando sesión:", e);
+    if (sesionActiva !== "true" || sesionCodigoValidado !== "true" || !sesionCedula) {
+      return;
     }
-  }, 300);
+
+    // ✅ llenar el campo correcto, el visible
+    const inputCedulaResponsable = document.getElementById("cedula_responsable");
+    if (inputCedulaResponsable) {
+      inputCedulaResponsable.value = sesionCedula;
+    }
+
+    // opcional: también llenar el oculto
+    const inputCedulaElabora = document.getElementById("cedula_elabora");
+    if (inputCedulaElabora) {
+      inputCedulaElabora.value = sesionCedula;
+    }
+
+    otpValidado = true;
+
+    setTimeout(async () => {
+      try {
+        await validarResponsable();
+      } catch (e) {
+        console.error("Error restaurando sesión:", e);
+      }
+    }, 300);
+
+  } catch (error) {
+    console.error("Error general restaurando sesión:", error);
+  }
 }
   
 window.serviciosExtraTemporales = {};
@@ -1566,10 +1583,19 @@ localStorage.setItem("sesion_fecha", new Date().toISOString());
 async function validarResponsable() {
   const cedula = document.getElementById("cedula_responsable")?.value.trim();
 
+  // 🔐 Validación inteligente (permite sesión guardada)
+const sesionActiva = localStorage.getItem("sesion_activa");
+const sesionCodigoValidado = localStorage.getItem("sesion_codigo_validado");
+
+if (sesionActiva === "true" && sesionCodigoValidado === "true") {
+  console.log("Sesión restaurada automáticamente");
+  otpValidado = true;
+} else {
   if (!otpValidado) {
     alert("Primero debes validar el código de seguridad");
     return;
   }
+}
 
   const lista = document.getElementById("lista");
   const resultado = document.getElementById("resultado");
@@ -8461,10 +8487,6 @@ async function resetTotalSistema() {
     alert("❌ Error de conexión con el servidor");
   }
 }
-
-window.addEventListener("load", () => {
-  restaurarSesion();
-}); 
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Cargando página...");
