@@ -8465,6 +8465,11 @@ async function resetTotalSistema() {
 window.addEventListener("load", () => {
   restaurarSesion();
 }); 
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Cargando página...");
+  restaurarSesion();
+});
   
 </script>
 
