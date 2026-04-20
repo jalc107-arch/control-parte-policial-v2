@@ -3262,22 +3262,22 @@ app.get("/historial-partes", async (req, res) => {
     }
 
     let html = `
-      <h2>Historial de Partes</h2>
-      <table border="1" cellpadding="5">
-        <tr>
-          <th>ID</th>
-          <th>Fecha</th>
-          <th>Responsable</th>
-          <th>Acción</th>
-        </tr>
-    `;
+  <h2>Historial de Partes</h2>
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>ID</th>
+      <th>Fecha</th>
+      <th>Responsable</th>
+      <th>Acción</th>
+    </tr>
+`;
 
     data.forEach(p => {
       html += `
         <tr>
           <td>${p.id}</td>
-          <td>${p.created_at}</td>
-          <td>${p.responsable || ""}</td>
+          <td>${p.fecha || ""}</td>
+          <td>${p.nombre_responsable || ""}</td>
           <td>
             <a href="/descargar-parte/${p.id}" target="_blank">Descargar</a>
           </td>
