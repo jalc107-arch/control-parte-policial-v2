@@ -3211,7 +3211,7 @@ app.get("/historial-partes", async (req, res) => {
       index++;
     }
 
-    query += ` ORDER BY fecha DESC`;
+    query += " ORDER BY fecha DESC";
 
     const result = await pool.query(query, params);
 
@@ -3221,38 +3221,9 @@ app.get("/historial-partes", async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error.message
-    });
+    res.json({ ok: false, error: error.message });
   }
 });
-
-app.get("/descargar-parte/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await pool.query(
-      "SELECT texto_parte FROM partes WHERE id = $1",
-      [id]
-    );
-
-    if (!result.rows.length) {
-      return res.send("Parte no encontrado");
-    }
-
-    const texto = result.rows[0].texto_parte || "SIN CONTENIDO";
-
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader("Content-Disposition", `attachment; filename=parte_${id}.txt`);
-
-    res.send(texto);
-
-  } catch (error) {
-    res.status(500).send("Error descargando parte");
-  }
-});
-
 
 // =========================
 // LEVANTAR SERVIDOR
