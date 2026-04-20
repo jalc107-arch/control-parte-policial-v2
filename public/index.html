@@ -38,13 +38,37 @@
   * { box-sizing: border-box; }
 
   body {
-    margin: 0;
-    padding: 16px;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: linear-gradient(180deg, #0B1F3A 0%, #102B4E 100%);
-    color: var(--blanco);
-  }
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0B1F3A 0%, #10294d 100%);
+  min-height: 100vh;
+}
+    .app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 28px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.app-title {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.main-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+.panel-principal {
+  background: #f7f9fc;
+  border-radius: 20px;
+  padding: 20px;
+}
 
   h1 {
     margin: 0 0 18px 0;
