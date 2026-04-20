@@ -3200,18 +3200,18 @@ app.get("/historial-partes", async (req, res) => {
     let index = 1;
 
     if (fechaInicio) {
-      query += `AND DATE(fecha) >= $${index}`;
+      query += ` AND DATE(fecha) >= $${index}`;
       params.push(fechaInicio);
       index++;
     }
 
     if (fechaFin) {
-      query +=  `AND DATE(fecha) <= $${index}`;
+      query += ` AND DATE(fecha) <= $${index}`;
       params.push(fechaFin);
       index++;
     }
 
-    query += " ORDER BY fecha DESC";
+    query += ` ORDER BY fecha DESC`;
 
     const result = await pool.query(query, params);
 
@@ -3221,7 +3221,10 @@ app.get("/historial-partes", async (req, res) => {
     });
 
   } catch (error) {
-    res.json({ ok: false, error: error.message });
+    res.status(500).json({
+      ok: false,
+      error: error.message
+    });
   }
 });
 
@@ -3240,136 +3243,16 @@ app.get("/descargar-parte/:id", async (req, res) => {
 
     const texto = result.rows[0].texto_parte || "SIN CONTENIDO";
 
-    res.setHeader("Content-Type", "text/plain");
-    res.setHeader("Content-Disposition", "attachment; filename=parte.txt");
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename=parte_${id}.txt`);
 
     res.send(texto);
 
   } catch (error) {
-    res.send("Error descargando parte");
-  }
-});
-
-app.get("/historial-partes", async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("partes")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      return res.status(500).send("Error consultando partes");
-    }
-
-    let html = `
-    <html>
-    <head>
-      <title>Historial de Partes</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          background: #f5f7fa;
-          padding: 20px;
-          color: #1a1a1a;
-        }
-        h2 {
-          color: #0B1F3A;
-          margin-bottom: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          background: #ffffff;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          border-radius: 8px;
-          overflow: hidden;
-        }
-        th {
-          background: #0B1F3A;
-          color: white;
-          padding: 12px;
-          text-align: left;
-        }
-        td {
-          padding: 10px 12px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-        tr:hover {
-          background: #f9fafb;
-        }
-        a {
-          color: #1F5A3C;
-          font-weight: bold;
-          text-decoration: none;
-        }
-        a:hover {
-          text-decoration: underline;
-        }
-      </style>
-    </head>
-    <body>
-      <h2>📋 Historial de Partes</h2>
-      <table>
-        <tr>
-          <th>ID</th>
-          <th>Fecha</th>
-          <th>Responsable</th>
-          <th>Acción</th>
-        </tr>
-    `;
-
-    data.forEach(p => {
-      html += `
-        <tr>
-          <td>${p.id}</td>
-          <td>${p.fecha || ""}</td>
-          <td>${p.nombre_responsable || ""}</td>
-          <td>
-            <a href="/descargar-parte/${p.id}" target="_blank">Descargar</a>
-          </td>
-        </tr>
-      `;
-    });
-
-    html += `
-      </table>
-    </body>
-    </html>
-    `;
-
-    res.send(html);
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error del servidor");
-  }
-});
-
-app.get("/descargar-parte/:id", async (req, res) => {
-  const id = req.params.id;
-
-  try {
-    const { data, error } = await supabase
-      .from("partes")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error || !data) {
-      return res.status(404).send("Parte no encontrado");
-    }
-
-    const contenido = JSON.stringify(data, null, 2);
-
-    res.setHeader("Content-Disposition", `attachment; filename=parte_${id}.json`);
-    res.setHeader("Content-Type", "application/json");
-    res.send(contenido);
-
-  } catch (err) {
-    console.error(err);
     res.status(500).send("Error descargando parte");
   }
 });
+
 
 // =========================
 // LEVANTAR SERVIDOR
