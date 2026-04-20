@@ -3200,7 +3200,7 @@ app.get("/historial-partes", async (req, res) => {
     let index = 1;
 
     if (fechaInicio) {
-      query +=  AND DATE(fecha) >= $${index};
+      query += AND DATE(fecha) >= $${index};
       params.push(fechaInicio);
       index++;
     }
