@@ -2357,6 +2357,8 @@ app.post("/validar-codigo", async (req, res) => {
   }
 });
 
+
+
 app.get("/modulo12-subunidades", async (req, res) => {
   try {
     const fecha = String(req.query.fecha || "").trim();
@@ -3245,6 +3247,77 @@ app.get("/descargar-parte/:id", async (req, res) => {
 
   } catch (error) {
     res.send("Error descargando parte");
+  }
+});
+
+app.get("/historial-partes", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("partes")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).send("Error consultando partes");
+    }
+
+    let html = `
+      <h2>Historial de Partes</h2>
+      <table border="1" cellpadding="5">
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Responsable</th>
+          <th>Acción</th>
+        </tr>
+    `;
+
+    data.forEach(p => {
+      html += `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.created_at}</td>
+          <td>${p.responsable || ""}</td>
+          <td>
+            <a href="/descargar-parte/${p.id}" target="_blank">Descargar</a>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += "</table>";
+
+    res.send(html);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error del servidor");
+  }
+});
+
+app.get("/descargar-parte/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const { data, error } = await supabase
+      .from("partes")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).send("Parte no encontrado");
+    }
+
+    const contenido = JSON.stringify(data, null, 2);
+
+    res.setHeader("Content-Disposition", `attachment; filename=parte_${id}.json`);
+    res.setHeader("Content-Type", "application/json");
+    res.send(contenido);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error descargando parte");
   }
 });
 
