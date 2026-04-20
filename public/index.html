@@ -905,6 +905,30 @@
       </div>
     </div>
 
+    <div class="seccion">
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialPartes')">
+    6.1 Historial de partes
+  </button>
+
+  <div id="panelHistorialPartes" class="panel-contenido" style="display:none;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+      <div>
+        <label>Fecha inicio</label><br>
+        <input type="date" id="fechaInicioHistorial">
+      </div>
+      <div>
+        <label>Fecha fin</label><br>
+        <input type="date" id="fechaFinHistorial">
+      </div>
+      <div style="align-self:end;">
+        <button type="button" onclick="consultarHistorialPartes()">Consultar</button>
+      </div>
+    </div>
+
+    <div id="resultadoHistorialPartes"></div>
+  </div>
+</div>
+
 <div class="seccion" id="bloqueExtraordinario" style="display:none;">
   <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
     7. Planeación servicio extraordinario
@@ -8522,6 +8546,78 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Cargando página...");
   restaurarSesion();
 });
+
+
+async function consultarHistorialPartes() {
+  const fechaInicio = document.getElementById("fechaInicioHistorial")?.value || "";
+  const fechaFin = document.getElementById("fechaFinHistorial")?.value || "";
+  const contenedor = document.getElementById("resultadoHistorialPartes");
+
+  contenedor.innerHTML = "<p>Consultando historial...</p>";
+
+  try {
+    let url = "/historial-partes";
+    const params = new URLSearchParams();
+
+    if (fechaInicio) params.append("fechaInicio", fechaInicio);
+    if (fechaFin) params.append("fechaFin", fechaFin);
+
+    if ([...params.keys()].length) {
+      url += "?" + params.toString();
+    }
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.data) || data.data.length === 0) {
+      contenedor.innerHTML = "<p>No hay partes registrados.</p>";
+      return;
+    }
+
+    let html = `
+      <table style="width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden;">
+        <thead>
+          <tr style="background:#0B1F3A; color:#fff;">
+            <th style="padding:10px; text-align:left;">ID</th>
+            <th style="padding:10px; text-align:left;">Consecutivo</th>
+            <th style="padding:10px; text-align:left;">Fecha</th>
+            <th style="padding:10px; text-align:left;">Unidad</th>
+            <th style="padding:10px; text-align:left;">Responsable</th>
+            <th style="padding:10px; text-align:left;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    data.data.forEach(p => {
+      html += `
+        <tr style="border-bottom:1px solid #e5e7eb;">
+          <td style="padding:10px;">${p.id || ""}</td>
+          <td style="padding:10px;">${p.consecutivo || ""}</td>
+          <td style="padding:10px;">${p.fecha || ""}</td>
+          <td style="padding:10px;">${p.unidad || ""}</td>
+          <td style="padding:10px;">${p.nombre_responsable || ""}</td>
+          <td style="padding:10px;">
+            <a href="/descargar-parte/${p.id}" target="_blank" style="color:#1F5A3C; font-weight:bold; text-decoration:none;">
+              Descargar
+            </a>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    `;
+
+    contenedor.innerHTML = html;
+
+  } catch (error) {
+    console.error("Error consultando historial:", error);
+    contenedor.innerHTML = "<p>Error consultando historial de partes.</p>";
+  }
+}
   
 </script>
 
