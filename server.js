@@ -3261,55 +3261,62 @@ app.get("/historial-partes", async (req, res) => {
       return res.status(500).send("Error consultando partes");
     }
 
-   let html = `
-<html>
-<head>
-  <title>Historial de Partes</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #f5f7fa;
-      padding: 20px;
-    }
-    h2 {
-      color: #0B1F3A;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-    }
-    th {
-      background: #0B1F3A;
-      color: white;
-      padding: 10px;
-    }
-    td {
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-    }
-    tr:hover {
-      background: #f1f1f1;
-    }
-    a {
-      color: #1F5A3C;
-      font-weight: bold;
-      text-decoration: none;
-    }
-  </style>
-</head>
-<body>
-
-<h2>📋 Historial de Partes</h2>
-
-<table>
-<tr>
-  <th>ID</th>
-  <th>Fecha</th>
-  <th>Responsable</th>
-  <th>Acción</th>
-</tr>
-`;
+    let html = `
+    <html>
+    <head>
+      <title>Historial de Partes</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #f5f7fa;
+          padding: 20px;
+          color: #1a1a1a;
+        }
+        h2 {
+          color: #0B1F3A;
+          margin-bottom: 20px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: #ffffff;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        th {
+          background: #0B1F3A;
+          color: white;
+          padding: 12px;
+          text-align: left;
+        }
+        td {
+          padding: 10px 12px;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        tr:hover {
+          background: #f9fafb;
+        }
+        a {
+          color: #1F5A3C;
+          font-weight: bold;
+          text-decoration: none;
+        }
+        a:hover {
+          text-decoration: underline;
+        }
+      </style>
+    </head>
+    <body>
+      <h2>📋 Historial de Partes</h2>
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Responsable</th>
+          <th>Acción</th>
+        </tr>
+    `;
 
     data.forEach(p => {
       html += `
@@ -3324,7 +3331,11 @@ app.get("/historial-partes", async (req, res) => {
       `;
     });
 
-    html += "</table>";
+    html += `
+      </table>
+    </body>
+    </html>
+    `;
 
     res.send(html);
 
