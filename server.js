@@ -3261,15 +3261,54 @@ app.get("/historial-partes", async (req, res) => {
       return res.status(500).send("Error consultando partes");
     }
 
-    let html = `
-  <h2>Historial de Partes</h2>
-  <table border="1" cellpadding="5">
-    <tr>
-      <th>ID</th>
-      <th>Fecha</th>
-      <th>Responsable</th>
-      <th>Acción</th>
-    </tr>
+   let html = `
+<html>
+<head>
+  <title>Historial de Partes</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f7fa;
+      padding: 20px;
+    }
+    h2 {
+      color: #0B1F3A;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+    }
+    th {
+      background: #0B1F3A;
+      color: white;
+      padding: 10px;
+    }
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    tr:hover {
+      background: #f1f1f1;
+    }
+    a {
+      color: #1F5A3C;
+      font-weight: bold;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📋 Historial de Partes</h2>
+
+<table>
+<tr>
+  <th>ID</th>
+  <th>Fecha</th>
+  <th>Responsable</th>
+  <th>Acción</th>
+</tr>
 `;
 
     data.forEach(p => {
