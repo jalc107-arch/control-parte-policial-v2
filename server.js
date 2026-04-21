@@ -3225,6 +3225,73 @@ app.get("/historial-partes", async (req, res) => {
   }
 });
 
+app.get("/descargar-parte/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        consecutivo,
+        fecha,
+        unidad,
+        subunidad,
+        estacion,
+        grado_responsable,
+        nombre_responsable,
+        cedula_responsable,
+        telefono_responsable,
+        texto_parte
+      FROM partes
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).send("Parte no encontrado");
+    }
+
+    const parte = result.rows[0];
+
+    const contenido = `
+PARTE DE PERSONAL
+==============================
+
+ID: ${parte.id || ""}
+CONSECUTIVO: ${parte.consecutivo || ""}
+FECHA: ${parte.fecha || ""}
+UNIDAD: ${parte.unidad || ""}
+SUBUNIDAD: ${parte.subunidad || ""}
+ESTACION: ${parte.estacion || ""}
+GRADO RESPONSABLE: ${parte.grado_responsable || ""}
+NOMBRE RESPONSABLE: ${parte.nombre_responsable || ""}
+CEDULA RESPONSABLE: ${parte.cedula_responsable || ""}
+TELEFONO RESPONSABLE: ${parte.telefono_responsable || ""}
+
+==============================
+TEXTO DEL PARTE
+==============================
+
+${parte.texto_parte || "SIN CONTENIDO"}
+`.trim();
+
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=parte_${parte.id}_${(parte.consecutivo || "sin_consecutivo").replace(/[^\w\-]/g, "_")}.txt`
+    );
+
+    return res.send(contenido);
+  } catch (error) {
+    console.error("ERROR /descargar-parte/:id", error);
+    return res.status(500).send("Error descargando parte");
+  }
+});
+
+
 // =========================
 // LEVANTAR SERVIDOR
 // =========================
