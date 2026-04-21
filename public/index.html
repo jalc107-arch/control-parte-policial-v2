@@ -3094,6 +3094,24 @@ async function descargarPDF() {
     });
 
     if (dataVal.guardarOficial) {
+
+let latitud = "";
+let longitud = "";
+
+if (navigator.geolocation) {
+  await new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        latitud = pos.coords.latitude;
+        longitud = pos.coords.longitude;
+        resolve();
+      },
+      () => resolve(),
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  });
+}
+      
       const formData = new FormData();
       formData.append("foto_parte", fotoInput.files[0]);
       formData.append("tipo", dataVal.tipo || "");
@@ -3106,6 +3124,8 @@ async function descargarPDF() {
       formData.append("subunidades", JSON.stringify(subunidades));
       formData.append("estaciones", JSON.stringify(estaciones));
       formData.append("novedades", JSON.stringify(novedadesSeleccionadas));
+      formData.append("latitud", latitud);
+      formData.append("longitud", longitud);
 
       const resGuardar = await fetch("/guardar-parte-pdf", {
         method: "POST",
