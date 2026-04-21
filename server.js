@@ -3354,21 +3354,25 @@ doc.font("Helvetica");
         align: "center"
       });
 
-    if (parte.foto_parte && fs.existsSync(parte.foto_parte)) {
-  doc.addPage();
+    try {
+  if (parte.foto_parte && fs.existsSync(parte.foto_parte)) {
+    doc.addPage();
 
-  doc
-    .fontSize(12)
-    .font("Helvetica-Bold")
-    .text("EVIDENCIA FOTOGRÁFICA", { align: "center" });
+    doc
+      .fontSize(12)
+      .font("Helvetica-Bold")
+      .text("EVIDENCIA FOTOGRÁFICA", { align: "center" });
 
-  doc.moveDown();
+    doc.moveDown();
 
-  doc.image(parte.foto_parte, {
-    fit: [500, 650],
-    align: "center",
-    valign: "center"
-  });
+    doc.image(parte.foto_parte, {
+      fit: [500, 650],
+      align: "center",
+      valign: "center"
+    });
+  }
+} catch (e) {
+  console.log("ERROR CARGANDO IMAGEN:", e.message);
 }
 
     doc.end();
