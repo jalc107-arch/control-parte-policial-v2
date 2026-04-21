@@ -1028,14 +1028,11 @@
     </div>
 
     <div class="seccion">
-
-  <!-- 6.1 HISTORIAL -->
   <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialPartes')">
     6.1 Historial de partes
   </button>
 
-  <div id="panelHistorialPartes" class="panel-contenido">
-
+  <div id="panelHistorialPartes" class="panel-contenido" style="display:none;">
     <div class="modulo-card">
       <div class="modulo-header">
         <span>📊 Historial de Partes</span>
@@ -1071,23 +1068,16 @@
           </thead>
           <tbody id="tablaHistorial">
             <tr>
-              <td colspan="6" class="sin-datos">
-                No hay registros
-              </td>
+              <td colspan="6" class="sin-datos">No hay registros</td>
             </tr>
           </tbody>
         </table>
       </div>
-
     </div>
-
   </div>
-
 </div>
 
-<!-- 7. SERVICIO EXTRA -->
-<div class="seccion">
-
+<div class="seccion" id="bloqueExtraordinario" style="display:none;">
   <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
     7. Planeación servicio extraordinario
   </button>
