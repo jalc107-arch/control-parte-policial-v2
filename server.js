@@ -1357,18 +1357,20 @@ function excelFechaAISO(valor) {
 // GUARDA PARTE PDF
 // ==============================
 app.post("/guardar-parte-pdf", upload.single("foto_parte"), async (req, res) => {
-  const {
-    tipo,
-    unidad,
-    subunidades = [],
-    estaciones = [],
-    grado_responsable,
-    nombre_responsable,
-    cedula_responsable,
-    telefono_responsable,
-    texto_parte,
-    novedades = []
-  } = req.body;
+ const {
+  tipo,
+  unidad,
+  subunidades = [],
+  estaciones = [],
+  grado_responsable,
+  nombre_responsable,
+  cedula_responsable,
+  telefono_responsable,
+  texto_parte,
+  novedades = [],
+  latitud = "",
+  longitud = ""
+} = req.body;
 
   const grado = (grado_responsable || "").toUpperCase().trim().replace(/\s+/g, "");
   const esOficial = esGradoOficial(grado);
@@ -1520,9 +1522,11 @@ result = await pool.query(
     cedula_responsable,
     telefono_responsable,
     texto_parte,
-    foto_parte
+    foto_parte,
+    latitud,
+    longitud
   )
-  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
   RETURNING *`,
   [
     consecutivo,
@@ -1536,7 +1540,9 @@ result = await pool.query(
     cedula_responsable || null,
     telefono_responsable || null,
     texto_parte || null,
-    rutaFoto
+    rutaFoto,
+    latitud || null,
+    longitud || null
   ]
 );
     
