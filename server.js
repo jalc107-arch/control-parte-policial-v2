@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import multer from "multer";
 import XLSX from "xlsx";
 import fs from "fs";
+import PDFDocument from "pdfkit";
 import { pool } from "./db.js";
 
 const app = express();
