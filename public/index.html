@@ -1028,53 +1028,67 @@
     </div>
 
     <div class="seccion">
+
+  <!-- 6.1 HISTORIAL -->
   <button type="button" class="panel-toggle" onclick="togglePanel('panelHistorialPartes')">
     6.1 Historial de partes
   </button>
 
-  <div class="modulo-card">
-  <div class="modulo-header">
-    <span>📊 Historial de Partes</span>
-  </div>
+  <div id="panelHistorialPartes" class="panel-contenido">
 
-  <div class="filtros">
-    <div class="grupo-filtro">
-      <label>Fecha inicio</label>
-      <input type="date" id="fechaInicio">
+    <div class="modulo-card">
+      <div class="modulo-header">
+        <span>📊 Historial de Partes</span>
+      </div>
+
+      <div class="filtros">
+        <div class="grupo-filtro">
+          <label>Fecha inicio</label>
+          <input type="date" id="fechaInicio">
+        </div>
+
+        <div class="grupo-filtro">
+          <label>Fecha fin</label>
+          <input type="date" id="fechaFin">
+        </div>
+
+        <button class="btn-consultar" onclick="consultarHistorial()">
+          🔍 Consultar
+        </button>
+      </div>
+
+      <div class="tabla-contenedor">
+        <table class="tabla-pro">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Consecutivo</th>
+              <th>Fecha</th>
+              <th>Unidad</th>
+              <th>Responsable</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaHistorial">
+            <tr>
+              <td colspan="6" class="sin-datos">
+                No hay registros
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
-    <div class="grupo-filtro">
-      <label>Fecha fin</label>
-      <input type="date" id="fechaFin">
-    </div>
-
-    <button class="btn-consultar" onclick="consultarHistorial()">
-      🔍 Consultar
-    </button>
   </div>
 
-  <div class="tabla-contenedor">
-    <table class="tabla-pro">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Consecutivo</th>
-          <th>Fecha</th>
-          <th>Unidad</th>
-          <th>Responsable</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody id="tablaHistorial">
-        <tr>
-          <td colspan="6" class="sin-datos">
-            No hay registros
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
 </div>
+
+<!-- 7. SERVICIO EXTRA -->
+<div class="seccion">
+
+  <button type="button" class="panel-toggle" onclick="togglePanel('panelExtraordinario')">
     7. Planeación servicio extraordinario
   </button>
 
