@@ -38,37 +38,13 @@
   * { box-sizing: border-box; }
 
   body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0B1F3A 0%, #10294d 100%);
-  min-height: 100vh;
-}
-    .app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px 28px;
-  background: rgba(255,255,255,0.04);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.app-title {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.main-container {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 15px;
-}
-
-.panel-principal {
-  background: #f7f9fc;
-  border-radius: 20px;
-  padding: 20px;
-}
+    margin: 0;
+    padding: 16px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: linear-gradient(180deg, #0B1F3A 0%, #102B4E 100%);
+    color: var(--blanco);
+  }
 
   h1 {
     margin: 0 0 18px 0;
@@ -719,104 +695,6 @@
     grid-template-columns: 1fr;
   }
 }
-
-    .modulo-card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 18px;
-  margin-top: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-
-.modulo-header {
-  font-weight: 700;
-  font-size: 16px;
-  color: #0B1F3A;
-  margin-bottom: 15px;
-}
-
-.filtros {
-  display: flex;
-  gap: 15px;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  margin-bottom: 15px;
-}
-
-.grupo-filtro {
-  display: flex;
-  flex-direction: column;
-  font-size: 13px;
-  color: #444;
-}
-
-.grupo-filtro input {
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-.btn-consultar {
-  background: #1F5A3C;
-  color: #fff;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.btn-consultar:hover {
-  background: #17452E;
-}
-
-.tabla-contenedor {
-  overflow-x: auto;
-}
-
-.tabla-pro {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.tabla-pro thead {
-  background: #0B1F3A;
-  color: #fff;
-}
-
-.tabla-pro th {
-  padding: 10px;
-  text-align: left;
-}
-
-.tabla-pro td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.tabla-pro tr:hover {
-  background: #f3f6fb;
-}
-
-.btn-descargar {
-  background: #1F5A3C;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 12px;
-}
-
-.btn-descargar:hover {
-  background: #17452E;
-}
-
-.sin-datos {
-  text-align: center;
-  padding: 15px;
-  color: #888;
-}
     
 </style>
 </head>
@@ -1033,47 +911,21 @@
   </button>
 
   <div id="panelHistorialPartes" class="panel-contenido" style="display:none;">
-    <div class="modulo-card">
-      <div class="modulo-header">
-        <span>📊 Historial de Partes</span>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+      <div>
+        <label>Fecha inicio</label><br>
+        <input type="date" id="fechaInicioHistorial">
       </div>
-
-      <div class="filtros">
-        <div class="grupo-filtro">
-          <label>Fecha inicio</label>
-          <input type="date" id="fechaInicio">
-        </div>
-
-        <div class="grupo-filtro">
-          <label>Fecha fin</label>
-          <input type="date" id="fechaFin">
-        </div>
-
-        <button class="btn-consultar" onclick="consultarHistorial()">
-          🔍 Consultar
-        </button>
+      <div>
+        <label>Fecha fin</label><br>
+        <input type="date" id="fechaFinHistorial">
       </div>
-
-      <div class="tabla-contenedor">
-        <table class="tabla-pro">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Consecutivo</th>
-              <th>Fecha</th>
-              <th>Unidad</th>
-              <th>Responsable</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="tablaHistorial">
-            <tr>
-              <td colspan="6" class="sin-datos">No hay registros</td>
-            </tr>
-          </tbody>
-        </table>
+      <div style="align-self:end;">
+        <button type="button" onclick="consultarHistorialPartes()">Consultar</button>
       </div>
     </div>
+
+    <div id="resultadoHistorialPartes"></div>
   </div>
 </div>
 
@@ -7409,45 +7261,6 @@ function abrirVentanaPdfModulo11(titulo, texto) {
         <div class="titulo">${escapeHtmlPdf(titulo)}</div>
         <div class="contenido">${contenidoSeguro}</div>
 
-<script>
-async function consultarHistorial() {
-  const inicio = document.getElementById("fechaInicio").value;
-  const fin = document.getElementById("fechaFin").value;
-
-  const res = await fetch(`/historial-partes?fechaInicio=${inicio}&fechaFin=${fin}`);
-  const data = await res.json();
-
-  const tbody = document.getElementById("tablaHistorial");
-  tbody.innerHTML = "";
-
-  if (!data.ok || !data.data.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" class="sin-datos">No hay registros</td>
-      </tr>`;
-    return;
-  }
-
-  data.data.forEach(p => {
-    const fecha = new Date(p.fecha).toLocaleString("es-CO");
-
-    tbody.innerHTML += `
-      <tr>
-        <td>${p.id}</td>
-        <td>${p.consecutivo || ""}</td>
-        <td>${fecha}</td>
-        <td>${p.unidad || ""}</td>
-        <td>${p.nombre_responsable || ""}</td>
-        <td>
-          <a href="/descargar-parte/${p.id}" class="btn-descargar">
-            Descargar
-          </a>
-        </td>
-      </tr>
-    `;
-  });
-}
-</script>
 
         
         <script>
@@ -8819,3 +8632,4 @@ async function consultarHistorialPartes() {
     
 </body>
 </html>
+
