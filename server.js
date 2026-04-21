@@ -3243,19 +3243,21 @@ app.get("/descargar-parte/:id", async (req, res) => {
     const result = await pool.query(
       `
       SELECT
-        id,
-        consecutivo,
-        fecha,
-        unidad,
-        subunidad,
-        estacion,
-        grado_responsable,
-        nombre_responsable,
-        cedula_responsable,
-        telefono_responsable,
-        texto_parte,
-        foto_parte
-      FROM partes
+  id,
+  consecutivo,
+  fecha,
+  unidad,
+  subunidad,
+  estacion,
+  grado_responsable,
+  nombre_responsable,
+  cedula_responsable,
+  telefono_responsable,
+  texto_parte,
+  foto_parte,
+  latitud,
+  longitud
+FROM partes
       WHERE id = $1
       LIMIT 1
       `,
@@ -3325,7 +3327,10 @@ doc.font("Helvetica");
   ["GRADO RESPONSABLE", limpiarTexto(parte.grado_responsable)],
   ["NOMBRE RESPONSABLE", limpiarTexto(parte.nombre_responsable)],
   ["CÉDULA RESPONSABLE", limpiarTexto(parte.cedula_responsable)],
-  ["TELÉFONO RESPONSABLE", limpiarTexto(parte.telefono_responsable)]
+  ["TELÉFONO RESPONSABLE", limpiarTexto(parte.telefono_responsable)],
+  ["LATITUD", limpiarTexto(parte.latitud)],
+  ["LONGITUD", limpiarTexto(parte.longitud)]
+     
 ];
 
     datos.forEach(([label, value]) => {
