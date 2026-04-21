@@ -3257,38 +3257,92 @@ app.get("/descargar-parte/:id", async (req, res) => {
 
     const parte = result.rows[0];
 
-    const contenido = `
-PARTE DE PERSONAL
-==============================
+    const nombreArchivo = `parte_${parte.id}_${String(parte.consecutivo || "sin_consecutivo").replace(/[^\w\-]/g, "_")}.pdf`;
 
-ID: ${parte.id || ""}
-CONSECUTIVO: ${parte.consecutivo || ""}
-FECHA: ${parte.fecha || ""}
-UNIDAD: ${parte.unidad || ""}
-SUBUNIDAD: ${parte.subunidad || ""}
-ESTACION: ${parte.estacion || ""}
-GRADO RESPONSABLE: ${parte.grado_responsable || ""}
-NOMBRE RESPONSABLE: ${parte.nombre_responsable || ""}
-CEDULA RESPONSABLE: ${parte.cedula_responsable || ""}
-TELEFONO RESPONSABLE: ${parte.telefono_responsable || ""}
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${nombreArchivo}"`);
 
-==============================
-TEXTO DEL PARTE
-==============================
+    const doc = new PDFDocument({
+      size: "A4",
+      margin: 50
+    });
 
-${parte.texto_parte || "SIN CONTENIDO"}
-`.trim();
+    doc.pipe(res);
 
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=parte_${parte.id}_${(parte.consecutivo || "sin_consecutivo").replace(/[^\w\-]/g, "_")}.txt`
-    );
+    // Encabezado
+    doc
+      .fontSize(16)
+      .font("Helvetica-Bold")
+      .text("POLICÍA NACIONAL DE COLOMBIA", { align: "center" });
 
-    return res.send(contenido);
+    doc.moveDown(0.3);
+
+    doc
+      .fontSize(14)
+      .font("Helvetica-Bold")
+      .text("CONTROL DE PARTES", { align: "center" });
+
+    doc.moveDown(1);
+
+    // Datos generales
+    doc.fontSize(11).font("Helvetica-Bold").text("DATOS DEL PARTE");
+    doc.moveDown(0.4);
+
+    const fechaTexto = parte.fecha
+      ? new Date(parte.fecha).toLocaleString("es-CO", {
+          timeZone: "America/Bogota"
+        })
+      : "";
+
+    const datos = [
+      ["ID", parte.id || ""],
+      ["CONSECUTIVO", parte.consecutivo || ""],
+      ["FECHA", fechaTexto],
+      ["UNIDAD", parte.unidad || ""],
+      ["SUBUNIDAD", parte.subunidad || ""],
+      ["ESTACIÓN", parte.estacion || ""],
+      ["GRADO RESPONSABLE", parte.grado_responsable || ""],
+      ["NOMBRE RESPONSABLE", parte.nombre_responsable || ""],
+      ["CÉDULA RESPONSABLE", parte.cedula_responsable || ""],
+      ["TELÉFONO RESPONSABLE", parte.telefono_responsable || ""]
+    ];
+
+    datos.forEach(([label, value]) => {
+      doc
+        .font("Helvetica-Bold")
+        .text(`${label}: `, { continued: true })
+        .font("Helvetica")
+        .text(String(value));
+    });
+
+    doc.moveDown(1);
+
+    // Texto del parte
+    doc.fontSize(11).font("Helvetica-Bold").text("TEXTO DEL PARTE");
+    doc.moveDown(0.5);
+
+    doc
+      .font("Helvetica")
+      .fontSize(10)
+      .text(parte.texto_parte || "SIN CONTENIDO", {
+        align: "left",
+        lineGap: 3
+      });
+
+    doc.moveDown(1.5);
+
+    // Pie
+    doc
+      .fontSize(9)
+      .font("Helvetica-Oblique")
+      .text("Documento generado automáticamente por la plataforma Control de Partes.", {
+        align: "center"
+      });
+
+    doc.end();
   } catch (error) {
     console.error("ERROR /descargar-parte/:id", error);
-    return res.status(500).send("Error descargando parte");
+    return res.status(500).send("Error descargando parte en PDF");
   }
 });
 
