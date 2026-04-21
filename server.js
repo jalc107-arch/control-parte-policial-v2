@@ -1432,6 +1432,8 @@ const estacionTexto = Array.isArray(estaciones)
   ? String(estaciones)
   : "";
 
+    const rutaFoto = req.file ? req.file.path : null;
+
     // 🔥 GUARDAR NOVEDADES
     if (Array.isArray(novedades) && novedades.length > 0) {
       const horario = validarHorarioParte();
@@ -1505,37 +1507,39 @@ while (intento < 10) {
 numero = seqResult.rows[0].numero;
     consecutivo = `GPSE-${unidadLimpia}-${fechaTexto}-${String(numero).padStart(4, "0")}`;
 
-    result = await pool.query(
-      `INSERT INTO partes (
-        consecutivo,
-        consecutivo_dia,
-        tipo,
-        unidad,
-        subunidad,
-        estacion,
-        grado_responsable,
-        nombre_responsable,
-        cedula_responsable,
-        telefono_responsable,
-        texto_parte
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-      RETURNING *`,
-      [
-        consecutivo,
-        numero,
-        tipo || null,
-        unidad || null,
-        subunidadTexto || null,
-        estacionTexto || null,
-        grado_responsable || null,
-        nombre_responsable || null,
-        cedula_responsable || null,
-        telefono_responsable || null,
-        texto_parte || null
-      ]
-    );
-
+result = await pool.query(
+  `INSERT INTO partes (
+    consecutivo,
+    consecutivo_dia,
+    tipo,
+    unidad,
+    subunidad,
+    estacion,
+    grado_responsable,
+    nombre_responsable,
+    cedula_responsable,
+    telefono_responsable,
+    texto_parte,
+    foto_parte
+  )
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+  RETURNING *`,
+  [
+    consecutivo,
+    numero,
+    tipo || null,
+    unidad || null,
+    subunidadTexto || null,
+    estacionTexto || null,
+    grado_responsable || null,
+    nombre_responsable || null,
+    cedula_responsable || null,
+    telefono_responsable || null,
+    texto_parte || null,
+    rutaFoto
+  ]
+);
+    
     break;
 
   } catch (errorInsert) {
@@ -3243,7 +3247,8 @@ app.get("/descargar-parte/:id", async (req, res) => {
         nombre_responsable,
         cedula_responsable,
         telefono_responsable,
-        texto_parte
+        texto_parte,
+        foto_parte
       FROM partes
       WHERE id = $1
       LIMIT 1
@@ -3257,6 +3262,15 @@ app.get("/descargar-parte/:id", async (req, res) => {
 
     const parte = result.rows[0];
 
+    const limpiarTexto = (valor) => {
+  return String(valor || "")
+    .replace(/Ð/g, "")
+    .replace(/[[]/g, "")
+    .replace(/[]]/g, "")
+    .replace(/"/g, "")
+    .trim();
+};
+
     const nombreArchivo = `parte_${parte.id}_${String(parte.consecutivo || "sin_consecutivo").replace(/[^\w\-]/g, "_")}.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
@@ -3267,8 +3281,9 @@ app.get("/descargar-parte/:id", async (req, res) => {
       margin: 50
     });
 
-    doc.pipe(res);
-
+doc.pipe(res);
+doc.font("Helvetica");
+    
     // Encabezado
     doc
       .fontSize(16)
@@ -3294,18 +3309,18 @@ app.get("/descargar-parte/:id", async (req, res) => {
         })
       : "";
 
-    const datos = [
-      ["ID", parte.id || ""],
-      ["CONSECUTIVO", parte.consecutivo || ""],
-      ["FECHA", fechaTexto],
-      ["UNIDAD", parte.unidad || ""],
-      ["SUBUNIDAD", parte.subunidad || ""],
-      ["ESTACIÓN", parte.estacion || ""],
-      ["GRADO RESPONSABLE", parte.grado_responsable || ""],
-      ["NOMBRE RESPONSABLE", parte.nombre_responsable || ""],
-      ["CÉDULA RESPONSABLE", parte.cedula_responsable || ""],
-      ["TELÉFONO RESPONSABLE", parte.telefono_responsable || ""]
-    ];
+   const datos = [
+  ["ID", limpiarTexto(parte.id)],
+  ["CONSECUTIVO", limpiarTexto(parte.consecutivo)],
+  ["FECHA", limpiarTexto(fechaTexto)],
+  ["UNIDAD", limpiarTexto(parte.unidad)],
+  ["SUBUNIDAD", limpiarTexto(parte.subunidad)],
+  ["ESTACIÓN", limpiarTexto(parte.estacion)],
+  ["GRADO RESPONSABLE", limpiarTexto(parte.grado_responsable)],
+  ["NOMBRE RESPONSABLE", limpiarTexto(parte.nombre_responsable)],
+  ["CÉDULA RESPONSABLE", limpiarTexto(parte.cedula_responsable)],
+  ["TELÉFONO RESPONSABLE", limpiarTexto(parte.telefono_responsable)]
+];
 
     datos.forEach(([label, value]) => {
       doc
@@ -3324,7 +3339,7 @@ app.get("/descargar-parte/:id", async (req, res) => {
     doc
       .font("Helvetica")
       .fontSize(10)
-      .text(parte.texto_parte || "SIN CONTENIDO", {
+      .text(limpiarTexto(parte.texto_parte) || "SIN CONTENIDO", {
         align: "left",
         lineGap: 3
       });
@@ -3338,6 +3353,23 @@ app.get("/descargar-parte/:id", async (req, res) => {
       .text("Documento generado automáticamente por la plataforma Control de Partes.", {
         align: "center"
       });
+
+    if (parte.foto_parte && fs.existsSync(parte.foto_parte)) {
+  doc.addPage();
+
+  doc
+    .fontSize(12)
+    .font("Helvetica-Bold")
+    .text("EVIDENCIA FOTOGRÁFICA", { align: "center" });
+
+  doc.moveDown();
+
+  doc.image(parte.foto_parte, {
+    fit: [500, 650],
+    align: "center",
+    valign: "center"
+  });
+}
 
     doc.end();
   } catch (error) {
